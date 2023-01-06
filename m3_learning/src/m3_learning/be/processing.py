@@ -7,12 +7,52 @@ import numpy as np
 import pyUSID as usid
 import h5py
 import time
+from scipy import special
+import tensorflow as tf
 import os
 from BGlib import be as belib
 import sidpy
 import numpy as np
 from pyUSID.io.hdf_utils import  reshape_to_n_dims, get_auxiliary_datasets
 from sidpy.hdf.hdf_utils import get_attr
+
+
+def transform_params(params_real, params_pred):
+    """Utility function to transform the parameters to the correct distribution
+
+    Args:
+        params_real (np.array): real parameters
+        params_pred (np.array): predicted parameters
+
+    Returns:
+        tuple(np.array, np.array): returns the tuple of updated real and predicted parameters
+    """
+    params_pred[:, 3] = params_pred[:, 3] + 1/2 * np.pi
+    params_real[:, 3] = params_real[:, 3] + 1/2 * np.pi
+
+    params_pred[:, 3] = np.where(
+        params_pred[:, 3] < np.pi, params_pred[:, 3], params_pred[:, 3] - 2 * np.pi)
+    params_real[:, 3] = np.where(
+        params_real[:, 3] < np.pi, params_real[:, 3], params_real[:, 3] - 2 * np.pi)
+
+    params_pred[:, 3] = np.where(
+        params_pred[:, 2] > 0, params_pred[:, 3], params_pred[:, 3] + np.pi)
+    params_real[:, 3] = np.where(
+        params_real[:, 2] > 0, params_real[:, 3], params_real[:, 3] + np.pi)
+
+    params_pred[:, 2] = np.where(
+        params_pred[:, 2] > 0, params_pred[:, 2], params_pred[:, 2]*-1)
+    params_real[:, 2] = np.where(
+        params_real[:, 2] > 0, params_real[:, 2], params_real[:, 2]*-1)
+
+    params_pred[:, 3] = np.where(
+        params_pred[:, 3] < np.pi, params_pred[:, 3], params_pred[:, 3] - 2 * np.pi)
+    params_real[:, 3] = np.where(
+        params_real[:, 3] < np.pi, params_real[:, 3], params_real[:, 3] - 2 * np.pi)
+    
+    params_pred[:, 0] = np.abs(params_pred[:, 0])
+
+    return params_real, params_pred
 
 
 def convert_amp_phase(data):
@@ -234,3 +274,115 @@ def loop_lsqf(h5_f):
     proj_nd_shifted = np.roll(proj_nd_3, shift_ind, axis=len(pos_dims))
 
     return proj_nd_shifted
+
+
+def loop_fitting_function(type, V, y):
+
+    if(type == '9 parameters'):
+        a0 = y[:, 0]
+        a1 = y[:, 1]
+        a2 = y[:, 2]
+        a3 = y[:, 3]
+        a4 = y[:, 4]
+        b0 = y[:, 5]
+        b1 = y[:, 6]
+        b2 = y[:, 7]
+        b3 = y[:, 8]
+        d = 1000
+        V1 = V[:int(len(V) / 2)]
+        V2 = V[int(len(V) / 2):]
+
+        g1 = (b1 - b0) / 2 * (special.erf((V1 - a2) * d) + 1) + b0
+        g2 = (b3 - b2) / 2 * (special.erf((V2 - a3) * d) + 1) + b2
+
+        y1 = (g1 * special.erf((V1 - a2) / g1) + b0) / (b0 + b1)
+        y2 = (g2 * special.erf((V2 - a3) / g2) + b2) / (b2 + b3)
+
+        f1 = a0 + a1 * y1 + a4 * V1
+        f2 = a0 + a1 * y2 + a4 * V2
+
+        loop_eval = np.vstack((f1, f2))
+        return loop_eval
+    
+    elif(type == '13 parameters'):
+        a1 = y[:, 0]
+        a2 = y[:, 1]
+        a3 = y[:, 2]
+        b1 = y[:, 3]
+        b2 = y[:, 4]
+        b3 = y[:, 5]
+        b4 = y[:, 6]
+        b5 = y[:, 7]
+        b6 = y[:, 8]
+        b7 = y[:, 9]
+        b8 = y[:, 10]
+        Au = y[:, 11]
+        Al = y[:, 12]
+
+        # See supporting information for more information about the form of this function
+        S1 = ((b1 + b2) / 2) + ((b2 - b1) / 2) * special.erf((V - b7) / b5)
+        S2 = ((b4 + b3) / 2) + ((b3 - b4) / 2) * special.erf((V - b8) / b6)
+        Branch1 = (a1 + a2) / 2 + ((a2 - a1) / 2) * \
+            special.erf((V - Au) / S1) + a3 * V
+        Branch2 = (a1 + a2) / 2 + ((a2 - a1) / 2) * \
+            special.erf((V - Al) / S2) + a3 * V
+
+        return np.concatenate((Branch1, np.flipud(Branch2)), axis=0).squeeze()
+    else:
+        print('No such parameters')
+        return None
+
+def loop_fitting_function_tf(type, V, y):
+    if(type == '9 parameters'):
+        a0 = y[:, 0]
+        a1 = y[:, 1]
+        a2 = y[:, 2]
+        a3 = y[:, 3]
+        a4 = y[:, 4]
+        b0 = y[:, 5]
+        b1 = y[:, 6]
+        b2 = y[:, 7]
+        b3 = y[:, 8]
+        d = 1000
+        V1 = V[:int(len(V) / 2)]
+        V2 = V[int(len(V) / 2):]
+
+        g1 = tf.add(tf.multiply(tf.divide(tf.subtract(b1, b0), 2), tf.add(tf.math.erf(tf.multiply(tf.subtract(V1, a2), d)), 1)), b0)
+        g2 = tf.add(tf.multiply(tf.divide(tf.subtract(b3, b2), 2), tf.add(tf.math.erf(tf.multiply(tf.subtract(V2, a3), d)), 1)), b2)
+
+        y1 = tf.divide(tf.add(tf.multiply(g1, tf.math.erf(tf.divide(tf.subtract(V1, a2), g1))), b0), tf.add(b0, b1))
+        y2 = tf.divide(tf.add(tf.multiply(g2, tf.math.erf(tf.divide(tf.subtract(V2, a3), g2))), b2), tf.add(b2, b3))
+
+        f1 = tf.add(a0, tf.add(tf.multiply(a1, y1), tf.multiply(a4, V1)))
+        f2 = tf.add(a0, tf.add(tf.multiply(a1, y2), tf.multiply(a4, V2)))
+
+        return tf.transpose(tf.concat([f1, f2], axis=0))
+
+    elif(type == '13 parameters'):
+
+        a1 = y[:, 0]
+        a2 = y[:, 1]
+        a3 = y[:, 2]
+        b1 = y[:, 3]
+        b2 = y[:, 4]
+        b3 = y[:, 5]
+        b4 = y[:, 6]
+        b5 = y[:, 7]
+        b6 = y[:, 8]
+        b7 = y[:, 9]
+        b8 = y[:, 10]
+        Au = y[:, 11]
+        Al = y[:, 12]
+
+        epsilon = 5e-14
+
+        S1 = tf.add(tf.divide(tf.add(b1, b2) + epsilon, 2.0), tf.multiply(tf.divide(tf.subtract(b2,
+                                                                                                b1) + epsilon, 2.0), tf.math.erf(tf.divide(tf.subtract(V, b7) + epsilon, b5))))
+        S2 = tf.add(tf.divide(tf.add(b4, b3) + epsilon, 2.0), tf.multiply(tf.divide(tf.subtract(b3,
+                                                                                                b4) + epsilon, 2.0), tf.math.erf(tf.divide(tf.subtract(np.flipud(V), b8) + epsilon, b6))))
+        Branch1 = tf.add(tf.add(tf.divide(tf.add(a1, a2) + epsilon, 2.0), tf.multiply(tf.divide(tf.subtract(
+            a2, a1) + epsilon, 2.0), tf.math.erf(tf.divide(tf.subtract(V, Au) + epsilon, S1)))), tf.multiply(a3, V))
+        Branch2 = tf.add(tf.add(tf.divide(tf.add(a1, a2) + epsilon, 2.0), tf.multiply(tf.divide(tf.subtract(a2, a1) + epsilon,
+                                                                                                2.0), tf.math.erf(tf.divide(tf.subtract(np.flipud(V), Al) + epsilon, S2)))), tf.multiply(a3, np.flipud(V)))
+
+        return tf.transpose(tf.concat([Branch1, Branch2], axis=0))

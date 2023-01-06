@@ -125,6 +125,11 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# trained models
+*.pt
+*.pth
+m3_learning/papers/2023_Rapid_Fitting/Trained Models
+
 # Pyre type checker
 .pyre/
 m3_learning/Datasets/Mixed_phase_pzt_BEPFM/data_file_sho_fit.h5
@@ -132,3 +137,6 @@ m3_learning/Datasets/Mixed_phase_pzt_BEPFM/data_file.h5
 m3_learning/papers/2023_Rapid_Fitting/data/
 *.h5
 m3_learning/papers/2023_Rapid_Fitting\Assets
+
+# temporary image files
+m3_learning/papers/2023_Rapid_Fitting/Assets/Maps/
