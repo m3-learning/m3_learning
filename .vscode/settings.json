@@ -1,0 +1,22 @@
+{
+    "python.formatting.provider": "autopep8",
+    "cSpell.words": [
+        "spectras",
+        "suptitle"
+    ],
+    "grammarly.selectors": [
+        {
+            "language": "python",
+            "scheme": "file"
+        },
+        {
+            "language": "markdown",
+            "scheme": "vscode-notebook-cell",
+            "pattern": "c:\\Users\\Joshua Agar\\Documents\\codes\\m3_learning\\m3_learning\\Tutorials\\Physics_Informed_Autoencoders\\Physics_Constrained_Autoencoder.ipynb"
+        },
+        {
+            "language": "python",
+            "scheme": "vscode-notebook-cell"
+        }
+    ]
+}

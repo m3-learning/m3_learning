@@ -1,0 +1,1310 @@
+
+
+<!DOCTYPE html>
+
+
+<html >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Band Excitation Piezoresponse Force Microscopy of \(PbZr_{0.2}Ti_{0.8}O_3\) &#8212; M3 Learning: Multifunctional Materials and Machine Learning</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script type="application/vnd.jupyter.widget-state+json">{"state": {"32a1c5366be040139f6b734c49237897": {"model_name": "LayoutModel", "model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": "500px"}}}, "version_major": 2, "version_minor": 0}</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script crossorigin="anonymous" data-jupyter-widgets-cdn="https://cdn.jsdelivr.net/npm/" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'Datasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting';</script>
+    <link rel="shortcut icon" href="../../_static/m3_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction" href="../../papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html" />
+    <link rel="prev" title="M3-Learning: Multifunctional Materials and Machine learning" href="../../jupyterbook/Introduction.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="None"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../jupyterbook/Introduction.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/m3_logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../../_static/m3_logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../jupyterbook/Introduction.html">
+                    M3-Learning: Multifunctional Materials and Machine learning
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Data Sets</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Band Excitation Piezoresponse Force Microscopy of <span class="math notranslate nohighlight">\(PbZr_{0.2}Ti_{0.8}O_3\)</span></a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Papers</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Unsupervised_Learning_with_AEs/Unsupervised_Learning_with_Autoencoders.html">Unsupervised Spectral Unmixing with Autoencoders</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Physics_Informed_Autoencoders/Physics_Constrained_Autoencoder.html">Physics Constrained Autoencoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Cycle_Consistent_Spatial_Transformer_Autoencoder/Cycle_Consistent_Spatial_Transformer_Autoencoder.html">Cycle Consistent Spatial Transforming Autoencoder</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../docs/api.html">docs</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../docs/_autosummary/m3_learning.html">m3_learning</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../docs/_autosummary/m3_learning.be.html">m3_learning.be</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.be.processing.html">m3_learning.be.processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.be.util.html">m3_learning.be.util</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../docs/_autosummary/m3_learning.nn.html">m3_learning.nn</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.nn.Regularization.html">m3_learning.nn.Regularization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.nn.STEM_AE.html">m3_learning.nn.STEM_AE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.nn.random.html">m3_learning.nn.random</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.nn.time_series_nn.html">m3_learning.nn.time_series_nn</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../docs/_autosummary/m3_learning.util.html">m3_learning.util</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.util.data_generators.html">m3_learning.util.data_generators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.util.file_IO.html">m3_learning.util.file_IO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.util.h5_util.html">m3_learning.util.h5_util</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.util.nn.html">m3_learning.util.nn</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.util.preprocessing.html">m3_learning.util.preprocessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.util.rand_util.html">m3_learning.util.rand_util</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../docs/_autosummary/m3_learning.viz.html">m3_learning.viz</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.viz.Movies.html">m3_learning.viz.Movies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.viz.layout.html">m3_learning.viz.layout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.viz.nn.html">m3_learning.viz.nn</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.viz.printing.html">m3_learning.viz.printing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../docs/_autosummary/m3_learning.viz.style.html">m3_learning.viz.style</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://jupyterhub.coe.drexel.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/m3-learning/m3_learning&urlpath=tree/m3_learning/m3_learning/Datasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting.ipynb&branch=main" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onJupyterHub"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../../_static/images/logo_jupyterhub.svg">
+  </span>
+<span class="btn__text-container">JupyterHub</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/m3-learning/m3_learning/blob/main/m3_learning/Datasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/m3-learning/m3_learning" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/m3-learning/m3_learning/issues/new?title=Issue%20on%20page%20%2FDatasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/Datasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Band Excitation Piezoresponse Force Microscopy of PbZr_{0.2}Ti_{0.8}O_3</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Band Excitation Piezoresponse Force Microscopy of <span class="math notranslate nohighlight">\(PbZr_{0.2}Ti_{0.8}O_3\)</span></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#import-packages">Import Packages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-data-for-sho-fitting">Loading data for SHO fitting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sho-fitting">SHO Fitting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#extract-data">Extract Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#saves-the-data">Saves the Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plots-the-sho-fit-results">Plots the SHO Fit Results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-raw-data">Visualize Raw Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-the-sho-fit-results">Visualize the SHO Fit Results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#piezoelectric-hysteresis-loops">Piezoelectric Hysteresis Loops</a></li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <div class="tex2jax_ignore mathjax_ignore section" id="band-excitation-piezoresponse-force-microscopy-of-pbzr-0-2-ti-0-8-o-3">
+<h1>Band Excitation Piezoresponse Force Microscopy of <span class="math notranslate nohighlight">\(PbZr_{0.2}Ti_{0.8}O_3\)</span><a class="headerlink" href="#band-excitation-piezoresponse-force-microscopy-of-pbzr-0-2-ti-0-8-o-3" title="Permalink to this headline">#</a></h1>
+<p>Film grown and measurements conducted by Joshua C. Agar at Oak Ridge National Laboratory</p>
+<p>This dataset has been the subject of 4 manuscripts:</p>
+<ol class="arabic simple">
+<li><p>Agar, J., Damodaran, A. R., Pandya, S., C, Cao, Y., Vasudevan, R. K., Xu, R., Saremi, S., Li, Q., Kim, J., McCarter, M. R., Dedon, L. R., Angsten, T., Balke, N., Jesse, S., Asta, M., Kalinin, S. V. &amp; Martin, L. W. Three-State Ferroelastic Switching and Large Electromechanical Responses in PbTiO<sub>3 Thin Films. Adv. Mater. 29, 1702069 (2017). <a class="reference external" href="https://onlinelibrary.wiley.com/doi/10.1002/adma.201702069">doi:10.1002/adma.201702069</a></p></li>
+<li><p>Agar, J. C., Cao, Y., Naul, B., Pandya, S., van der Walt, S., Luo, A. I., Maher, J. T., Balke, N., Jesse, S., Kalinin, S. V., Vasudevan, R. K. &amp; Martin, L. W. Machine detection of enhanced electromechanical energy conversion in PbZr<sub>0.2</sub>Ti<sub>0.8</sub>O<sub>3</sub> thin films. Adv. Mater. 30, e1800701 (2018). <a class="reference external" href="https://onlinelibrary.wiley.com/doi/abs/10.1002/adma.201800701">doi:10.1002/adma.201800701</a></p></li>
+<li><p>Griffin, L. A., Gaponenko, I. &amp; Bassiri-Gharb, N. Better, Faster, and Less Biased Machine Learning: Electromechanical Switching in Ferroelectric Thin Films. Adv. Mater. e2002425 (2020). <a class="reference external" href="https://onlinelibrary.wiley.com/doi/abs/10.1002/adma.202002425">doi:10.1002/adma.202002425</a></p></li>
+<li><p>Qin, S., Guo, Y., Kaliyev, A. T. &amp; Agar, J. C. Why it is Unfortunate that Linear Machine Learning ‘Works’ so well in Electromechanical Switching of Ferroelectric Thin Films. Adv. Mater. e2202814 (2022). <a class="reference external" href="https://onlinelibrary.wiley.com/doi/10.1002/adma.202202814">doi:10.1002/adma.202202814</a></p></li>
+</ol>
+<div class="section" id="import-packages">
+<h2>Import Packages<a class="headerlink" href="#import-packages" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="kn">import</span> <span class="n">ConnectionPatch</span>
+
+
+<span class="kn">from</span> <span class="nn">m3_learning.nn.random</span> <span class="kn">import</span> <span class="n">random_seed</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.style</span> <span class="kn">import</span> <span class="n">set_style</span>
+<span class="kn">from</span> <span class="nn">m3_learning.be.util</span> <span class="kn">import</span> <span class="n">print_be_tree</span>
+<span class="kn">from</span> <span class="nn">m3_learning.be.processing</span> <span class="kn">import</span> <span class="n">convert_amp_phase</span><span class="p">,</span> <span class="n">fit_loop_function</span><span class="p">,</span> <span class="n">SHO_Fitter</span><span class="p">,</span> <span class="n">SHO_fit_to_array</span><span class="p">,</span> <span class="n">loop_lsqf</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.layout</span> <span class="kn">import</span> <span class="n">layout_fig</span>
+<span class="kn">from</span> <span class="nn">m3_learning.util.h5_util</span> <span class="kn">import</span> <span class="n">make_dataset</span><span class="p">,</span> <span class="n">make_group</span>
+<span class="kn">from</span> <span class="nn">m3_learning.util.file_IO</span> <span class="kn">import</span> <span class="n">download_and_unzip</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">resample</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">fftpack</span>
+
+
+
+<span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+<span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>default set for seaborn
+default set for matplotlib
+Pytorch seed was set to 42
+Numpy seed was set to 42
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tensorflow seed was set to 42
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="loading-data-for-sho-fitting">
+<h2>Loading data for SHO fitting<a class="headerlink" href="#loading-data-for-sho-fitting" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;./&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://zenodo.org/record/7297755/files/data_file.h5?download=1&#39;</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;data_file.h5&#39;</span>
+<span class="n">save_path</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+
+<span class="n">download_and_unzip</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">save_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using files already downloaded
+</pre></div>
+</div>
+</div>
+</div>
+<p>Prints the Tree to show the Data Structure</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">print_be_tree</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;data_file.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/
+├ Measurement_000
+  ---------------
+  ├ Channel_000
+    -----------
+    ├ Bin_FFT
+    ├ Bin_Frequencies
+    ├ Bin_Indices
+    ├ Bin_Step
+    ├ Bin_Wfm_Type
+    ├ Excitation_Waveform
+    ├ Noise_Floor
+    ├ Position_Indices
+    ├ Position_Values
+    ├ Raw_Data
+    ├ Raw_Data-SHO_Fit_000
+      --------------------
+      ├ Fit
+      ├ Guess
+      ├ Guess-Loop_Fit_000
+        ------------------
+        ├ Fit
+        ├ Fit_Loop_Parameters
+        ├ Guess
+        ├ Guess_Loop_Parameters
+        ├ Loop_Metrics
+        ├ Loop_Metrics_Indices
+        ├ Loop_Metrics_Values
+        ├ Projected_Loops
+        ├ completed_fit_positions
+        ├ completed_guess_positions
+      ├ Spectroscopic_Indices
+      ├ Spectroscopic_Values
+      ├ completed_fit_positions
+      ├ completed_guess_positions
+    ├ Spatially_Averaged_Plot_Group_000
+      ---------------------------------
+      ├ Bin_Frequencies
+      ├ Max_Response
+      ├ Mean_Spectrogram
+      ├ Min_Response
+      ├ Spectroscopic_Parameter
+      ├ Step_Averaged_Response
+    ├ Spatially_Averaged_Plot_Group_001
+      ---------------------------------
+      ├ Bin_Frequencies
+      ├ Max_Response
+      ├ Mean_Spectrogram
+      ├ Min_Response
+      ├ Spectroscopic_Parameter
+      ├ Step_Averaged_Response
+    ├ Spectroscopic_Indices
+    ├ Spectroscopic_Values
+    ├ UDVS
+    ├ UDVS_Indices
+    ├ complex
+      -------
+      ├ imag
+      ├ real
+    ├ magn_spec
+      ---------
+      ├ amp
+      ├ phase
+├ Raw_Data-SHO_Fit_000
+  --------------------
+  ├ Fit
+  ├ Guess
+  ├ Spectroscopic_Indices
+  ├ Spectroscopic_Values
+  ├ completed_fit_positions
+  ├ completed_guess_positions
+Datasets and datagroups within the file:
+------------------------------------
+/
+/Measurement_000
+/Measurement_000/Channel_000
+/Measurement_000/Channel_000/Bin_FFT
+/Measurement_000/Channel_000/Bin_Frequencies
+/Measurement_000/Channel_000/Bin_Indices
+/Measurement_000/Channel_000/Bin_Step
+/Measurement_000/Channel_000/Bin_Wfm_Type
+/Measurement_000/Channel_000/Excitation_Waveform
+/Measurement_000/Channel_000/Noise_Floor
+/Measurement_000/Channel_000/Position_Indices
+/Measurement_000/Channel_000/Position_Values
+/Measurement_000/Channel_000/Raw_Data
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Fit
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/Fit
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/Fit_Loop_Parameters
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/Guess
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/Guess_Loop_Parameters
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/Loop_Metrics
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/Loop_Metrics_Indices
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/Loop_Metrics_Values
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/Projected_Loops
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/completed_fit_positions
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000/completed_guess_positions
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Spectroscopic_Indices
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Spectroscopic_Values
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/completed_fit_positions
+/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/completed_guess_positions
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_000
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_000/Bin_Frequencies
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_000/Max_Response
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_000/Mean_Spectrogram
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_000/Min_Response
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_000/Spectroscopic_Parameter
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_000/Step_Averaged_Response
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_001
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_001/Bin_Frequencies
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_001/Max_Response
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_001/Mean_Spectrogram
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_001/Min_Response
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_001/Spectroscopic_Parameter
+/Measurement_000/Channel_000/Spatially_Averaged_Plot_Group_001/Step_Averaged_Response
+/Measurement_000/Channel_000/Spectroscopic_Indices
+/Measurement_000/Channel_000/Spectroscopic_Values
+/Measurement_000/Channel_000/UDVS
+/Measurement_000/Channel_000/UDVS_Indices
+/Measurement_000/Channel_000/complex
+/Measurement_000/Channel_000/complex/imag
+/Measurement_000/Channel_000/complex/real
+/Measurement_000/Channel_000/magn_spec
+/Measurement_000/Channel_000/magn_spec/amp
+/Measurement_000/Channel_000/magn_spec/phase
+/Raw_Data-SHO_Fit_000
+/Raw_Data-SHO_Fit_000/Fit
+/Raw_Data-SHO_Fit_000/Guess
+/Raw_Data-SHO_Fit_000/Spectroscopic_Indices
+/Raw_Data-SHO_Fit_000/Spectroscopic_Values
+/Raw_Data-SHO_Fit_000/completed_fit_positions
+/Raw_Data-SHO_Fit_000/completed_guess_positions
+
+The main dataset:
+------------------------------------
+&lt;HDF5 file &quot;data_file.h5&quot; (mode r+)&gt;
+
+The ancillary datasets:
+------------------------------------
+&lt;HDF5 dataset &quot;Position_Indices&quot;: shape (3600, 2), type &quot;&lt;u4&quot;&gt;
+&lt;HDF5 dataset &quot;Position_Values&quot;: shape (3600, 2), type &quot;&lt;f4&quot;&gt;
+&lt;HDF5 dataset &quot;Spectroscopic_Indices&quot;: shape (4, 63360), type &quot;&lt;u4&quot;&gt;
+&lt;HDF5 dataset &quot;Spectroscopic_Values&quot;: shape (4, 63360), type &quot;&lt;f4&quot;&gt;
+
+Metadata or attributes in a datagroup
+------------------------------------
+BE_actual_duration_[s] : 0.004
+BE_amplitude_[V] : 1
+BE_auto_smoothing : auto smoothing on
+BE_band_edge_smoothing_[s] : 4832.1
+BE_band_edge_trim : 0.094742
+BE_band_width_[Hz] : 200000
+BE_bins_per_band : 0
+BE_center_frequency_[Hz] : 1310000
+BE_desired_duration_[s] : 0.004
+BE_phase_content : chirp-sinc hybrid
+BE_phase_variation : 1
+BE_points_per_BE_wave : 0
+BE_repeats : 4
+FORC_V_high1_[V] : 1
+FORC_V_high2_[V] : 10
+FORC_V_low1_[V] : -1
+FORC_V_low2_[V] : -10
+FORC_num_of_FORC_cycles : 1
+FORC_num_of_FORC_repeats : 1
+File_MDAQ_version : MDAQ_VS_090915_01
+File_date_and_time : 18-Sep-2015 18:32:14
+File_file_name : SP128_NSO
+File_file_path : C:\Users\Asylum User\Documents\Users\Agar\SP128_NSO\
+File_file_suffix : 99
+IO_AO_amplifier : 10
+IO_AO_range_[V] : +/- 10
+IO_Analog_Input_1 : +/- .1V, FFT
+IO_Analog_Input_2 : off
+IO_Analog_Input_3 : off
+IO_Analog_Input_4 : off
+IO_DAQ_platform : NI 6115
+IO_rate_[Hz] : 4000000
+VS_amplitude_[V] : 16
+VS_cycle_fraction : full
+VS_cycle_phase_shift : 0
+VS_measure_in_field_loops : in and out-of-field
+VS_mode : DC modulation mode
+VS_number_of_cycles : 2
+VS_offset_[V] : 0
+VS_read_voltage_[V] : 0
+VS_set_pulse_amplitude[V] : 0
+VS_set_pulse_duration[s] : 0.002
+VS_step_edge_smoothing_[s] : 0.001
+VS_steps_per_full_cycle : 96
+data_type : BEPSData
+grid_/single : grid
+grid_contact_set_point_[V] : 1
+grid_current_col : 1
+grid_current_row : 1
+grid_cycle_time_[s] : 10
+grid_measuring : 0
+grid_moving : 0
+grid_num_cols : 60
+grid_num_rows : 60
+grid_settle_time_[s] : 0.15
+grid_time_remaining_[h;m;s] : 10
+grid_total_time_[h;m;s] : 10
+grid_transit_set_point_[V] : 0.1
+grid_transit_time_[s] : 0.15
+num_bins : 165
+num_pix : 3600
+num_udvs_steps : 384
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="sho-fitting">
+<h2>SHO Fitting<a class="headerlink" href="#sho-fitting" title="Permalink to this headline">#</a></h2>
+<p><strong>Note</strong>: this code takes around 15 minutes to execute</p>
+<div class="cell tag_skip-execution docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SHO_Fitter</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;data_file.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="extract-data">
+<h3>Extract Data<a class="headerlink" href="#extract-data" title="Permalink to this headline">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Opens the data file</span>
+<span class="n">h5_f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;data_file.h5&quot;</span><span class="p">,</span> <span class="s2">&quot;r+&quot;</span><span class="p">)</span>
+
+<span class="c1"># number of samples per SHO fit</span>
+<span class="n">num_bins</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;num_bins&quot;</span><span class="p">]</span>
+
+<span class="c1"># number of pixels in the image</span>
+<span class="n">num_pix</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;num_pix&quot;</span><span class="p">]</span>
+
+<span class="c1"># number of pixels in x and y dimensions</span>
+<span class="n">num_pix_1d</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_pix</span><span class="p">))</span>
+
+<span class="c1"># number of DC voltage steps</span>
+<span class="n">voltage_steps</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;num_udvs_steps&quot;</span><span class="p">]</span>
+
+<span class="c1"># sampling rate</span>
+<span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;IO_rate_[Hz]&quot;</span><span class="p">]</span>
+
+<span class="c1"># BE bandwidth</span>
+<span class="n">be_bandwidth</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;BE_band_width_[Hz]&quot;</span><span class="p">]</span>
+
+<span class="c1"># BE center frequency</span>
+<span class="n">be_center_frequency</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;BE_center_frequency_[Hz]&quot;</span><span class="p">]</span>
+
+<span class="c1"># Frequency Vector in Hz</span>
+<span class="n">frequency_bin</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Bin_Frequencies&quot;</span><span class="p">][:]</span>
+
+<span class="c1"># Resampled frequency vector</span>
+<span class="n">wvec_freq</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">frequency_bin</span><span class="p">,</span> <span class="mi">80</span><span class="p">)</span>
+
+<span class="c1"># extracting the excitation waveform</span>
+<span class="n">be_waveform</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Excitation_Waveform&quot;</span><span class="p">]</span>
+
+<span class="c1"># extracting spectroscopic values</span>
+<span class="n">spectroscopic_values</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Spectroscopic_Values&quot;</span><span class="p">]</span>
+
+<span class="c1"># get raw data (real and imaginary combined)</span>
+<span class="n">raw_data</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Raw_Data&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="saves-the-data">
+<h3>Saves the Data<a class="headerlink" href="#saves-the-data" title="Permalink to this headline">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">shape</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Raw_Data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+
+<span class="c1">#creates the necessary structure in the H5_file</span>
+<span class="n">make_group</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">],</span> <span class="s1">&#39;complex&#39;</span><span class="p">)</span>
+<span class="n">make_group</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">],</span> <span class="s1">&#39;magn_spec&#39;</span><span class="p">)</span>
+<span class="n">make_dataset</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;complex&#39;</span><span class="p">],</span> <span class="s1">&#39;real&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Raw_Data&quot;</span><span class="p">]))</span>
+<span class="n">make_dataset</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;complex&#39;</span><span class="p">],</span> <span class="s1">&#39;imag&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Raw_Data&quot;</span><span class="p">]))</span>
+
+<span class="n">amp</span><span class="p">,</span> <span class="n">phase</span> <span class="o">=</span> <span class="n">convert_amp_phase</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
+
+<span class="n">make_dataset</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;magn_spec&#39;</span><span class="p">],</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="n">amp</span><span class="p">)</span>
+<span class="n">make_dataset</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;magn_spec&#39;</span><span class="p">],</span> <span class="s1">&#39;phase&#39;</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>could not add group - it might already exist
+could not add group - it might already exist
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="plots-the-sho-fit-results">
+<h3>Plots the SHO Fit Results<a class="headerlink" href="#plots-the-sho-fit-results" title="Permalink to this headline">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dc_voltage</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;Raw_Data-SHO_Fit_000&#39;</span><span class="p">][</span><span class="s1">&#39;Spectroscopic_Values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">SHO_fit_results</span> <span class="o">=</span> <span class="n">SHO_fit_to_array</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Raw_Data-SHO_Fit_000&quot;</span><span class="p">][</span><span class="s2">&quot;Fit&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3600</span><span class="p">)</span>
+
+<span class="n">figs</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">layout_fig</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s2">&quot;Amplitude&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;y_label&#39;</span><span class="p">:</span> <span class="s2">&quot;Ampltude (Arb. U.)&quot;</span><span class="p">},</span>
+         <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s2">&quot;Resonance Frequency&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;y_label&#39;</span><span class="p">:</span> <span class="s2">&quot;Resonance Frequency (Hz)&quot;</span><span class="p">},</span>
+         <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s2">&quot;Dampening&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;y_label&#39;</span><span class="p">:</span> <span class="s2">&quot;Quality Factor (Arb. U.)&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s2">&quot;Phase&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;y_label&#39;</span><span class="p">:</span> <span class="s2">&quot;Phase (rad)&quot;</span><span class="p">}]</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ax</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dc_voltage</span><span class="p">,</span> <span class="n">SHO_fit_results</span><span class="p">[</span><span class="n">pix</span><span class="p">,</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;y_label&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/0e5c1c5ed5fe5e4a6488b3822b75a239b20b0e2ad9bcbe3161bf6551c3fafe9c.png" src="../../_images/0e5c1c5ed5fe5e4a6488b3822b75a239b20b0e2ad9bcbe3161bf6551c3fafe9c.png" />
+</div>
+</div>
+</div>
+<div class="section" id="visualize-raw-data">
+<h3>Visualize Raw Data<a class="headerlink" href="#visualize-raw-data" title="Permalink to this headline">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Selects a random point and timestep to plot</span>
+<span class="n">pixel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;magn_spec&#39;</span><span class="p">][</span><span class="s1">&#39;amp&#39;</span><span class="p">][:]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">timestep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;magn_spec&#39;</span><span class="p">][</span><span class="s1">&#39;amp&#39;</span><span class="p">][:]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">num_bins</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">pixel</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">layout_fig</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span> <span class="o">*</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="n">be_timesteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">be_waveform</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of time steps: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">be_timesteps</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">be_waveform</span><span class="p">[:</span> <span class="nb">int</span><span class="p">(</span><span class="n">be_timesteps</span><span class="p">)])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Time (sec)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Voltage (V)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;BE Waveform&quot;</span><span class="p">)</span>
+
+<span class="n">resonance_graph</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">be_waveform</span><span class="p">[:</span> <span class="nb">int</span><span class="p">(</span><span class="n">be_timesteps</span><span class="p">)])</span>
+<span class="n">fftfreq</span> <span class="o">=</span> <span class="n">fftpack</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">be_timesteps</span><span class="p">))</span> <span class="o">*</span> <span class="n">sampling_rate</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">fftfreq</span><span class="p">[:</span> <span class="nb">int</span><span class="p">(</span><span class="n">be_timesteps</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">resonance_graph</span><span class="p">[:</span> <span class="nb">int</span><span class="p">(</span><span class="n">be_timesteps</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">])</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">be_center_frequency</span><span class="p">,</span>
+    <span class="n">ymax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">resonance_graph</span><span class="p">[:</span> <span class="nb">int</span><span class="p">(</span><span class="n">be_timesteps</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]),</span>
+    <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Amplitude (Arb. U.)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span>
+    <span class="n">be_center_frequency</span> <span class="o">-</span> <span class="n">be_bandwidth</span> <span class="o">-</span> <span class="n">be_bandwidth</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span>
+    <span class="n">be_center_frequency</span> <span class="o">+</span> <span class="n">be_bandwidth</span> <span class="o">+</span> <span class="n">be_bandwidth</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">hysteresis_waveform</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">spectroscopic_values</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="mi">165</span><span class="p">][</span><span class="mi">192</span><span class="p">:]</span> <span class="o">*</span> <span class="n">spectroscopic_values</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">::</span><span class="mi">165</span><span class="p">][</span><span class="mi">192</span><span class="p">:]</span>
+<span class="p">)</span>
+<span class="n">x_start</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="n">x_end</span> <span class="o">=</span> <span class="mi">140</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hysteresis_waveform</span><span class="p">)</span>
+<span class="n">ax_new</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.52</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.3</span><span class="o">/</span><span class="mf">5.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">])</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">hysteresis_waveform</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">x_start</span><span class="p">,</span> <span class="n">x_end</span><span class="p">)</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_start</span><span class="p">,</span> <span class="n">x_end</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="mi">60</span><span class="p">,</span> <span class="mi">62</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">66</span><span class="p">,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">70</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span>
+    <span class="n">ConnectionPatch</span><span class="p">(</span>
+        <span class="n">xyA</span><span class="o">=</span><span class="p">(</span><span class="n">x_start</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">hysteresis_waveform</span><span class="p">[</span><span class="n">x_start</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]),</span>
+        <span class="n">coordsA</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span>
+        <span class="n">xyB</span><span class="o">=</span><span class="p">(</span><span class="mi">105</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+        <span class="n">coordsB</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span>
+    <span class="n">ConnectionPatch</span><span class="p">(</span>
+        <span class="n">xyA</span><span class="o">=</span><span class="p">(</span><span class="n">x_end</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">hysteresis_waveform</span><span class="p">[</span><span class="n">x_end</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]),</span>
+        <span class="n">coordsA</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span>
+        <span class="n">xyB</span><span class="o">=</span><span class="p">(</span><span class="mi">105</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">),</span>
+        <span class="n">coordsB</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Voltage Steps&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Voltage (V)&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">frequency_bin</span><span class="p">,</span>
+    <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;magn_spec&#39;</span><span class="p">][</span><span class="s1">&#39;amp&#39;</span><span class="p">][:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_pix</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_bins</span><span class="p">)[</span><span class="n">pixel</span><span class="p">,</span> <span class="n">timestep</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Amplitude (Arb. U.)&quot;</span><span class="p">)</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">frequency_bin</span><span class="p">,</span>
+    <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;magn_spec&#39;</span><span class="p">][</span><span class="s1">&#39;phase&#39;</span><span class="p">][:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_pix</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_bins</span><span class="p">)[</span><span class="n">pixel</span><span class="p">,</span> <span class="n">timestep</span><span class="p">],</span>
+    <span class="s2">&quot;r&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Phase (rad)&quot;</span><span class="p">);</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frequency_bin</span><span class="p">,</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;complex&#39;</span><span class="p">][</span><span class="s1">&#39;real&#39;</span><span class="p">][</span><span class="n">pixel</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_bins</span><span class="p">)[</span><span class="n">timestep</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Real&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Amplitude (Arb. U.)&quot;</span><span class="p">)</span>
+<span class="n">ax3</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">frequency_bin</span><span class="p">,</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s1">&#39;complex&#39;</span><span class="p">][</span><span class="s1">&#39;imag&#39;</span><span class="p">][</span><span class="n">pixel</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_bins</span><span class="p">)[</span><span class="n">timestep</span><span class="p">],</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Imaginary&quot;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Amplitude (Arb. U.)&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>3507 14
+Number of time steps: 4096.0
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/ferroelectric/anaconda3/envs/STEM/lib/python3.9/site-packages/matplotlib/cbook/__init__.py:1369: ComplexWarning: Casting complex values to real discards the imaginary part
+  return np.asarray(x, float)
+</pre></div>
+</div>
+<img alt="../../_images/08ea50aacc9641c756944be9fcfbcb94c847f54f4367966418b4f87645cb5922.png" src="../../_images/08ea50aacc9641c756944be9fcfbcb94c847f54f4367966418b4f87645cb5922.png" />
+</div>
+</div>
+</div>
+<div class="section" id="visualize-the-sho-fit-results">
+<h3>Visualize the SHO Fit Results<a class="headerlink" href="#visualize-the-sho-fit-results" title="Permalink to this headline">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create a list for parameters</span>
+<span class="n">fit_results_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Raw_Data-SHO_Fit_000&quot;</span><span class="p">][</span><span class="s2">&quot;Fit&quot;</span><span class="p">]</span>
+<span class="p">):</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+            <span class="n">fit_results_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c1"># flatten parameters list into numpy array</span>
+<span class="n">fit_results_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">fit_results_list</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_pix</span><span class="p">,</span> <span class="n">voltage_steps</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># check distributions of each parameter before and after scaling</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">layout_fig</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="n">units</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Amplitude (Arb. U.)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Quality Factor (Arb. U.)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Phase (rad)&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">fit_results_list</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axs</span><span class="o">.</span><span class="n">flat</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="n">units</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Density&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">ticklabel_format</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;sci&quot;</span><span class="p">,</span> <span class="n">scilimits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/edd2e6a1d6d3e894f213f1f36251f565b41ffa284cee20bc925329d70370174a.png" src="../../_images/edd2e6a1d6d3e894f213f1f36251f565b41ffa284cee20bc925329d70370174a.png" />
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="tex2jax_ignore mathjax_ignore section" id="piezoelectric-hysteresis-loops">
+<h1>Piezoelectric Hysteresis Loops<a class="headerlink" href="#piezoelectric-hysteresis-loops" title="Permalink to this headline">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">h5_main</span> <span class="o">=</span> <span class="n">h5_f</span><span class="p">[</span><span class="s2">&quot;Measurement_000&quot;</span><span class="p">][</span><span class="s2">&quot;Channel_000&quot;</span><span class="p">][</span><span class="s2">&quot;Raw_Data-SHO_Fit_000&quot;</span><span class="p">][</span><span class="s2">&quot;Guess&quot;</span><span class="p">]</span>
+<span class="n">h5_loop_fit</span><span class="p">,</span> <span class="n">h5_loop_group</span> <span class="o">=</span> <span class="n">fit_loop_function</span><span class="p">(</span><span class="n">h5_f</span><span class="p">,</span> <span class="n">h5_main</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Consider calling test() to check results before calling compute() which computes on the entire dataset and writes results to the HDF5 file
+
+Note: Loop_Fit has already been performed with the same parameters before. These results will be returned by compute() by default. Set override to True to force fresh computation
+
+[&lt;HDF5 group &quot;/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000&quot; (11 members)&gt;]
+
+Note: Loop_Fit has already been performed with the same parameters before. These results will be returned by compute() by default. Set override to True to force fresh computation
+
+[&lt;HDF5 group &quot;/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000&quot; (11 members)&gt;]
+Returned previously computed results at /Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000
+
+Note: Loop_Fit has already been performed with the same parameters before. These results will be returned by compute() by default. Set override to True to force fresh computation
+
+[&lt;HDF5 group &quot;/Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000&quot; (11 members)&gt;]
+Returned previously computed results at /Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/ferroelectric/anaconda3/envs/STEM/lib/python3.9/site-packages/pyUSID/io/hdf_utils/simple.py:888: UserWarning: A dataset named: Guess_Loop_Parameters already exists in group: /Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000
+  warn(&#39;A dataset named: {} already exists in group: {}&#39;.format(dset_name, h5_group.name))
+/home/ferroelectric/anaconda3/envs/STEM/lib/python3.9/site-packages/pyUSID/io/hdf_utils/simple.py:888: UserWarning: A dataset named: Fit_Loop_Parameters already exists in group: /Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000
+  warn(&#39;A dataset named: {} already exists in group: {}&#39;.format(dset_name, h5_group.name))
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Formats the data for viewing</span>
+<span class="n">proj_nd_shifted</span> <span class="o">=</span> <span class="n">loop_lsqf</span><span class="p">(</span><span class="n">h5_f</span><span class="p">)</span>
+<span class="n">proj_nd_shifted_transposed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">proj_nd_shifted</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>No spectroscopic datasets found as attributes of /Measurement_000/Channel_000/Position_Indices
+No position datasets found as attributes of /Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Spectroscopic_Values
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">hysteresis_waveform</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">spectroscopic_values</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="mi">165</span><span class="p">][</span><span class="mi">192</span><span class="p">:]</span> <span class="o">*</span> <span class="n">spectroscopic_values</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">::</span><span class="mi">165</span><span class="p">][</span><span class="mi">192</span><span class="p">:]</span>
+<span class="p">)</span>
+<span class="n">x_start</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="n">x_end</span> <span class="o">=</span> <span class="mi">140</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hysteresis_waveform</span><span class="p">)</span>
+<span class="n">ax_new</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">])</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">hysteresis_waveform</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">x_start</span><span class="p">,</span> <span class="n">x_end</span><span class="p">)</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_start</span><span class="p">,</span> <span class="n">x_end</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax_new</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="mi">60</span><span class="p">,</span> <span class="mi">62</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">66</span><span class="p">,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">70</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span>
+    <span class="n">ConnectionPatch</span><span class="p">(</span>
+        <span class="n">xyA</span><span class="o">=</span><span class="p">(</span><span class="n">x_start</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">hysteresis_waveform</span><span class="p">[</span><span class="n">x_start</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]),</span>
+        <span class="n">coordsA</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span>
+        <span class="n">xyB</span><span class="o">=</span><span class="p">(</span><span class="mi">105</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+        <span class="n">coordsB</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span>
+    <span class="n">ConnectionPatch</span><span class="p">(</span>
+        <span class="n">xyA</span><span class="o">=</span><span class="p">(</span><span class="n">x_end</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">hysteresis_waveform</span><span class="p">[</span><span class="n">x_end</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]),</span>
+        <span class="n">coordsA</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span>
+        <span class="n">xyB</span><span class="o">=</span><span class="p">(</span><span class="mi">105</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">),</span>
+        <span class="n">coordsB</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Voltage Steps&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Voltage (V)&quot;</span><span class="p">)</span>
+
+<span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pix_1d</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dc_voltage</span><span class="p">[</span><span class="mi">24</span><span class="p">:</span><span class="mi">120</span><span class="p">],</span> <span class="n">proj_nd_shifted_transposed</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;blue&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ticklabel_format</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;sci&quot;</span><span class="p">,</span> <span class="n">scilimits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Voltage (V)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Amplitude (Arb. U.)&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">label_outer</span><span class="p">()</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=-</span><span class="mi">16</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.lines.Line2D at 0x7fbe293cb130&gt;
+</pre></div>
+</div>
+<img alt="../../_images/35bb4273d57b376285164bfa6431d71acdaae508768e07a74fa5aa1222d1bfa3.png" src="../../_images/35bb4273d57b376285164bfa6431d71acdaae508768e07a74fa5aa1222d1bfa3.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Closes the h5_file</span>
+<span class="n">h5_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./Datasets/Mixed_phase_pzt_BEPFM"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../../jupyterbook/Introduction.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">M3-Learning: Multifunctional Materials and Machine learning</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../../papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Band Excitation Piezoresponse Force Microscopy of <span class="math notranslate nohighlight">\(PbZr_{0.2}Ti_{0.8}O_3\)</span></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#import-packages">Import Packages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-data-for-sho-fitting">Loading data for SHO fitting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sho-fitting">SHO Fitting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#extract-data">Extract Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#saves-the-data">Saves the Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plots-the-sho-fit-results">Plots the SHO Fit Results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-raw-data">Visualize Raw Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-the-sho-fit-results">Visualize the SHO Fit Results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#piezoelectric-hysteresis-loops">Piezoelectric Hysteresis Loops</a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Joshua C. Agar, Assistant Professor Drexel University
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

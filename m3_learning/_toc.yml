@@ -1,0 +1,25 @@
+format: jb-book
+root: jupyterbook/Introduction
+options:
+  numbered: true
+parts:
+  - caption: "Data Sets"
+    chapters:
+      - file: Datasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting
+        title: "Band Excitation Piezoresponse Force Microscopy of $PbZr_{0.2}Ti_{0.8}O_3$"
+  - caption: "Papers"
+    chapters:
+    - file: papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains
+      title: "Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction"
+  - caption: "Tutorials"
+    chapters:
+      - file: Tutorials/Unsupervised_Learning_with_AEs/Unsupervised_Learning_with_Autoencoders
+        title: Unsupervised Learning with Autoencoders
+      - file: Tutorials/Physics_Informed_Autoencoders/Physics_Constrained_Autoencoder
+        title: Physics Constrained Autoencoders
+      - file: Tutorials/Cycle_Consistent_Spatial_Transformer_Autoencoder/Cycle_Consistent_Spatial_Transformer_Autoencoder
+        title: Cycle Consistent Spatial Transforming Autoencoder
+  - caption: "Documentation"
+    chapters:
+      - file: docs/api
+        title: docs
