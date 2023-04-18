@@ -111,6 +111,7 @@ def download_and_unzip(filename, url, save_path, force=False):
         save_path (str): place where the data is saved
         download_data (bool, optional): sets if to download the data. Defaults to True.
     """
+    make_folder(save_path)
 
     path = save_path + '/' + filename
     # if np.int(get_size(save_path) / 1e9) < 1:
