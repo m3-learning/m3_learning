@@ -29,6 +29,7 @@ Created on Tue Oct 09 16:39:00 2018
 @author: Joshua C. Agar
 """
 
+
 def reporthook(count, block_size, total_size):
     """
     A function that displays the status and speed of the download
@@ -54,7 +55,7 @@ def download_file(url, filename):
     Args:
         url (string): url where the file to download is located
         filename (string): location where to save the file
-    """    
+    """
     if not os.path.isfile(filename):
         urllib.request.urlretrieve(url, filename, reporthook)
 
@@ -66,8 +67,9 @@ def compress_folder(base_name, format, root_dir=None):
         base_name (string): base name of the zip file
         format (string): sets the format of the zip file. Can either be zip or tar
         root_dir (string, optional): sets the root directory to save the file. Defaults to None.
-    """    
+    """
     shutil.make_archive(base_name, format, root_dir)
+
 
 def unzip(filename, path):
     """Function that unzips the files
@@ -76,10 +78,11 @@ def unzip(filename, path):
     Args:
         filename (string): base name of the zip file
         path (string): path where the zip file will be saved
-    """    
+    """
     zip_ref = zipfile.ZipFile('./' + filename, 'r')
     zip_ref.extractall(path)
     zip_ref.close()
+
 
 def get_size(start_path='.'):
     """A function that computes the size of a folder
@@ -90,7 +93,7 @@ def get_size(start_path='.'):
 
     Returns:
         float: Size of the folder
-    """    
+    """
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(start_path):
         for f in filenames:
@@ -98,7 +101,8 @@ def get_size(start_path='.'):
             total_size += os.path.getsize(fp)
     return total_size
 
-def download_and_unzip(filename, url, save_path, force = False):
+
+def download_and_unzip(filename, url, save_path, force=False):
     """Function that computes the size of a folder
 
     Args:
@@ -106,15 +110,17 @@ def download_and_unzip(filename, url, save_path, force = False):
         url (str): url where the file is located
         save_path (str): place where the data is saved
         download_data (bool, optional): sets if to download the data. Defaults to True.
-    """    
+    """
+
+    path = save_path + '/' + filename
     # if np.int(get_size(save_path) / 1e9) < 1:
-    if exists(save_path + filename) and not force:
+    if exists(path) and not force:
         print('Using files already downloaded')
     else:
         print('downloading data')
-        download_file(url, filename)
+        download_file(url, path)
 
     if '.zip' in filename:
-        if os.path.isfile(filename):
-            print(f'extracting {filename} to {save_path}')
-            unzip(filename, save_path)
+        if os.path.isfile(path):
+            print(f'extracting {path}')
+            unzip(path, save_path)
