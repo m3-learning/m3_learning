@@ -7,9 +7,10 @@ from scipy import ndimage
 from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
 import imageio
+from pprint import pprint
 
 
-class DataWriter:
+class Bright_Field_Dataset:
 
     def __init__(self, path, filename, verbose=False):
         self.path = path
@@ -31,6 +32,22 @@ class DataWriter:
             return '-'+e[:-4].zfill(3)
         else:
             return '-0.png'
+
+    def list_imgs(self):
+        l = [file.split('/')[-2] + ' ' + file.split('/')[-1][:-4] for file in self.temps]
+        pprint(l)
+
+    def get_img(self, state, temperature):
+        """_summary_
+
+        Args:
+            state (_type_): "Up" or "Down"
+            temperature (_type_): _description_
+        """        
+        s = f"{self.path}/Ramp_{state}/{temperature}.png"
+        im = rgb2gray(imageio.imread(s))
+        return im
+
 
     def get_temps(self):
 
@@ -100,34 +117,25 @@ class DataWriter:
         h.close()
 
 
-class Bright_Field_Dataset:
-    """Class for the STEM dataset.
-    """
+# class Bright_Field_Dataset:
+#     """Class for the STEM dataset.
+#     """
 
-    def __init__(self, data_path):
-        """Initialization of the class.
+#     def __init__(self, data_path):
+#         """Initialization of the class.
 
-        Args:
-            data_path (string): path where the hyperspy file is located
-        """
+#         Args:
+#             data_path (string): path where the hyperspy file is located
+#         """
 
-        # loads the data
-        s = hs.load(data_path,
-                    reader="hspy",
-                    lazy=False,
-                    )
+#     self.data_path = data_path
 
-        # extracts the data
-        self.data = s.data
 
-        # sets the log data
-        self.log_data = s
+    # @property
+    # def log_data(self):
+    #     return self._log_data
 
-    @property
-    def log_data(self):
-        return self._log_data
-
-    @log_data.setter
-    def log_data(self, log_data):
-        # add 1 to avoid log(0)
-        self._log_data = np.log(log_data.data + 1)
+    # @log_data.setter
+    # def log_data(self, log_data):
+    #     # add 1 to avoid log(0)
+    #     self._log_data = np.log(log_data.data + 1)
