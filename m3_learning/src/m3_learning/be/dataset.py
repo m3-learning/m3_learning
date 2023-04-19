@@ -21,7 +21,6 @@ from m3_learning.be.processing import convert_amp_phase
 from sklearn.model_selection import train_test_split
 
 
-
 class BE_Dataset:
 
     def __init__(self, dataset,
@@ -34,7 +33,7 @@ class BE_Dataset:
                  resampled_bins=80,
                  LSQF_phase_shift=None,
                  NN_phase_shift=None,
-                 verbose = False,
+                 verbose=False,
                  **kwargs):
         self.dataset = dataset
         self.resampled = resampled
@@ -50,27 +49,30 @@ class BE_Dataset:
 
         for key, value in kwargs.items():
             setattr(self, key, value)
-        
+
         # make only run if SHO exist
         self.set_preprocessing()
 
     def set_preprocessing(self):
         self.set_raw_data()
         self.set_raw_data_resampler()
-        self.set_SHO_LSQF()
         self.raw_data_scaler = self.Raw_Data_Scaler(self.raw_data())
-        
+        try:
+            self.set_SHO_LSQF()
+        except:
+            pass
+
     def default_state(self):
         default_state_ = {'raw_format': "complex",
-                 "fitter" : 'LSQF',
-                 "output_shape" : "pixels",
-                 "scaled" : False,
-                 "measurement_state" : "all",
-                 "resampled" : False,
-                 "resampled_bins" : 80,
-                 "LSQF_phase_shift" : None,
-                 "NN_phase_shift" : None,}
-        
+                          "fitter": 'LSQF',
+                          "output_shape": "pixels",
+                          "scaled": False,
+                          "measurement_state": "all",
+                          "resampled": False,
+                          "resampled_bins": 80,
+                          "LSQF_phase_shift": None,
+                          "NN_phase_shift": None, }
+
         self.set_state(**default_state_)
 
     def print_be_tree(self):
@@ -348,7 +350,7 @@ class BE_Dataset:
     def SHO_LSQF(self, pixel=None, voltage_step=None):
         with h5py.File(self.dataset, "r+") as h5_f:
             dataset_ = h5_f['/Raw_Data-SHO_Fit_000/SHO_LSQF']
-            
+
             if pixel is not None and voltage_step is not None:
                 return dataset_[[pixel], :, :][:, [voltage_step], :]
             elif pixel is not None:
@@ -481,22 +483,22 @@ class BE_Dataset:
                         pixel=pixel, voltage_step=voltage_step)
                     bins = self.frequency_bin
             else:
-                
+
                 params_shape = fit_results.shape
-            
+
                 # reshapes the parameters for fitting functions
                 params = torch.tensor(fit_results.reshape(-1, 4))
-                
+
                 if self.resampled:
                     bins = self.resample_bins
                     frequency_bins = resample(self.frequency_bin,
                                               self.resampled_bins)
                 else:
                     frequency_bins = self.frequency_bin
-                
-                data = eval(f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)").reshape(params_shape[0], 
-                                                                                                     params_shape[1],-1)
-            
+
+                data = eval(f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)").reshape(params_shape[0],
+                                                                                                params_shape[1], -1)
+
             data_shape = data.shape
 
             # does not sample if just a pixel is returned
@@ -550,39 +552,37 @@ class BE_Dataset:
                   LSQF Phase Shift = {self.LSQF_phase_shift}
                   NN Phase Shift = {self.NN_phase_shift}
                   ''')
-        
-    def test_train_split_(self, test_size=0.2, random_state=42, resampled = True, scaled = True, shuffle = False):
-    
+
+    def test_train_split_(self, test_size=0.2, random_state=42, resampled=True, scaled=True, shuffle=False):
+
         # makes sure you are using the resampled data
         self.resampled = resampled
-        
+
         # makes sure you are using the scaled data
         self.scaled = scaled
-        
+
         # gets the raw spectra
         real, imag = self.raw_spectra()
-        
+
         # reshapes the data to be samples x timesteps
         real = real.reshape(-1, self.resample_bins)
         imag = imag.reshape(-1, self.resample_bins)
-        
+
         # stacks the real and imaginary components
         x_data = np.stack((real, imag), axis=2)
-        
+
         # gets the SHO fit results these values are scaled
         y_data = self.SHO_fit_results().reshape(-1, 4)
-        
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x_data, y_data, 
-                                                            test_size = test_size, 
-                                                            random_state = random_state, 
-                                                            shuffle = shuffle)
-        
-        if self.verbose: 
-            self.extraction_state
-    
-        
-        return self.X_train, self.X_test, self.y_train, self.y_test
 
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x_data, y_data,
+                                                                                test_size=test_size,
+                                                                                random_state=random_state,
+                                                                                shuffle=shuffle)
+
+        if self.verbose:
+            self.extraction_state
+
+        return self.X_train, self.X_test, self.y_train, self.y_test
 
     class Raw_Data_Scaler():
 
@@ -615,7 +615,6 @@ class BE_Dataset:
 
             real = self.real_scaler.inverse_transform(real)
             imag = self.imag_scaler.inverse_transform(imag)
-
 
 
 # from m3_learning.util.h5_util import print_tree
