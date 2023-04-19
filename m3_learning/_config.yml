@@ -4,6 +4,7 @@
 title: "M3 Learning: Multifunctional Materials and Machine Learning"
 author: "Joshua C. Agar, Assistant Professor Drexel University"
 logo: jupyterbook/figs/m3_logo.png
+only_build_toc_files: true
 
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html

@@ -1,4 +1,4 @@
-﻿m3\_learning.viz
+m3\_learning.viz
 ================
 
 .. automodule:: m3_learning.viz

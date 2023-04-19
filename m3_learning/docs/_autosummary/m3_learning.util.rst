@@ -1,4 +1,4 @@
-﻿m3\_learning.util
+m3\_learning.util
 =================
 
 .. automodule:: m3_learning.util
