@@ -206,6 +206,66 @@ class Bright_Field_Dataset:
 
         h.close()
 
+    def write_windows(self,name,window_params={},
+                      windows_group = 'windows',
+                      dset_name = 'windows_data',
+                      logset_name = 'windows_logdata',
+                      target_size=128,
+                      filter_threshold=5
+                  ):
+        
+        iw = ImageWindowing(window_params)
+        
+        combined = self.path +"/" + name + 'preprocessed.h5'
+        h = h5py.File(combined,'a')
+        if windows_group not in h.keys(): 
+            h_windows=h.create_group(windows_group)
+        h_windows=h[windows_group]
+
+        for key,val in window_params.items(): # write metadata
+            h_windows.attrs[key]=val
+        
+        for i,img_path in enumerate(tqdm(self.list_imgs())):
+            im_data = sidpy.Dataset.from_array( self.get_img(img_path) )
+            windows_group.MakeWindows(im_data)
+
+            if f'filler' in h[windows_group]: 
+                del h[windows_group][f'filler']
+            filler = h[windows_group].create_group(f'filler')
+            pyNSID.hdf_io.write_nsid_dataset(windows_group, filler, main_data_name="windows");
+
+            a,b,x,y = h[windows_group]['filler']['windows']['windows'].shape
+            data = h[windows_group]['filler']['windows']['windows'][:].reshape(-1,x,y)
+
+            if dset_name not in h[windows_group].keys(): 
+                d_windows=h[windows_group].create_dataset(dset_name,shape=(self.t_len*a*b,x,y))
+            d_windows=h[windows_group][dset_name]
+            d_windows[i*a*b:(i+1)*a*b] = data
+
+            if logset_name not in h[windows_group].keys(): 
+                logdata= h[windows_group].create_dataset(logset_name,
+                                                         shape=(self.t_len*a*b,1,target_size,target_size),
+                                                         dtype='f4')
+            logdata=h[windows_group][logset_name]
+            data = data.reshape(-1,1,x,y)
+            data = skimage.transform.resize(data,(a*b,1,target_size,target_size))
+            data = np.log(data+1)
+            data[data>filter_threshold]=filter_threshold
+            logdata[i*a*b:(i+1)*a*b] = data
+
+            if self.verbose: # print shape and 
+                print('shape: ',a,b,target_size,target_size)
+        
+        for key,val in window_params.items(): # write metadata
+            d_windows.attrs[key]=val
+            logdata.attrs[key]=val
+
+        d_windows.attrs['orig_shape'] = (self.t_len,a,b,x,y)
+        logdata.attrs['orig_shape'] = (self.t_len,a,b,target_size,target_size)
+        logdata.attrs['filter_threshold'] = filter_threshold
+
+        h.close()
+
 
     def write_windows(self,windows_group = '',
                       dset_name = '',
