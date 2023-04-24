@@ -1,5 +1,5 @@
 import numpy as np
-from m3_learning.viz.layout import layout_fig
+from m3_learning.viz.layout import layout_fig, inset_connector, add_box
 from scipy.signal import resample
 from scipy import fftpack
 import matplotlib.pyplot as plt
@@ -81,9 +81,15 @@ class Viz:
         ax[2].plot(dataset.hysteresis_waveform)
 
         ax_new = ax[2].inset_axes([0.5, 0.65, 0.48, 0.33])
-        ax_new.plot(np.repeat(dataset.hysteresis_waveform, 2))
+        ax_new.plot(dataset.hysteresis_waveform)
         ax_new.set_xlim(x_start, x_end)
-        ax_new.set_ylim(0, 15)
+        ax_new.set_ylim(0, -15)
+        
+        inset_connector(fig, ax[2], ax_new, 
+                        [(x_start, 0), (x_end, 0)], [(x_start, 0), (x_end, 0)], 
+                        color='k', linestyle='--', linewidth = .5)
+        
+        add_box(ax[2], (x_start, 0, x_end, -15), edgecolor = 'k', linestyle='--', facecolor='none', linewidth = .5, zorder=10)
 
         ax[2].set_xlabel("Voltage Steps")
         ax[2].set_ylabel("Voltage (V)")
