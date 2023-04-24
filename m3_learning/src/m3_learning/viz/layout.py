@@ -1,3 +1,4 @@
+from matplotlib.patches import ConnectionPatch
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
@@ -16,6 +17,40 @@ import string
 
 Path = path.Path
 PathPatch = patches.PathPatch
+
+def add_box(axs, pos, **kwargs):
+    
+    
+    xmin, ymin, xmax, ymax = pos
+    rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, **kwargs)
+    axs.add_patch(rect)
+
+def inset_connector(fig, ax1, ax2, coord1=None, coord2=None, **kwargs):
+    if coord1 is None:
+        coord1_xlim = ax1.get_xlim()
+        coord1_ylim = ax1.get_ylim()
+
+        coord1_l1 = (coord1_xlim[0], coord1_ylim[0])
+        coord1_l2 = (coord1_xlim[0], coord1_ylim[1])
+        coord1 = [coord1_l1, coord1_l2]
+
+    if coord2 is None:
+        coord2_xlim = ax2.get_xlim()
+        coord2_ylim = ax2.get_ylim()
+
+        coord2_l1 = (coord2_xlim[0], coord2_ylim[0])
+        coord2_l2 = (coord2_xlim[0], coord2_ylim[1])
+        coord2 = [coord2_l1, coord2_l2]
+
+    
+    for p1, p2 in zip(coord1, coord2):
+        
+        # Create a connection between the two points
+        con = ConnectionPatch(xyA=p1, xyB=p2,
+                            coordsA=ax1.transData, coordsB=ax2.transData, **kwargs)
+        
+        # Add the connection to the plot
+        fig.add_artist(con)
 
 
 def path_maker(axes, locations, facecolor, edgecolor, linestyle, lineweight):
@@ -88,7 +123,7 @@ def layout_fig(graph, mod=None, figsize=None, layout='compressed', **kwargs):
             mod = 6
         elif graph < 37:
             mod = 7
-            
+
     if figsize is None:
         figsize = (3 * mod, 3 * (graph // mod + (graph % mod > 0)))
 
@@ -196,6 +231,7 @@ def find_nearest(array, value, averaging_number):
     """
     idx = (np.abs(array - value)).argsort()[0:averaging_number]
     return idx
+
 
 def combine_lines(*args):
 
@@ -432,7 +468,8 @@ def set_axis(axs, range):
     for ax in axs:
         ax.set_xlim(range[0], range[1])
         ax.set_ylim(range[2], range[3])
-        
+
+
 def add_scalebar(ax, scalebar_):
     """Adds a scalebar to the figure
 
