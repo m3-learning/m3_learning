@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 from ..optimizers.AdaHessian import AdaHessian
 from ..nn.random import random_seed
-from ..nn.benchmarks.inference import computeTime
+from m3_learning.nn.benchmarks.inference import computeTime
 from ..viz.layout import get_axis_range, set_axis, Axis_Ratio
 from torch.utils.data import DataLoader
 import time
@@ -244,6 +244,15 @@ class SHO_Model(AE_Fitter_SHO):
         torch.save(self.model.state_dict(),
                    f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
 
+    def inference_timer(self, data, batch_size=.5e4):
+        torch.cuda.empty_cache()
+
+        batch_size = int(batch_size)
+
+        dataloader = DataLoader(data, batch_size)
+
+        # Computes the inference time
+        computeTime(self.model, dataloader, batch_size, device=self.device)
 
 # def SHO_fit_func_nn(parms,
 #                        wvec_freq,
