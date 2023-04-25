@@ -255,6 +255,8 @@ class SHO_Model(AE_Fitter_SHO):
         computeTime(self.model, dataloader, batch_size, device=self.device)
         
     def predict(self, data, batch_size=10000, single = False):
+        
+        self.model.eval()
 
         dataloader = DataLoader(data, batch_size=batch_size)
 
@@ -281,7 +283,11 @@ class SHO_Model(AE_Fitter_SHO):
             params[start:end] = params_.cpu().detach()
 
             torch.cuda.empty_cache()
-            
+        
+        if self.model.dataset.NN_phase_shift is not None:
+            params_scaled[:,3] = torch.Tensor(self.model.dataset.shift_phase(params_scaled[:,3].detach().numpy(), self.model.dataset.NN_phase_shift))
+            params[:,3] = torch.Tensor(self.model.dataset.shift_phase(params[:,3].detach().numpy(), self.model.dataset.NN_phase_shift))
+        
         return predictions, params_scaled, params
 
 # def SHO_fit_func_nn(parms,

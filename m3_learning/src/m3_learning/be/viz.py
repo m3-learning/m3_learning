@@ -84,12 +84,13 @@ class Viz:
         ax_new.plot(dataset.hysteresis_waveform)
         ax_new.set_xlim(x_start, x_end)
         ax_new.set_ylim(0, -15)
-        
-        inset_connector(fig, ax[2], ax_new, 
-                        [(x_start, 0), (x_end, 0)], [(x_start, 0), (x_end, 0)], 
-                        color='k', linestyle='--', linewidth = .5)
-        
-        add_box(ax[2], (x_start, 0, x_end, -15), edgecolor = 'k', linestyle='--', facecolor='none', linewidth = .5, zorder=10)
+
+        inset_connector(fig, ax[2], ax_new,
+                        [(x_start, 0), (x_end, 0)], [(x_start, 0), (x_end, 0)],
+                        color='k', linestyle='--', linewidth=.5)
+
+        add_box(ax[2], (x_start, 0, x_end, -15), edgecolor='k',
+                linestyle='--', facecolor='none', linewidth=.5, zorder=10)
 
         ax[2].set_xlabel("Voltage Steps")
         ax[2].set_ylabel("Voltage (V)")
@@ -370,25 +371,35 @@ class Viz:
             self.Printer.savefig(fig, filename, label_figs=[
                                  axs[0], axs[1]], style='b')
 
-    def nn_validation(self, model, 
-                      data = None, unscaled=True, 
-                      pixel=None, voltage_step = None, 
-                      index = None, **kwargs):
-        # plot real and imaginary components of resampled data
+    def nn_validation(self, model,
+                      data=None, unscaled=True,
+                      pixel=None, voltage_step=None,
+                      index=None,
+                      legend=True,
+                      filename=None,
+                      **kwargs):
+
+        # Makes the figure
         fig, axs = layout_fig(2, 2, figsize=(5, 1.25))
-        
+
+        # sets the dataset state to grab the magnitude spectrum
         state = {'raw_format': 'magnitude spectrum',
-                         'resampled': True}
-                
+                 'resampled': True}
         self.set_attributes(**state)
-                
+
+        # if set to scaled it will change the label
         if unscaled:
             label = ''
         else:
             label = 'scaled'
 
+        # if an index is not provided it will select a random index
+        # it is also possible to use a voltage step
         if index is None:
+
+            # if a voltage step is provided it will use the voltage step to grab a specific index
             if voltage_step is not None:
+
                 # if a pixel is not provided it will select a random pixel
                 if pixel is None:
 
@@ -398,79 +409,109 @@ class Viz:
                 # gets the voltagestep with consideration of the current state
                 voltagestep = self.get_voltagestep(voltagestep)
 
+                # gets the data based on a specific pixel and voltagestep
                 x, data = self._get_data(pixel, voltagestep, **kwargs)
-                
-            elif data is not None:
-                if index is None:
-                    index = np.random.randint(0, data.shape[0])
-                
-                data = data[[index]]
-                
-                x = self.get_freq_values(data[:,:,0])
-                
-        
-        pred_data, scaled_param, parm = model.predict(data) 
 
-        # # converts the data to be real/imag by vector length
-        # data_complex = np.rollaxis(data.squeeze(),1)
-        # pred_data_complex = np.rollaxis(pred_data.numpy().squeeze(),1)
+                SHO_results = self.dataset.SHO_LSQF(pixel, voltagestep)
 
-        data_complex = self.dataset.raw_data_scaler.inverse_transform(data)
-        pred_data_complex = self.dataset.raw_data_scaler.inverse_transform(pred_data.numpy())
-        
-        print(data_complex.shape)
+        # if a smaller manual dataset is provided it will use that
+        if data is not None:
 
+            # if an index is not provided it will select a random index
+            if index is None:
+                index = np.random.randint(0, data.shape[0])
+
+            # grabs the data based on the index
+            data = data[[index]]
+
+            # gets the frequency values from the dataset
+            x = self.get_freq_values(data[:, :, 0])
+
+        # computes the prediction from the nn model
+        pred_data, scaled_param, parm = model.predict(data)
+
+        # unscales the data
+        if unscaled:
+            data_complex = self.dataset.raw_data_scaler.inverse_transform(data)
+            pred_data_complex = self.dataset.raw_data_scaler.inverse_transform(
+                pred_data.numpy())
+        else:
+            data_complex = data
+            pred_data_complex = self.dataset.to_complex(pred_data.numpy())
+
+        # computes the magnitude spectrum from the data
         data_magnitude = self.dataset.to_magnitude(data_complex)
         pred_data_magnitude = self.dataset.to_magnitude(pred_data_complex)
 
+        # plots the data
         axs[0].plot(x, pred_data_magnitude[0].flatten(), 'b',
-                    label=label + " Amplitude")
+                    label=label + " Amplitude \n NN Prediction")
         ax1 = axs[0].twinx()
         ax1.plot(x, pred_data_magnitude[1].flatten(), 'r',
-                 label=label + " Phase")
-        
-        axs[0].plot(x, data_magnitude[0].flatten(), 'bo',
-                    label=label + " Amplitude - NN Prediction")
-        ax1.plot(x, data_magnitude[1].flatten(), 'ro',
-                    label=label + " Phase - NN Prediction")
+                 label=label + " Phase \n NN Prediction")
 
+        axs[0].plot(x, data_magnitude[0].flatten(), 'bo',
+                    label=label + " Amplitude")
+        ax1.plot(x, data_magnitude[1].flatten(), 'ro',
+                 label=label + " Phase")
 
         axs[0].set_xlabel("Frequency (Hz)")
         axs[0].set_ylabel("Amplitude (Arb. U.)")
         ax1.set_ylabel("Phase (rad)")
-        
-        
 
-        # axs[1].plot(x, data[0].flatten(), 'k',
-        #             label=self.dataset.label + " Real")
-        # axs[1].set_xlabel("Frequency (Hz)")
-        # axs[1].set_ylabel("Real (Arb. U.)")
-        # ax2 = axs[1].twinx()
-        # ax2.set_ylabel("Imag (Arb. U.)")
-        # ax2.plot(x, data[1].flatten(), 'g',
-        #          label=self.dataset.label + " Imag")
+        pred_data_complex = self.dataset.to_real_imag(pred_data_complex)
+        data_complex = self.dataset.to_real_imag(data_complex)
 
-        # axs[1].plot(x, data[0].flatten(), 'ko',
-        #             label=self.dataset.label + " Real")
-        # ax2.plot(x, data[1].flatten(), 'gs',
-        #             label=self.dataset.label + " Imag")
+        axs[1].plot(x, pred_data_complex[0].flatten(), 'k',
+                    label=label + " Real \n NN Prediction")
+        axs[1].set_xlabel("Frequency (Hz)")
+        axs[1].set_ylabel("Real (Arb. U.)")
+        ax2 = axs[1].twinx()
+        ax2.set_ylabel("Imag (Arb. U.)")
+        ax2.plot(x, pred_data_complex[1].flatten(), 'g',
+                 label=label + " Imag \n NN Prediction")
 
-        # axes = [axs[0], axs[1], ax1, ax2]
-        
-        # for ax in axes:
-        #     ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-        #     ax.set_box_aspect(1)
+        axs[1].plot(x, data_complex[0].flatten(), 'ko',
+                    label=label + " Real")
+        ax2.plot(x, data_complex[1].flatten(), 'gs',
+                 label=label + " Imag")
 
-        # if legend:
-        #     fig.legend(bbox_to_anchor=(1., 1),
-        #                loc="upper right", borderaxespad=0.1)
+        axes = [axs[0], axs[1], ax1, ax2]
 
-        # # prints the figure
-        # if self.Printer is not None and filename is not None:
-        #     self.Printer.savefig(fig, filename, label_figs=[
-        #                          axs[0], axs[1]], style='b')
-        
-        
+        for ax in axes:
+            ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+            ax.set_box_aspect(1)
+
+        if legend:
+            fig.legend(bbox_to_anchor=(1., 1),
+                       loc="upper right", borderaxespad=0.1)
+
+        if "SHO_results" in kwargs:
+            if voltage_step is None:
+                SHO_results = kwargs["SHO_results"][[index]]
+
+                if unscaled:
+                    SHO_results = self.dataset.SHO_scaler.inverse_transform(
+                        SHO_results)
+
+            SHO_results = SHO_results.squeeze()
+
+            fig.text(
+                0.5, -.05, f"LSQF: A = {SHO_results[0]:0.2e} ,  \u03C9 = {SHO_results[1]/1000:0.1f} Hz, Q = {SHO_results[2]:0.1f}, \u03C6 = {SHO_results[3]:0.2f} rad", 
+                ha='center', fontsize=6)
+            
+            parm = parm.detach().numpy().squeeze()
+            
+            fig.text(
+                0.5, -.15, f"NN: A = {parm[0]:0.2e} ,  \u03C9 = {parm[1]/1000:0.1f} Hz, Q = {parm[2]:0.1f}, \u03C6 = {parm[3]:0.2f} rad", 
+                ha='center', fontsize=6)
+
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename, label_figs=[
+                                 axs[0], axs[1]], style='b')
+
+
 # Class BE_Viz:
 
 #     def __init__(self, dataset, shift=None, **kwargs):
