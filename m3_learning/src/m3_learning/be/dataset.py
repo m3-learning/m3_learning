@@ -370,6 +370,11 @@ class BE_Dataset:
     def to_magnitude(data):
         data = BE_Dataset.to_complex(data)
         return [np.abs(data), np.angle(data)]
+    
+    @staticmethod
+    def to_real_imag(data):
+        data = BE_Dataset.to_complex(data)
+        return [np.real(data), np.imag(data)]
             
     @staticmethod
     def to_complex(data):
@@ -412,7 +417,8 @@ class BE_Dataset:
 
             self.SHO_Scaler()
 
-    def shift_phase(self, phase, shift_=None):
+    @staticmethod
+    def shift_phase(phase, shift_=None):
 
         if shift_ is None:
             return phase
@@ -577,7 +583,6 @@ class BE_Dataset:
                   NN Phase Shift = {self.NN_phase_shift}
                   ''')
         
-    @property
     def NN_data(self, resampled=True, scaled=True):
         
         # makes sure you are using the resampled data
