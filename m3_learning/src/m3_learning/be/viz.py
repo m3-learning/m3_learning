@@ -370,7 +370,107 @@ class Viz:
             self.Printer.savefig(fig, filename, label_figs=[
                                  axs[0], axs[1]], style='b')
 
+    def nn_validation(self, model, 
+                      data = None, unscaled=True, 
+                      pixel=None, voltage_step = None, 
+                      index = None, **kwargs):
+        # plot real and imaginary components of resampled data
+        fig, axs = layout_fig(2, 2, figsize=(5, 1.25))
+        
+        state = {'raw_format': 'magnitude spectrum',
+                         'resampled': True}
+                
+        self.set_attributes(**state)
+                
+        if unscaled:
+            label = ''
+        else:
+            label = 'scaled'
 
+        if index is None:
+            if voltage_step is not None:
+                # if a pixel is not provided it will select a random pixel
+                if pixel is None:
+
+                    # Select a random point and time step to plot
+                    pixel = np.random.randint(0, self.dataset.num_pix)
+
+                # gets the voltagestep with consideration of the current state
+                voltagestep = self.get_voltagestep(voltagestep)
+
+                x, data = self._get_data(pixel, voltagestep, **kwargs)
+                
+            elif data is not None:
+                if index is None:
+                    index = np.random.randint(0, data.shape[0])
+                
+                data = data[[index]]
+                
+                x = self.get_freq_values(data[:,:,0])
+                
+        
+        pred_data, scaled_param, parm = model.predict(data) 
+
+        # # converts the data to be real/imag by vector length
+        # data_complex = np.rollaxis(data.squeeze(),1)
+        # pred_data_complex = np.rollaxis(pred_data.numpy().squeeze(),1)
+
+        data_complex = self.dataset.raw_data_scaler.inverse_transform(data)
+        pred_data_complex = self.dataset.raw_data_scaler.inverse_transform(pred_data.numpy())
+        
+        print(data_complex.shape)
+
+        data_magnitude = self.dataset.to_magnitude(data_complex)
+        pred_data_magnitude = self.dataset.to_magnitude(pred_data_complex)
+
+        axs[0].plot(x, pred_data_magnitude[0].flatten(), 'b',
+                    label=label + " Amplitude")
+        ax1 = axs[0].twinx()
+        ax1.plot(x, pred_data_magnitude[1].flatten(), 'r',
+                 label=label + " Phase")
+        
+        axs[0].plot(x, data_magnitude[0].flatten(), 'bo',
+                    label=label + " Amplitude - NN Prediction")
+        ax1.plot(x, data_magnitude[1].flatten(), 'ro',
+                    label=label + " Phase - NN Prediction")
+
+
+        axs[0].set_xlabel("Frequency (Hz)")
+        axs[0].set_ylabel("Amplitude (Arb. U.)")
+        ax1.set_ylabel("Phase (rad)")
+        
+        
+
+        # axs[1].plot(x, data[0].flatten(), 'k',
+        #             label=self.dataset.label + " Real")
+        # axs[1].set_xlabel("Frequency (Hz)")
+        # axs[1].set_ylabel("Real (Arb. U.)")
+        # ax2 = axs[1].twinx()
+        # ax2.set_ylabel("Imag (Arb. U.)")
+        # ax2.plot(x, data[1].flatten(), 'g',
+        #          label=self.dataset.label + " Imag")
+
+        # axs[1].plot(x, data[0].flatten(), 'ko',
+        #             label=self.dataset.label + " Real")
+        # ax2.plot(x, data[1].flatten(), 'gs',
+        #             label=self.dataset.label + " Imag")
+
+        # axes = [axs[0], axs[1], ax1, ax2]
+        
+        # for ax in axes:
+        #     ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+        #     ax.set_box_aspect(1)
+
+        # if legend:
+        #     fig.legend(bbox_to_anchor=(1., 1),
+        #                loc="upper right", borderaxespad=0.1)
+
+        # # prints the figure
+        # if self.Printer is not None and filename is not None:
+        #     self.Printer.savefig(fig, filename, label_figs=[
+        #                          axs[0], axs[1]], style='b')
+        
+        
 # Class BE_Viz:
 
 #     def __init__(self, dataset, shift=None, **kwargs):

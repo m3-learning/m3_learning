@@ -253,6 +253,36 @@ class SHO_Model(AE_Fitter_SHO):
 
         # Computes the inference time
         computeTime(self.model, dataloader, batch_size, device=self.device)
+        
+    def predict(self, data, batch_size=10000, single = False):
+
+        dataloader = DataLoader(data, batch_size=batch_size)
+
+        # preallocate the predictions
+        num_elements = len(dataloader.dataset)
+        num_batches = len(dataloader)
+        predictions = torch.zeros_like(torch.tensor(data))
+        params_scaled = torch.zeros((data.shape[0], 4))
+        params = torch.zeros((data.shape[0], 4))
+
+        # compute the predictions
+        for i, train_batch in enumerate(dataloader):
+            start = i * batch_size
+            end = start + batch_size
+
+            if i == num_batches - 1:
+                end = num_elements
+
+            pred_batch, params_scaled_, params_ = self.model(
+                train_batch.to(self.device))
+
+            predictions[start:end] = pred_batch.cpu().detach()
+            params_scaled[start:end] = params_scaled_.cpu().detach()
+            params[start:end] = params_.cpu().detach()
+
+            torch.cuda.empty_cache()
+            
+        return predictions, params_scaled, params
 
 # def SHO_fit_func_nn(parms,
 #                        wvec_freq,

@@ -357,6 +357,30 @@ class BE_Dataset:
                 return dataset_[[pixel], :, :]
             else:
                 return dataset_[:]
+            
+    @staticmethod
+    def is_complex(data):
+        if type(data) == torch.Tensor:
+            complex_ = data.is_complex()
+        if type(data) == np.ndarray:
+            complex_ = np.iscomplex(data)
+        return complex_.any()
+            
+    @staticmethod
+    def to_magnitude(data):
+        data = BE_Dataset.to_complex(data)
+        return [np.abs(data), np.angle(data)]
+            
+    @staticmethod
+    def to_complex(data):
+        if BE_Dataset.is_complex(data):
+            return data
+        elif data.ndim == 1:
+            return data[0] + 1j * data[1]
+        elif data.ndim == 2:
+            return data[:, 0] + 1j * data[:, 1]
+        elif data.ndim == 3: 
+            return data[:,:, 0] + 1j * data[:,:, 1]
 
     def set_SHO_LSQF(self, basepath="Raw_Data-SHO_Fit_000", save_loc='SHO_LSQF'):
         """Utility function to convert the SHO fit results to an array
@@ -596,9 +620,21 @@ class BE_Dataset:
         def __init__(self, raw_data):
             self.raw_data = raw_data
             self.fit()
+        
+        @staticmethod
+        def data_type_converter(data):
+
+                
+            if BE_Dataset.is_complex(data):
+                return data
+            else:
+                return BE_Dataset.to_complex(data)   
 
         def fit(self):
             data = self.raw_data
+            
+            data = self.data_type_converter(data)
+            
             real = np.real(data)
             imag = np.imag(data)
             self.real_scaler = global_scaler()
@@ -608,6 +644,10 @@ class BE_Dataset:
             self.imag_scaler.fit(imag)
 
         def transform(self, data):
+            
+            data = self.data_type_converter(data)
+            
+            
             real = np.real(data)
             imag = np.imag(data)
 
@@ -617,11 +657,15 @@ class BE_Dataset:
             return real + 1j*imag
 
         def inverse_transform(self, data):
+            data = self.data_type_converter(data)
+            
             real = np.real(data)
             imag = np.imag(data)
 
             real = self.real_scaler.inverse_transform(real)
             imag = self.imag_scaler.inverse_transform(imag)
+            
+            return real + 1j*imag
 
 
 # from m3_learning.util.h5_util import print_tree
