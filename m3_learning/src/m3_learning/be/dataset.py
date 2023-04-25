@@ -552,9 +552,10 @@ class BE_Dataset:
                   LSQF Phase Shift = {self.LSQF_phase_shift}
                   NN Phase Shift = {self.NN_phase_shift}
                   ''')
-
-    def test_train_split_(self, test_size=0.2, random_state=42, resampled=True, scaled=True, shuffle=False):
-
+        
+    @property
+    def NN_data(self, resampled=True, scaled=True):
+        
         # makes sure you are using the resampled data
         self.resampled = resampled
 
@@ -573,6 +574,12 @@ class BE_Dataset:
 
         # gets the SHO fit results these values are scaled
         y_data = self.SHO_fit_results().reshape(-1, 4)
+        
+        return x_data, y_data
+
+    def test_train_split_(self, test_size=0.2, random_state=42, resampled=True, scaled=True, shuffle=False):
+
+        x_data, y_data = self.NN_data(resampled, scaled)
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x_data, y_data,
                                                                                 test_size=test_size,

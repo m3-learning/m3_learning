@@ -1,5 +1,5 @@
 {
-    "python.formatting.provider": "autopep8",
+    "python.formatting.provider": "none",
     "cSpell.words": [
         "spectras",
         "suptitle"
@@ -18,5 +18,8 @@
             "language": "python",
             "scheme": "vscode-notebook-cell"
         }
-    ]
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8"
+    }
 }
