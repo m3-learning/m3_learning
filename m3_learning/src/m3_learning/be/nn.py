@@ -145,7 +145,7 @@ class AE_Fitter_SHO(nn.Module):
         ).cuda()
         out = torch.stack((real_scaled, imag_scaled), 2)
         if self.training == True:
-            return out
+            return out, unscaled_param
         if self.training == False:
             return out, embedding, unscaled_param
 
@@ -220,11 +220,14 @@ class SHO_Model(AE_Fitter_SHO):
 
                 train_batch = train_batch.to(datatype).to(self.device)
 
-                pred = self.model(train_batch).to(torch.float32)
+                pred, embedding = self.model(train_batch)
+                
+                pred = pred.to(torch.float32)
+                embedding = embedding.to(torch.float32)
 
                 optimizer.zero_grad()
-
-                loss = loss_func(train_batch, pred).to(torch.float32)
+            
+                loss = loss_func(train_batch, pred, embedding[:,0]).to(torch.float32)
                 loss.backward(create_graph=True)
                 train_loss += loss.item() * pred.shape[0]
                 total_num += pred.shape[0]
@@ -260,7 +263,9 @@ class SHO_Model(AE_Fitter_SHO):
         # Computes the inference time
         computeTime(self.model, dataloader, batch_size, device=self.device)
         
-    def predict(self, data, batch_size=10000, single = False):
+    def predict(self, data, batch_size=10000, 
+                single = False, 
+                translate_params = True):
         
         self.model.eval()
 

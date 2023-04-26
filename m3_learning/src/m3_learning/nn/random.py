@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 def random_seed(seed = 42, pytorch_ = True, numpy_ = True, tensorflow_ = True):
     """Function that sets the random seed
@@ -15,6 +16,14 @@ def random_seed(seed = 42, pytorch_ = True, numpy_ = True, tensorflow_ = True):
             import torch
             # torch.set_default_dtype(torch.float64)
             torch.manual_seed(seed)
+            torch.manual_seed(seed)
+            torch.cuda.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+            np.random.seed(seed)  # Numpy module.
+            random.seed(seed)  # Python random module.
+            torch.manual_seed(seed)
+            torch.backends.cudnn.benchmark = False
+            torch.backends.cudnn.deterministic = True
             print(f'Pytorch seed was set to {42}')
     except: 
         pass
