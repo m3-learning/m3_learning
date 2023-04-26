@@ -243,6 +243,12 @@ class SHO_Model(AE_Fitter_SHO):
 
         torch.save(self.model.state_dict(),
                    f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
+        
+        self.model.eval()
+    
+    def load(self, model_path):
+        self.model.load_state_dict(torch.load(model_path))
+        self.model.to(self.device)
 
     def inference_timer(self, data, batch_size=.5e4):
         torch.cuda.empty_cache()
@@ -289,7 +295,13 @@ class SHO_Model(AE_Fitter_SHO):
             params[:,3] = torch.Tensor(self.model.dataset.shift_phase(params[:,3].detach().numpy(), self.model.dataset.NN_phase_shift))
         
         return predictions, params_scaled, params
-
+    
+    @staticmethod
+    def mse_rankings(true, prediction):
+        errors = mean_squared_error(true, prediction)
+        index = np.argsort(errors)
+        return index, errors[index]
+        
 # def SHO_fit_func_nn(parms,
 #                        wvec_freq,
 #                        device='cpu'):
