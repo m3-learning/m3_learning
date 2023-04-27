@@ -1,5 +1,5 @@
 import numpy as np
-from m3_learning.viz.layout import layout_fig, inset_connector, add_box
+from m3_learning.viz.layout import layout_fig, inset_connector, add_box, subfigures, add_text_to_figure
 from scipy.signal import resample
 from scipy import fftpack
 import matplotlib.pyplot as plt
@@ -497,19 +497,90 @@ class Viz:
             SHO_results = SHO_results.squeeze()
 
             fig.text(
-                0.5, -.05, f"LSQF: A = {SHO_results[0]:0.2e} ,  \u03C9 = {SHO_results[1]/1000:0.1f} Hz, Q = {SHO_results[2]:0.1f}, \u03C6 = {SHO_results[3]:0.2f} rad", 
+                0.5, -.05, f"LSQF: A = {SHO_results[0]:0.2e} ,  \u03C9 = {SHO_results[1]/1000:0.1f} Hz, Q = {SHO_results[2]:0.1f}, \u03C6 = {SHO_results[3]:0.2f} rad",
                 ha='center', fontsize=6)
-            
+
             parm = parm.detach().numpy().squeeze()
-            
+
             fig.text(
-                0.5, -.15, f"NN: A = {parm[0]:0.2e} ,  \u03C9 = {parm[1]/1000:0.1f} Hz, Q = {parm[2]:0.1f}, \u03C6 = {parm[3]:0.2f} rad", 
+                0.5, -.15, f"NN: A = {parm[0]:0.2e} ,  \u03C9 = {parm[1]/1000:0.1f} Hz, Q = {parm[2]:0.1f}, \u03C6 = {parm[3]:0.2f} rad",
                 ha='center', fontsize=6)
 
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=[
                                  axs[0], axs[1]], style='b')
+
+    def best_median_worst_reconstructions(self, model, true, SHO_values=None,
+                                          labels=["NN", "LSQF"], unscaled=True, 
+                                          filename = None, **kwargs):
+        gaps = (0.8, 0.9)
+        size = (1.25, 1.25)
+
+        fig, ax = subfigures(3, 3, gaps=gaps, size=size)
+
+        dpi = fig.get_dpi()
+
+        prediction, scaled_param, parm = model.predict(true)
+
+        index, mse = model.mse_rankings(true, prediction)
+
+        ind = np.hstack(
+            (index[0:3], index[len(index)//2-1:len(index)//2+2], index[-3:]))
+        mse = np.hstack(
+            (mse[0:3], mse[len(index)//2-1:len(index)//2+2], mse[-3:]))
+
+        x = self.get_freq_values(true[0, :, 0])
+
+        # unscales the data
+        if unscaled:
+            true = self.dataset.raw_data_scaler.inverse_transform(true)
+            prediction = self.dataset.raw_data_scaler.inverse_transform(
+                prediction.numpy())
+
+            # computes the magnitude spectrum from the data
+            true = self.dataset.to_magnitude(true)
+            prediction = self.dataset.to_magnitude(prediction)
+
+            SHO_values = self.dataset.SHO_scaler.inverse_transform(SHO_values)
+
+        else:
+            true = true
+            prediction = self.dataset.to_complex(prediction.numpy())
+
+        ax.reverse()
+
+        for i, (ind_, ax_) in enumerate(zip(ind, ax)):
+
+            ax_.plot(x, prediction[0][ind_].flatten(), 'b',
+                     label=labels[0] + " Amplitude")
+            ax1 = ax_.twinx()
+            ax1.plot(x, prediction[1][ind_].flatten(), 'r',
+                     label=labels[0] + " Phase")
+            
+            ax_.plot(x, true[0][ind_].flatten(), 'bo',
+                        label="Raw Amplitude")
+            ax1.plot(x, true[1][ind_].flatten(), 'ro',
+                     label="Raw Phase")
+
+            ax_.set_xlabel("Frequency (Hz)")
+            ax_.set_ylabel("Amplitude (Arb. U.)")
+            ax1.set_ylabel("Phase (rad)")
+
+            # Position text at (1 inch, 2 inches) from the bottom left corner of the figure
+            text_position_in_inches = (
+                (gaps[0] + size[0])*(i % 3), (gaps[1] + size[1])*(3-i//3 - 1)-0.8)
+            text = f'MSE: {mse[i]:0.4f}\nA LSQF:{SHO_values[ind_, 0]:0.2e} NN:{parm[ind_, 0]:0.2e}\n\u03C9: LSQF: {SHO_values[ind_, 1]/1000:0.1f} NN: {parm[ind_, 1]/1000:0.1f} Hz\nQ: LSQF: {SHO_values[ind_, 2]:0.1f} NN: {parm[ind_, 2]:0.1f}\n\u03C6: LSQF: {SHO_values[ind_, 3]:0.2f} NN: {parm[ind_, 3]:0.1f} rad'
+            add_text_to_figure(fig, text, text_position_in_inches, fontsize=6)
+            
+            if i == 2: 
+                lines, labels = ax_.get_legend_handles_labels()
+                lines2, labels2 = ax1.get_legend_handles_labels()
+                ax_.legend(lines + lines2, labels + labels2, loc='upper right')
+                
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename, style='b')
 
 
 # Class BE_Viz:
