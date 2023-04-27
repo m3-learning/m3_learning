@@ -157,7 +157,8 @@ class SHO_Model(AE_Fitter_SHO):
                  model_basename='',
                  training=True,
                  path='Trained Models/SHO Fitter/',
-                 device=None):
+                 device=None,
+                 **kwargs):
 
         if device is None:
             if torch.cuda.is_available():
@@ -174,7 +175,7 @@ class SHO_Model(AE_Fitter_SHO):
         self.model.training = True
         self.model_name = model_basename
         self.path = make_folder(path)
-
+            
     def fit(self,
             data_train,
             batch_size=200,
@@ -221,13 +222,14 @@ class SHO_Model(AE_Fitter_SHO):
                 train_batch = train_batch.to(datatype).to(self.device)
 
                 pred, embedding = self.model(train_batch)
-                
+
                 pred = pred.to(torch.float32)
                 embedding = embedding.to(torch.float32)
 
                 optimizer.zero_grad()
-            
-                loss = loss_func(train_batch, pred, embedding[:,0]).to(torch.float32)
+
+                loss = loss_func(train_batch, pred,
+                                 embedding[:, 0]).to(torch.float32)
                 loss.backward(create_graph=True)
                 train_loss += loss.item() * pred.shape[0]
                 total_num += pred.shape[0]
@@ -246,9 +248,9 @@ class SHO_Model(AE_Fitter_SHO):
 
         torch.save(self.model.state_dict(),
                    f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
-        
+
         self.model.eval()
-    
+
     def load(self, model_path):
         self.model.load_state_dict(torch.load(model_path))
         self.model.to(self.device)
@@ -262,11 +264,11 @@ class SHO_Model(AE_Fitter_SHO):
 
         # Computes the inference time
         computeTime(self.model, dataloader, batch_size, device=self.device)
-        
-    def predict(self, data, batch_size=10000, 
-                single = False, 
-                translate_params = True):
-        
+
+    def predict(self, data, batch_size=10000,
+                single=False,
+                translate_params=True):
+
         self.model.eval()
 
         dataloader = DataLoader(data, batch_size=batch_size)
@@ -294,19 +296,24 @@ class SHO_Model(AE_Fitter_SHO):
             params[start:end] = params_.cpu().detach()
 
             torch.cuda.empty_cache()
-        
+
         if self.model.dataset.NN_phase_shift is not None:
-            params_scaled[:,3] = torch.Tensor(self.model.dataset.shift_phase(params_scaled[:,3].detach().numpy(), self.model.dataset.NN_phase_shift))
-            params[:,3] = torch.Tensor(self.model.dataset.shift_phase(params[:,3].detach().numpy(), self.model.dataset.NN_phase_shift))
-        
+            params_scaled[:, 3] = torch.Tensor(self.model.dataset.shift_phase(
+                params_scaled[:, 3].detach().numpy(), self.model.dataset.NN_phase_shift))
+            params[:, 3] = torch.Tensor(self.model.dataset.shift_phase(
+                params[:, 3].detach().numpy(), self.model.dataset.NN_phase_shift))
+
         return predictions, params_scaled, params
-    
+
     @staticmethod
     def mse_rankings(true, prediction):
-        errors = mean_squared_error(true, prediction)
+        true = np.array(true)
+        prediction = np.array(prediction)
+
+        errors = np.mean((true.reshape(true.shape[0], -1) - prediction.reshape(prediction.shape[0], -1))**2, axis=1)
         index = np.argsort(errors)
         return index, errors[index]
-        
+
 # def SHO_fit_func_nn(parms,
 #                        wvec_freq,
 #                        device='cpu'):

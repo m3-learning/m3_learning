@@ -357,7 +357,7 @@ class BE_Dataset:
                 return dataset_[[pixel], :, :]
             else:
                 return dataset_[:]
-            
+
     @staticmethod
     def is_complex(data):
         if type(data) == torch.Tensor:
@@ -365,17 +365,17 @@ class BE_Dataset:
         if type(data) == np.ndarray:
             complex_ = np.iscomplex(data)
         return complex_.any()
-            
+
     @staticmethod
     def to_magnitude(data):
         data = BE_Dataset.to_complex(data)
         return [np.abs(data), np.angle(data)]
-    
+
     @staticmethod
     def to_real_imag(data):
         data = BE_Dataset.to_complex(data)
         return [np.real(data), np.imag(data)]
-            
+
     @staticmethod
     def to_complex(data):
         if BE_Dataset.is_complex(data):
@@ -384,8 +384,8 @@ class BE_Dataset:
             return data[0] + 1j * data[1]
         elif data.ndim == 2:
             return data[:, 0] + 1j * data[:, 1]
-        elif data.ndim == 3: 
-            return data[:,:, 0] + 1j * data[:,:, 1]
+        elif data.ndim == 3:
+            return data[:, :, 0] + 1j * data[:, :, 1]
 
     def set_SHO_LSQF(self, basepath="Raw_Data-SHO_Fit_000", save_loc='SHO_LSQF'):
         """Utility function to convert the SHO fit results to an array
@@ -425,11 +425,18 @@ class BE_Dataset:
         else:
             shift = shift_
 
-        phase_ = phase.copy()
-        phase_ += np.pi
-        phase_[phase_ <= shift] += 2 *\
-            np.pi  # shift phase values greater than pi
-        return phase_ - shift - np.pi
+        if shift > 0:
+            phase_ = phase.copy()
+            phase_ += np.pi
+            phase_[phase_ <= shift] += 2 *\
+                np.pi  # shift phase values greater than pi
+            return phase_ - shift - np.pi
+        else:
+            phase_ = phase.copy()
+            phase_ -= np.pi
+            phase_[phase_ >= shift] -= 2 *\
+                np.pi  # shift phase values greater than pi
+            return phase_ - shift + np.pi
 
     def raw_data_resampled(self, pixel=None, voltage_step=None):
         """Resampled real part of the complex data resampled"""
@@ -582,9 +589,9 @@ class BE_Dataset:
                   LSQF Phase Shift = {self.LSQF_phase_shift}
                   NN Phase Shift = {self.NN_phase_shift}
                   ''')
-        
+
     def NN_data(self, resampled=True, scaled=True):
-        
+
         # makes sure you are using the resampled data
         self.resampled = resampled
 
@@ -603,7 +610,7 @@ class BE_Dataset:
 
         # gets the SHO fit results these values are scaled
         y_data = self.SHO_fit_results().reshape(-1, 4)
-        
+
         return x_data, y_data
 
     def test_train_split_(self, test_size=0.2, random_state=42, resampled=True, scaled=True, shuffle=False):
@@ -625,21 +632,20 @@ class BE_Dataset:
         def __init__(self, raw_data):
             self.raw_data = raw_data
             self.fit()
-        
+
         @staticmethod
         def data_type_converter(data):
 
-                
             if BE_Dataset.is_complex(data):
                 return data
             else:
-                return BE_Dataset.to_complex(data)   
+                return BE_Dataset.to_complex(data)
 
         def fit(self):
             data = self.raw_data
-            
+
             data = self.data_type_converter(data)
-            
+
             real = np.real(data)
             imag = np.imag(data)
             self.real_scaler = global_scaler()
@@ -649,10 +655,9 @@ class BE_Dataset:
             self.imag_scaler.fit(imag)
 
         def transform(self, data):
-            
+
             data = self.data_type_converter(data)
-            
-            
+
             real = np.real(data)
             imag = np.imag(data)
 
@@ -663,13 +668,13 @@ class BE_Dataset:
 
         def inverse_transform(self, data):
             data = self.data_type_converter(data)
-            
+
             real = np.real(data)
             imag = np.imag(data)
 
             real = self.real_scaler.inverse_transform(real)
             imag = self.imag_scaler.inverse_transform(imag)
-            
+
             return real + 1j*imag
 
 
