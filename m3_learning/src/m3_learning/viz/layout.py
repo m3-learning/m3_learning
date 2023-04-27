@@ -1,6 +1,9 @@
 from matplotlib.patches import ConnectionPatch
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.transforms as transforms
+from itertools import product
+from matplotlib.text import Annotation
 import numpy as np
 import os
 import torch
@@ -17,6 +20,38 @@ import string
 
 Path = path.Path
 PathPatch = patches.PathPatch
+
+def subfigures(nrows, ncols, size = (1.25, 1.25), gaps = (.8, .33), figsize=None, **kwargs):
+
+    if figsize is None: 
+        figsize=(size[0]*ncols + gaps[0]*ncols, size[0]*nrows+gaps[1]*nrows)
+    
+    
+    # create a new figure with a size of 6x6 inches
+    fig = plt.figure(figsize=figsize, layout='compressed')
+
+    ax = []
+
+    for i, j in product(range(nrows), range(ncols)):
+        rvalue =  (nrows-1) - j 
+        # create the first axis with absolute position (1 inch, 1 inch) and size (2 inches, 2 inches)
+        pos1 = [(size[0]*rvalue + gaps[0]*rvalue)/figsize[0], (size[1]*i + gaps[1]*i)/figsize[1],
+                size[0]/figsize[0], size[1]/figsize[1]] #transforms.Bbox.from_bounds()
+        ax.append(fig.add_axes(pos1))
+        
+    return fig, ax
+
+def add_text_to_figure(fig, text, text_position_in_inches, **kwargs):
+    
+    # Get the figure size in inches and dpi
+    fig_size_inches = fig.get_size_inches()
+    fig_dpi = fig.get_dpi()
+    
+    # Convert the desired text position in inches to a relative position (0 to 1)
+    text_position_relative = (text_position_in_inches[0] / fig_size_inches[0], text_position_in_inches[1] / fig_size_inches[1])
+
+    # Add the text to the figure with the calculated relative position
+    fig.text(text_position_relative[0], text_position_relative[1], text, **kwargs)
 
 def add_box(axs, pos, **kwargs):
     

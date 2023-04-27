@@ -78,3 +78,30 @@ class DivergenceLoss(nn.Module):
         loss = loss / self.batch_size
 
         return loss
+
+class NegValLoss(torch.nn.Module):
+    
+    
+    
+    def __init__(self, penalty=0.1, verbose=False, scale_factor=1):
+        super(NegValLoss, self).__init__()
+        self.penalty = penalty
+        self.verbose = verbose
+        self.scale_factor = scale_factor
+
+    def forward(self, y_true, y_pred, values):
+        # Calculate the mean squared error between y_true and y_pred
+        mse = torch.mean(torch.square(y_true - y_pred))
+        
+        # Apply the penalty term to any negative values in y_pred
+        neg_penalty = torch.mean(torch.clamp(-values/self.scale_factor, min=0)) * self.penalty
+        # Add the penalty term to the mean squared error
+
+        loss = mse + neg_penalty
+        
+        if self.verbose:
+            print(f"neg_penalty : {neg_penalty}")
+            print(f"MSE : {loss}")
+            print(np.sum((values<0).sum().item()))
+    
+        return loss
