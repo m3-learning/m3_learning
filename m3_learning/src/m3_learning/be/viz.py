@@ -3,6 +3,7 @@ from m3_learning.viz.layout import layout_fig, inset_connector, add_box, subfigu
 from scipy.signal import resample
 from scipy import fftpack
 import matplotlib.pyplot as plt
+from m3_learning.be.nn import SHO_Model
 
 
 class Viz:
@@ -529,6 +530,8 @@ class Viz:
             (index[0:3], index[len(index)//2-1:len(index)//2+2], index[-3:]))
         mse = np.hstack(
             (mse[0:3], mse[len(index)//2-1:len(index)//2+2], mse[-3:]))
+        
+        print(ind)
 
         x = self.get_freq_values(true[0, :, 0])
 
@@ -538,9 +541,14 @@ class Viz:
             prediction = self.dataset.raw_data_scaler.inverse_transform(
                 prediction.numpy())
 
-            # computes the magnitude spectrum from the data
-            true = self.dataset.to_magnitude(true)
-            prediction = self.dataset.to_magnitude(prediction)
+            if self.dataset.raw_format == "magnitude spectrum":
+                # computes the magnitude spectrum from the data
+                true = self.dataset.to_magnitude(true)
+                prediction = self.dataset.to_magnitude(prediction)
+            else:
+                # computes the magnitude spectrum from the data
+                true = self.dataset.to_real_imag(true)
+                prediction = self.dataset.to_real_imag(prediction)
 
             SHO_values = self.dataset.SHO_scaler.inverse_transform(SHO_values)
 
@@ -581,6 +589,63 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
+           
+    def best_median_worst_fit_comparison(self):
+        
+        
+        # for the SHO curves it makes sense to determine the error based on the normalized fit results in complex form. 
+        state = {'fitter' : 'LSQF',
+             'resampled' : False,
+             'scaled' : True, 
+             "raw_format": "complex",}
+        
+        self.set_attributes(**state)
+        
+        fit_results_compare = self.dataset.raw_spectra(fit_results = self.dataset.SHO_fit_results())
+        
+        raw_SHO = self.dataset.raw_spectra()
+        
+        index1, mse1, d1, d2 = SHO_Model.get_rankings(raw_SHO, fit_results_compare, n = 1)
+        
+        d1 = np.swapaxes(d1, 1, 2)
+        d2 = np.swapaxes(d2, 1, 2)
+        
+        d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
+        d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
+        
+        
+        d1 = np.array(self.dataset.to_magnitude(d1))
+        d2 = np.array(self.dataset.to_magnitude(d2))
+        
+        d1 = np.swapaxes(d1, 0, 1)
+        d2 = np.swapaxes(d2, 0, 1)
+        
+        
+        fig, ax = subfigures(3, 2, gaps=(.8, .9), size=(1.25,1.25))
+        
+        x = self.get_freq_values(d1[0][1])
+
+        ax.reverse()
+        
+        for i, (true, prediction) in enumerate(zip(d1, d2)):
+            print(mse1[i])
+            ax_ = ax[i*2]
+            ax_.plot(x, prediction[0].flatten(), 'b',
+                     label="LSQF Amplitude")
+            ax1 = ax_.twinx()
+            ax1.plot(x, prediction[1].flatten(), 'r',
+                     label="LSQF Phase")
+            
+            ax_.plot(x, true[0].flatten(), 'bo',
+                        label="Raw Amplitude")
+            ax1.plot(x, true[1].flatten(), 'ro',
+                     label="Raw Phase")
+
+            ax_.set_xlabel("Frequency (Hz)")
+            ax_.set_ylabel("Amplitude (Arb. U.)")
+            ax1.set_ylabel("Phase (rad)")
+
+        
 
 
 # Class BE_Viz:

@@ -10,7 +10,8 @@ from m3_learning.util.h5_util import make_dataset, make_group
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from m3_learning.viz.layout import layout_fig
-from scipy.signal import resample
+# from scipy.signal import resample
+from scipy.interpolate import interp1d
 from scipy import fftpack
 from sklearn.preprocessing import StandardScaler
 from m3_learning.util.preprocessing import global_scaler
@@ -19,7 +20,19 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from m3_learning.be.processing import convert_amp_phase
 from sklearn.model_selection import train_test_split
+from m3_learning.be.nn import SHO_fit_func_nn
 
+def resample(y, num_points, axis = 0):
+    
+    # Create a new array of x values that covers the range of the original x values with the desired number of points
+    x = np.arange(y.shape[0])
+    new_x = np.linspace(x.min(), x.max(), num_points)
+
+    # Use cubic spline interpolation to estimate the y values of the curve at the new x values
+    f = interp1d(x, y, kind='cubic',axis = axis)
+    new_y = f(new_x)
+
+    return new_y
 
 class BE_Dataset:
 
@@ -34,7 +47,9 @@ class BE_Dataset:
                  LSQF_phase_shift=None,
                  NN_phase_shift=None,
                  verbose=False,
+                 SHO_fit_func_LSQF = SHO_fit_func_nn,
                  **kwargs):
+        
         self.dataset = dataset
         self.resampled = resampled
         self.scaled = scaled
@@ -46,6 +61,7 @@ class BE_Dataset:
         self.LSQF_phase_shift = LSQF_phase_shift
         self.NN_phase_shift = NN_phase_shift
         self.verbose = verbose
+        self.SHO_fit_func_LSQF = SHO_fit_func_LSQF
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -302,6 +318,10 @@ class BE_Dataset:
                 self.spectroscopic_values[2, ::len(
                     self.frequency_bin)][int(self.voltage_steps/loop_number):]
             )
+            
+    @property
+    def resampled_freq(self):
+        return resample(self.frequency_bin, self.resampled_bins)
 
     # raw_be_data as complex
     @property
@@ -360,11 +380,15 @@ class BE_Dataset:
 
     @staticmethod
     def is_complex(data):
+
         if type(data) == torch.Tensor:
             complex_ = data.is_complex()
+            
+
         if type(data) == np.ndarray:
             complex_ = np.iscomplex(data)
-        return complex_.any()
+            complex_ = complex_.any()
+        return complex_
 
     @staticmethod
     def to_magnitude(data):
@@ -378,8 +402,14 @@ class BE_Dataset:
 
     @staticmethod
     def to_complex(data):
+        if type(data) == list: 
+            data = np.array(data)
+        
         if BE_Dataset.is_complex(data):
             return data
+        
+        if type(data) == list: 
+            data = np.array(data)
         elif data.ndim == 1:
             return data[0] + 1j * data[1]
         elif data.ndim == 2:
@@ -504,39 +534,49 @@ class BE_Dataset:
 
             return data
 
-    def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None):
+    def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_ = "numpy"):
         """Raw spectra"""
         with h5py.File(self.dataset, "r+") as h5_f:
 
             voltage_step = self.measurement_state_voltage(voltage_step)
+            
+            if self.resampled:
+                bins = self.resample_bins
+                frequency_bins = resample(self.frequency_bin,
+                                          self.resampled_bins)
+            else:
+                frequency_bins = self.frequency_bin
+                bins = self.num_bins
+                
 
             if fit_results is None:
                 if self.resampled:
                     data = self.raw_data_resampled(
                         pixel=pixel, voltage_step=voltage_step)
-                    bins = self.resample_bins
+
                 else:
                     data = self.raw_data(
                         pixel=pixel, voltage_step=voltage_step)
-                    bins = self.frequency_bin
+
             else:
 
                 params_shape = fit_results.shape
 
                 # reshapes the parameters for fitting functions
                 params = torch.tensor(fit_results.reshape(-1, 4))
+                
+                # have to do the inverse transform before fitting if the SHO params are scaled
+                if self.scaled:
+                    params = self.SHO_scaler.inverse_transform(
+                        params.reshape(-1, 4))
+                    params = torch.tensor(params)
 
-                if self.resampled:
-                    bins = self.resample_bins
-                    frequency_bins = resample(self.frequency_bin,
-                                              self.resampled_bins)
-                else:
-                    frequency_bins = self.frequency_bin
+                data = eval(f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)")
 
-                data = eval(f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)").reshape(params_shape[0],
-                                                                                                params_shape[1], -1)
-
+                data = data.reshape(*params_shape[:-1], -1)
+                  
             data_shape = data.shape
+
 
             # does not sample if just a pixel is returned
             if pixel is None or voltage_step is None:
@@ -551,11 +591,18 @@ class BE_Dataset:
             if self.raw_format == 'complex':
                 # computes the scaler on the raw data
                 if self.scaled:
+                    print(data.shape)
                     data = self.raw_data_scaler.transform(
                         data.reshape(-1, bins)).reshape(data_shape)
                 data = [np.real(data), np.imag(data)]
             elif self.raw_format == "magnitude spectrum":
                 data = [np.abs(data), np.angle(data)]
+                
+                # if a tensor converts to a numpy array
+                try:
+                    data[0] = data[0].numpy()
+                except:
+                    pass
             return data
 
     def set_raw_data_resampler(self,
@@ -695,7 +742,6 @@ class BE_Dataset:
 # from scipy import fftpack
 # from sklearn.preprocessing import StandardScaler
 # from ..util.preprocessing import global_scaler
-# from ..nn.SHO_fitter.SHO import SHO_fit_func_torch
 # import torch
 # import torch.nn as nn
 # from torch.utils.data import DataLoader

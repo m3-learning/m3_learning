@@ -24,11 +24,11 @@ PathPatch = patches.PathPatch
 def subfigures(nrows, ncols, size = (1.25, 1.25), gaps = (.8, .33), figsize=None, **kwargs):
 
     if figsize is None: 
-        figsize=(size[0]*ncols + gaps[0]*ncols, size[0]*nrows+gaps[1]*nrows)
+        figsize=(size[0]*ncols + gaps[0]*ncols, size[1]*nrows+gaps[1]*nrows)
     
     
     # create a new figure with a size of 6x6 inches
-    fig = plt.figure(figsize=figsize, layout='compressed')
+    fig = plt.figure(figsize=figsize)
 
     ax = []
 

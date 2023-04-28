@@ -82,7 +82,6 @@ class DivergenceLoss(nn.Module):
 class NegValLoss(torch.nn.Module):
     
     
-    
     def __init__(self, penalty=0.1, verbose=False, scale_factor=1):
         super(NegValLoss, self).__init__()
         self.penalty = penalty

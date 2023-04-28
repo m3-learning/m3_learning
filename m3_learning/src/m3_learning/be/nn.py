@@ -306,13 +306,60 @@ class SHO_Model(AE_Fitter_SHO):
         return predictions, params_scaled, params
 
     @staticmethod
-    def mse_rankings(true, prediction):
+    def mse_rankings(true, prediction, curves = False):
+        if isinstance(true[0], torch.Tensor):
+            true = [tensor.numpy() for tensor in true]
+        if isinstance(prediction[0], torch.Tensor):
+            prediction = np.array([tensor.numpy() for tensor in prediction])
+        
         true = np.array(true)
         prediction = np.array(prediction)
+        
 
+        # shifts the index of the magnitude to the end
+        if np.ndim(true) == 4:
+            mag_ind = true.shape.index(2)
+            true = np.rollaxis(true, mag_ind, true.ndim)
+            true = true.reshape(-1, *true.shape[-2:])
+            
+        if np.ndim(prediction) == 4:
+            mag_ind = prediction.shape.index(2)
+            prediction = np.rollaxis(prediction, mag_ind, prediction.ndim)
+            prediction = prediction.reshape(-1, *prediction.shape[-2:])
+            
         errors = np.mean((true.reshape(true.shape[0], -1) - prediction.reshape(prediction.shape[0], -1))**2, axis=1)
         index = np.argsort(errors)
+                
+        if curves:
+            return index, errors[index], true[index], prediction[index]
+        
         return index, errors[index]
+    
+    @staticmethod
+    def get_rankings(raw_data, pred, n = 1, curves = True):
+            """simple function to get the best, median and worst reconstructions
+
+            Args:
+                raw_data (np.array): array of the true values
+                pred (np.array): array of the predictions
+                n (int, optional): number of values for each. Defaults to 1.
+                curves (bool, optional): whether to return the curves or not. Defaults to True.
+
+            Returns:
+                ind: indices of the best, median and worst reconstructions
+                mse: mse of the best, median and worst reconstructions
+            """            
+            index, mse, d1, d2 = SHO_Model.mse_rankings(raw_data, pred, curves=curves)
+            middle_index = len(index) // 2
+            start_index = middle_index - n // 2
+            end_index = start_index + n
+            
+            ind = np.hstack(
+                (index[:n], index[start_index:end_index], index[-n:]))
+            mse = np.hstack(
+                (mse[:n], mse[start_index:end_index], mse[-n:]))
+
+            return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
 
 # def SHO_fit_func_nn(parms,
 #                        wvec_freq,
