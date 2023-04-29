@@ -23,16 +23,25 @@ from sklearn.model_selection import train_test_split
 from m3_learning.be.nn import SHO_fit_func_nn
 
 def resample(y, num_points, axis = 0):
-    
+   # Get the shape of the input array
+    shape = y.shape
+
+    # Swap the selected axis with the first axis
+    y = np.swapaxes(y, axis, 0)
+
     # Create a new array of x values that covers the range of the original x values with the desired number of points
-    x = np.arange(y.shape[0])
+    x = np.arange(shape[axis])
     new_x = np.linspace(x.min(), x.max(), num_points)
 
     # Use cubic spline interpolation to estimate the y values of the curve at the new x values
-    f = interp1d(x, y, kind='cubic',axis = axis)
+    f = interp1d(x, y, kind='cubic', axis=0)
     new_y = f(new_x)
 
+    # Swap the first axis back with the selected axis
+    new_y = np.swapaxes(new_y, axis, 0)
+
     return new_y
+
 
 class BE_Dataset:
 
@@ -605,6 +614,7 @@ class BE_Dataset:
                     pass
             return data
 
+
     def set_raw_data_resampler(self,
                                basepath="Measurement_000/Channel_000",
                                save_loc='raw_data_resampled'):
@@ -654,9 +664,13 @@ class BE_Dataset:
 
         # stacks the real and imaginary components
         x_data = np.stack((real, imag), axis=2)
+        
+        x_data = torch.tensor(x_data, dtype=torch.float32)
 
         # gets the SHO fit results these values are scaled
         y_data = self.SHO_fit_results().reshape(-1, 4)
+        
+        y_data = torch.tensor(y_data, dtype=torch.float32)
 
         return x_data, y_data
 
