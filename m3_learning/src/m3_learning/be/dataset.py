@@ -22,7 +22,8 @@ from m3_learning.be.processing import convert_amp_phase
 from sklearn.model_selection import train_test_split
 from m3_learning.be.nn import SHO_fit_func_nn
 
-def resample(y, num_points, axis = 0):
+
+def resample(y, num_points, axis=0):
    # Get the shape of the input array
     shape = y.shape
 
@@ -34,7 +35,7 @@ def resample(y, num_points, axis = 0):
     new_x = np.linspace(x.min(), x.max(), num_points)
 
     # Use cubic spline interpolation to estimate the y values of the curve at the new x values
-    f = interp1d(x, y, kind='cubic', axis=0)
+    f = interp1d(x, y, kind='linear', axis=0)
     new_y = f(new_x)
 
     # Swap the first axis back with the selected axis
@@ -56,9 +57,9 @@ class BE_Dataset:
                  LSQF_phase_shift=None,
                  NN_phase_shift=None,
                  verbose=False,
-                 SHO_fit_func_LSQF = SHO_fit_func_nn,
+                 SHO_fit_func_LSQF=SHO_fit_func_nn,
                  **kwargs):
-        
+
         self.dataset = dataset
         self.resampled = resampled
         self.scaled = scaled
@@ -327,7 +328,7 @@ class BE_Dataset:
                 self.spectroscopic_values[2, ::len(
                     self.frequency_bin)][int(self.voltage_steps/loop_number):]
             )
-            
+
     @property
     def resampled_freq(self):
         return resample(self.frequency_bin, self.resampled_bins)
@@ -389,14 +390,15 @@ class BE_Dataset:
 
     @staticmethod
     def is_complex(data):
-
+        data = data[0]
+        
         if type(data) == torch.Tensor:
             complex_ = data.is_complex()
-            
 
         if type(data) == np.ndarray:
             complex_ = np.iscomplex(data)
             complex_ = complex_.any()
+
         return complex_
 
     @staticmethod
@@ -411,13 +413,13 @@ class BE_Dataset:
 
     @staticmethod
     def to_complex(data):
-        if type(data) == list: 
+        if type(data) == list:
             data = np.array(data)
-        
+
         if BE_Dataset.is_complex(data):
             return data
-        
-        if type(data) == list: 
+
+        if type(data) == list:
             data = np.array(data)
         elif data.ndim == 1:
             return data[0] + 1j * data[1]
@@ -543,12 +545,12 @@ class BE_Dataset:
 
             return data
 
-    def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_ = "numpy"):
+    def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_="numpy"):
         """Raw spectra"""
         with h5py.File(self.dataset, "r+") as h5_f:
 
             voltage_step = self.measurement_state_voltage(voltage_step)
-            
+
             if self.resampled:
                 bins = self.resample_bins
                 frequency_bins = resample(self.frequency_bin,
@@ -556,7 +558,6 @@ class BE_Dataset:
             else:
                 frequency_bins = self.frequency_bin
                 bins = self.num_bins
-                
 
             if fit_results is None:
                 if self.resampled:
@@ -573,19 +574,19 @@ class BE_Dataset:
 
                 # reshapes the parameters for fitting functions
                 params = torch.tensor(fit_results.reshape(-1, 4))
-                
+
                 # have to do the inverse transform before fitting if the SHO params are scaled
                 if self.scaled:
                     params = self.SHO_scaler.inverse_transform(
                         params.reshape(-1, 4))
                     params = torch.tensor(params)
 
-                data = eval(f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)")
+                data = eval(
+                    f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)")
 
                 data = data.reshape(*params_shape[:-1], -1)
-                  
-            data_shape = data.shape
 
+            data_shape = data.shape
 
             # does not sample if just a pixel is returned
             if pixel is None or voltage_step is None:
@@ -606,14 +607,13 @@ class BE_Dataset:
                 data = [np.real(data), np.imag(data)]
             elif self.raw_format == "magnitude spectrum":
                 data = [np.abs(data), np.angle(data)]
-                
+
                 # if a tensor converts to a numpy array
                 try:
                     data[0] = data[0].numpy()
                 except:
                     pass
             return data
-
 
     def set_raw_data_resampler(self,
                                basepath="Measurement_000/Channel_000",
@@ -664,12 +664,12 @@ class BE_Dataset:
 
         # stacks the real and imaginary components
         x_data = np.stack((real, imag), axis=2)
-        
+
         x_data = torch.tensor(x_data, dtype=torch.float32)
 
         # gets the SHO fit results these values are scaled
         y_data = self.SHO_fit_results().reshape(-1, 4)
-        
+
         y_data = torch.tensor(y_data, dtype=torch.float32)
 
         return x_data, y_data
