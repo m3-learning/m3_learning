@@ -130,6 +130,8 @@ class AE_Fitter_SHO(nn.Module):
         frequency_bins = resample(self.dataset.frequency_bin,
                                   self.dataset.resampled_bins)
 
+        unscaled_param[:,0] = torch.nn.functional.relu(unscaled_param[:, 0])
+
         # passes to the pytorch fitting function
         fits = SHO_fit_func_nn(
             unscaled_param, frequency_bins, device=self.device)
@@ -175,7 +177,7 @@ class SHO_Model(AE_Fitter_SHO):
         self.model.training = True
         self.model_name = model_basename
         self.path = make_folder(path)
-            
+
     def fit(self,
             data_train,
             batch_size=200,
@@ -200,6 +202,8 @@ class SHO_Model(AE_Fitter_SHO):
             optimizer = torch.optim.Adam(self.model.parameters())
         elif optimizer == "AdaHessian":
             optimizer = AdaHessian(self.model.parameters(), lr=0.1)
+        else:
+            raise ValueError("Optimizer not recognised")
 
         # instantiate the dataloader
         train_dataloader = DataLoader(
@@ -228,8 +232,8 @@ class SHO_Model(AE_Fitter_SHO):
 
                 optimizer.zero_grad()
 
-                loss = loss_func(train_batch, pred,
-                                 embedding[:, 0]).to(torch.float32)
+                # , embedding[:, 0]).to(torch.float32)
+                loss = loss_func(train_batch, pred)
                 loss.backward(create_graph=True)
                 train_loss += loss.item() * pred.shape[0]
                 total_num += pred.shape[0]
@@ -306,60 +310,61 @@ class SHO_Model(AE_Fitter_SHO):
         return predictions, params_scaled, params
 
     @staticmethod
-    def mse_rankings(true, prediction, curves = False):
+    def mse_rankings(true, prediction, curves=False):
         if isinstance(true[0], torch.Tensor):
             true = [tensor.numpy() for tensor in true]
         if isinstance(prediction[0], torch.Tensor):
             prediction = np.array([tensor.numpy() for tensor in prediction])
-        
+
         true = np.array(true)
         prediction = np.array(prediction)
-        
 
         # shifts the index of the magnitude to the end
         if np.ndim(true) == 4:
             mag_ind = true.shape.index(2)
             true = np.rollaxis(true, mag_ind, true.ndim)
             true = true.reshape(-1, *true.shape[-2:])
-            
+
         if np.ndim(prediction) == 4:
             mag_ind = prediction.shape.index(2)
             prediction = np.rollaxis(prediction, mag_ind, prediction.ndim)
             prediction = prediction.reshape(-1, *prediction.shape[-2:])
-            
-        errors = np.mean((true.reshape(true.shape[0], -1) - prediction.reshape(prediction.shape[0], -1))**2, axis=1)
+
+        errors = np.mean((true.reshape(
+            true.shape[0], -1) - prediction.reshape(prediction.shape[0], -1))**2, axis=1)
         index = np.argsort(errors)
-                
+
         if curves:
             return index, errors[index], true[index], prediction[index]
-        
+
         return index, errors[index]
-    
+
     @staticmethod
-    def get_rankings(raw_data, pred, n = 1, curves = True):
-            """simple function to get the best, median and worst reconstructions
+    def get_rankings(raw_data, pred, n=1, curves=True):
+        """simple function to get the best, median and worst reconstructions
 
-            Args:
-                raw_data (np.array): array of the true values
-                pred (np.array): array of the predictions
-                n (int, optional): number of values for each. Defaults to 1.
-                curves (bool, optional): whether to return the curves or not. Defaults to True.
+        Args:
+            raw_data (np.array): array of the true values
+            pred (np.array): array of the predictions
+            n (int, optional): number of values for each. Defaults to 1.
+            curves (bool, optional): whether to return the curves or not. Defaults to True.
 
-            Returns:
-                ind: indices of the best, median and worst reconstructions
-                mse: mse of the best, median and worst reconstructions
-            """            
-            index, mse, d1, d2 = SHO_Model.mse_rankings(raw_data, pred, curves=curves)
-            middle_index = len(index) // 2
-            start_index = middle_index - n // 2
-            end_index = start_index + n
-            
-            ind = np.hstack(
-                (index[:n], index[start_index:end_index], index[-n:]))
-            mse = np.hstack(
-                (mse[:n], mse[start_index:end_index], mse[-n:]))
+        Returns:
+            ind: indices of the best, median and worst reconstructions
+            mse: mse of the best, median and worst reconstructions
+        """
+        index, mse, d1, d2 = SHO_Model.mse_rankings(
+            raw_data, pred, curves=curves)
+        middle_index = len(index) // 2
+        start_index = middle_index - n // 2
+        end_index = start_index + n
 
-            return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
+        ind = np.hstack(
+            (index[:n], index[start_index:end_index], index[-n:]))
+        mse = np.hstack(
+            (mse[:n], mse[start_index:end_index], mse[-n:]))
+
+        return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
 
 # def SHO_fit_func_nn(parms,
 #                        wvec_freq,
