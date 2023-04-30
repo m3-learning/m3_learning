@@ -575,11 +575,11 @@ class BE_Dataset:
                 # reshapes the parameters for fitting functions
                 params = torch.tensor(fit_results.reshape(-1, 4))
 
-                # have to do the inverse transform before fitting if the SHO params are scaled
-                if self.scaled:
-                    params = self.SHO_scaler.inverse_transform(
-                        params.reshape(-1, 4))
-                    params = torch.tensor(params)
+                # # have to do the inverse transform before fitting if the SHO params are scaled
+                # if self.scaled:
+                #     params = self.SHO_scaler.inverse_transform(
+                #         params.reshape(-1, 4))
+                #     params = torch.tensor(params)
 
                 data = eval(
                     f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)")
@@ -646,6 +646,19 @@ class BE_Dataset:
                   LSQF Phase Shift = {self.LSQF_phase_shift}
                   NN Phase Shift = {self.NN_phase_shift}
                   ''')
+    
+    @property    
+    def get_state(self):
+        return {'resampled': self.resampled,
+                'raw_format': self.raw_format,
+                'fitter': self.fitter,
+                'scaled': self.scaled,
+                'output_shape': self.output_shape,
+                'measurement_state': self.measurement_state,
+                'resampled': self.resampled,
+                'resample_bins': self.resample_bins,
+                'LSQF_phase_shift': self.LSQF_phase_shift,
+                'NN_phase_shift': self.NN_phase_shift}
 
     def NN_data(self, resampled=True, scaled=True):
 

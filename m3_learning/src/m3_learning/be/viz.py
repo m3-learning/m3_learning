@@ -589,7 +589,42 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
-           
+            
+    def validate_nn_best_median_worst(self, raw_state, 
+                                      X_data, model = None, 
+                                      out_state = None, n=1, **kwargs):
+        
+        self.set_attributes(**raw_state)
+        
+        # holds the raw state
+        current_state = self.dataset.get_state
+        
+        # sets the phase shift to zero for parameters
+        # This is important if doing the fits because the fits will be wrong if the phase is shifted.
+        self.dataset.NN_phase_shift = 0
+        
+        # the data must be scaled to rank the results
+        self.dataset.scaled = True
+        
+        true = self.dataset.raw_spectra()
+        
+        if model is not None:
+            pred_data, scaled_params, params = model.predict(X_data)
+            
+        prediction = self.dataset.raw_spectra(Fit_Results = params)
+        
+        # this must take the scaled data
+        index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n)
+        
+        def do_conversion(d1):
+            pass
+        
+        if not current_state['scaled']:
+            d1 = np.swapaxes(d1, 1, 2)
+            d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
+            d1 = np.swapaxes(d1, 0, 1)
+
+
     def best_median_worst_fit_comparison(self):
         
         
