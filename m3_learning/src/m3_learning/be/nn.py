@@ -201,9 +201,12 @@ class SHO_Model(AE_Fitter_SHO):
         if optimizer == 'Adam':
             optimizer = torch.optim.Adam(self.model.parameters())
         elif optimizer == "AdaHessian":
-            optimizer = AdaHessian(self.model.parameters(), lr=0.1)
+            optimizer = AdaHessian(self.model.parameters(), lr=.1)
         else:
-            raise ValueError("Optimizer not recognised")
+            try:
+                optimizer = optimizer(self.model.parameters())
+            except:    
+                raise ValueError("Optimizer not recognised")
 
         # instantiate the dataloader
         train_dataloader = DataLoader(
@@ -239,7 +242,11 @@ class SHO_Model(AE_Fitter_SHO):
                 total_num += pred.shape[0]
 
                 optimizer.step()
-
+                
+                if "verbose" in kwargs:
+                    if kwargs["verbose"] == True:
+                        print(f"Loss = {loss.item()}")
+                    
             train_loss /= total_num
 
             print("epoch : {}/{}, recon loss = {:.8f}".format(epoch +
