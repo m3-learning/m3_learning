@@ -307,6 +307,11 @@ class SHO_Model(AE_Fitter_SHO):
             params[start:end] = params_.cpu().detach()
 
             torch.cuda.empty_cache()
+        
+        # converts negative ampltiudes to positive and shifts the phase to compensate    
+        if translate_params:
+            params[params[:,0]<0, 3] = params[params[:,0]<0,3] - np.pi
+            params[params[:,0]<0,0] = np.abs(params[params[:,0]<0,0])
 
         if self.model.dataset.NN_phase_shift is not None:
             params_scaled[:, 3] = torch.Tensor(self.model.dataset.shift_phase(
@@ -371,16 +376,18 @@ class SHO_Model(AE_Fitter_SHO):
         mse = np.hstack(
             (mse[:n], mse[start_index:end_index], mse[-n:]))
 
-        return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
+        #return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
+        return ind, mse, d1[ind], d2[ind]
 
-# def SHO_fit_func_nn(parms,
+
+# def SHO_fit_func_nn(paramss,
 #                        wvec_freq,
 #                        device='cpu'):
 
-#     Amp = parms[:, 0].type(torch.complex128)
-#     w_0 = parms[:, 1].type(torch.complex128)
-#     Q = parms[:, 2].type(torch.complex128)
-#     phi = parms[:, 3].type(torch.complex128)
+#     Amp = paramss[:, 0].type(torch.complex128)
+#     w_0 = paramss[:, 1].type(torch.complex128)
+#     Q = paramss[:, 2].type(torch.complex128)
+#     phi = paramss[:, 3].type(torch.complex128)
 #     wvec_freq = torch.tensor(wvec_freq)
 
 #     Amp = torch.unsqueeze(Amp, 1)
