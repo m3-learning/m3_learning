@@ -130,7 +130,7 @@ class AE_Fitter_SHO(nn.Module):
         frequency_bins = resample(self.dataset.frequency_bin,
                                   self.dataset.resampled_bins)
 
-        unscaled_param[:,0] = torch.nn.functional.relu(unscaled_param[:, 0])
+        # unscaled_param[:,0] = torch.nn.functional.relu(unscaled_param[:, 0])
 
         # passes to the pytorch fitting function
         fits = SHO_fit_func_nn(
@@ -205,7 +205,7 @@ class SHO_Model(AE_Fitter_SHO):
         else:
             try:
                 optimizer = optimizer(self.model.parameters())
-            except:    
+            except:
                 raise ValueError("Optimizer not recognised")
 
         # instantiate the dataloader
@@ -242,11 +242,11 @@ class SHO_Model(AE_Fitter_SHO):
                 total_num += pred.shape[0]
 
                 optimizer.step()
-                
+
                 if "verbose" in kwargs:
                     if kwargs["verbose"] == True:
                         print(f"Loss = {loss.item()}")
-                    
+
             train_loss /= total_num
 
             print("epoch : {}/{}, recon loss = {:.8f}".format(epoch +
