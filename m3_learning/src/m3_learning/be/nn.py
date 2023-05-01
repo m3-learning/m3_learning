@@ -323,27 +323,30 @@ class SHO_Model(AE_Fitter_SHO):
 
     @staticmethod
     def mse_rankings(true, prediction, curves=False):
-        if isinstance(true[0], torch.Tensor):
-            true = [tensor.numpy() for tensor in true]
-        if isinstance(prediction[0], torch.Tensor):
-            prediction = np.array([tensor.numpy() for tensor in prediction])
+        
+        def type_conversion(data):            
+            if isinstance(data[0], torch.Tensor):
+                data = [tensor.numpy() for tensor in data]
+            if isinstance(data[0], torch.Tensor):
+                data = np.array([tensor.numpy() for tensor in data])
+                
+            data = np.array(data)
+                 
+            if np.ndim(data) == 4:
+                data = data.reshape(data.shape[0], -1, data.shape[3])
+                
+            data =  np.swapaxes(data, 0, 1)    
+            return data
 
-        true = np.array(true)
-        prediction = np.array(prediction)
+        true = type_conversion(true)
+        prediction = type_conversion(prediction)
+        
+        print(f"shaper = {true.shape}")
 
-        # shifts the index of the magnitude to the end
-        if np.ndim(true) == 4:
-            mag_ind = true.shape.index(2)
-            true = np.rollaxis(true, mag_ind, true.ndim)
-            true = true.reshape(-1, *true.shape[-2:])
-
-        if np.ndim(prediction) == 4:
-            mag_ind = prediction.shape.index(2)
-            prediction = np.rollaxis(prediction, mag_ind, prediction.ndim)
-            prediction = prediction.reshape(-1, *prediction.shape[-2:])
-
-        errors = np.mean((true.reshape(
-            true.shape[0], -1) - prediction.reshape(prediction.shape[0], -1))**2, axis=1)
+        errors = np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
+        
+        print(f"errors = {errors.shape}")
+        
         index = np.argsort(errors)
 
         if curves:

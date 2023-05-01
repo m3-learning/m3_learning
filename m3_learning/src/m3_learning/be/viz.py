@@ -513,8 +513,8 @@ class Viz:
                                  axs[0], axs[1]], style='b')
 
     def best_median_worst_reconstructions(self, model, true, SHO_values=None,
-                                          labels=["NN", "LSQF"], unscaled=True, 
-                                          filename = None, **kwargs):
+                                          labels=["NN", "LSQF"], unscaled=True,
+                                          filename=None, **kwargs):
         gaps = (0.8, 0.9)
         size = (1.25, 1.25)
 
@@ -530,7 +530,7 @@ class Viz:
             (index[0:3], index[len(index)//2-1:len(index)//2+2], index[-3:]))
         mse = np.hstack(
             (mse[0:3], mse[len(index)//2-1:len(index)//2+2], mse[-3:]))
-        
+
         print(ind)
 
         x = self.get_freq_values(true[0, :, 0])
@@ -565,9 +565,9 @@ class Viz:
             ax1 = ax_.twinx()
             ax1.plot(x, prediction[1][ind_].flatten(), 'r',
                      label=labels[0] + " Phase")
-            
+
             ax_.plot(x, true[0][ind_].flatten(), 'bo',
-                        label="Raw Amplitude")
+                     label="Raw Amplitude")
             ax1.plot(x, true[1][ind_].flatten(), 'ro',
                      label="Raw Phase")
 
@@ -580,88 +580,93 @@ class Viz:
                 (gaps[0] + size[0])*(i % 3), (gaps[1] + size[1])*(3-i//3 - 1)-0.8)
             text = f'MSE: {mse[i]:0.4f}\nA LSQF:{SHO_values[ind_, 0]:0.2e} NN:{parm[ind_, 0]:0.2e}\n\u03C9: LSQF: {SHO_values[ind_, 1]/1000:0.1f} NN: {parm[ind_, 1]/1000:0.1f} Hz\nQ: LSQF: {SHO_values[ind_, 2]:0.1f} NN: {parm[ind_, 2]:0.1f}\n\u03C6: LSQF: {SHO_values[ind_, 3]:0.2f} NN: {parm[ind_, 3]:0.1f} rad'
             add_text_to_figure(fig, text, text_position_in_inches, fontsize=6)
-            
-            if i == 2: 
+
+            if i == 2:
                 lines, labels = ax_.get_legend_handles_labels()
                 lines2, labels2 = ax1.get_legend_handles_labels()
                 ax_.legend(lines + lines2, labels + labels2, loc='upper right')
-                
+
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
-            
-    def validate_nn_best_median_worst(self, raw_state, 
-                                      X_data, model = None, 
-                                      out_state = None, n=1, **kwargs):
-        
+
+    def validate_nn_best_median_worst(self, raw_state,
+                                      X_data, model=None,
+                                      out_state=None, n=1, **kwargs):
+
         self.set_attributes(**raw_state)
-        
+
         # holds the raw state
         current_state = self.dataset.get_state
-        
+
         # sets the phase shift to zero for parameters
         # This is important if doing the fits because the fits will be wrong if the phase is shifted.
         self.dataset.NN_phase_shift = 0
-        
+
         # the data must be scaled to rank the results
         self.dataset.scaled = True
-        
+
         true = self.dataset.raw_spectra()
-        
+
         if model is not None:
             pred_data, scaled_params, params = model.predict(X_data)
-            
-        prediction = self.dataset.raw_spectra(Fit_Results = params)
+
+        prediction = self.dataset.raw_spectra(fit_results=params)
         
         # this must take the scaled data
-        index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n)
-        
-        def do_conversion(d1):
-            pass
-        
-        if not current_state['scaled']:
-            d1 = np.swapaxes(d1, 1, 2)
-            d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
-            d1 = np.swapaxes(d1, 0, 1)
+        index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
 
+        def convert_to_mag(data):
+            data = self.dataset.to_complex(data)
+            data = self.dataset.raw_data_scaler.inverse_transform(data)
+            return self.dataset.to_magnitude(data)
+
+        if out_state is not None:
+            if out_state["measurement_state"] == "magnitude spectrum":
+                d1 = convert_to_mag(d1)
+                d2 = convert_to_mag(d2)
+            elif out_state["scaled"] == False:
+                d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
+                d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
+
+        return d1, d2
 
     def best_median_worst_fit_comparison(self):
-        
-        
-        # for the SHO curves it makes sense to determine the error based on the normalized fit results in complex form. 
-        state = {'fitter' : 'LSQF',
-             'resampled' : False,
-             'scaled' : True, 
-             "raw_format": "complex",}
-        
+
+        # for the SHO curves it makes sense to determine the error based on the normalized fit results in complex form.
+        state = {'fitter': 'LSQF',
+                 'resampled': False,
+                 'scaled': True,
+                 "raw_format": "complex", }
+
         self.set_attributes(**state)
-        
-        fit_results_compare = self.dataset.raw_spectra(fit_results = self.dataset.SHO_fit_results())
-        
+
+        fit_results_compare = self.dataset.raw_spectra(
+            fit_results=self.dataset.SHO_fit_results())
+
         raw_SHO = self.dataset.raw_spectra()
-        
-        index1, mse1, d1, d2 = SHO_Model.get_rankings(raw_SHO, fit_results_compare, n = 1)
-        
+
+        index1, mse1, d1, d2 = SHO_Model.get_rankings(
+            raw_SHO, fit_results_compare, n=1)
+
         d1 = np.swapaxes(d1, 1, 2)
         d2 = np.swapaxes(d2, 1, 2)
-        
+
         d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
         d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
-        
-        
+
         d1 = np.array(self.dataset.to_magnitude(d1))
         d2 = np.array(self.dataset.to_magnitude(d2))
-        
+
         d1 = np.swapaxes(d1, 0, 1)
         d2 = np.swapaxes(d2, 0, 1)
-        
-        
-        fig, ax = subfigures(3, 2, gaps=(.8, .9), size=(1.25,1.25))
-        
+
+        fig, ax = subfigures(3, 2, gaps=(.8, .9), size=(1.25, 1.25))
+
         x = self.get_freq_values(d1[0][1])
 
         ax.reverse()
-        
+
         for i, (true, prediction) in enumerate(zip(d1, d2)):
             print(mse1[i])
             ax_ = ax[i*2]
@@ -670,17 +675,15 @@ class Viz:
             ax1 = ax_.twinx()
             ax1.plot(x, prediction[1].flatten(), 'r',
                      label="LSQF Phase")
-            
+
             ax_.plot(x, true[0].flatten(), 'bo',
-                        label="Raw Amplitude")
+                     label="Raw Amplitude")
             ax1.plot(x, true[1].flatten(), 'ro',
                      label="Raw Phase")
 
             ax_.set_xlabel("Frequency (Hz)")
             ax_.set_ylabel("Amplitude (Arb. U.)")
             ax1.set_ylabel("Phase (rad)")
-
-        
 
 
 # Class BE_Viz:
