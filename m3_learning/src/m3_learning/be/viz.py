@@ -592,7 +592,8 @@ class Viz:
 
     def validate_nn_best_median_worst(self, raw_state,
                                       X_data, model=None,
-                                      out_state=None, n=1, **kwargs):
+                                      out_state=None, 
+                                      n=1, **kwargs):
 
         self.set_attributes(**raw_state)
 
@@ -620,357 +621,399 @@ class Viz:
             data = self.dataset.to_complex(data)
             data = self.dataset.raw_data_scaler.inverse_transform(data)
             return self.dataset.to_magnitude(data)
-
+        
+        
+        label = ["real", "imaginary"]
+        
         if out_state is not None:
-            if out_state["measurement_state"] == "magnitude spectrum":
-                d1 = convert_to_mag(d1)
-                d2 = convert_to_mag(d2)
-            elif out_state["scaled"] == False:
-                d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
-                d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
-
-        return d1, d2
-
-    def best_median_worst_fit_comparison(self):
-
-        # for the SHO curves it makes sense to determine the error based on the normalized fit results in complex form.
-        state = {'fitter': 'LSQF',
-                 'resampled': False,
-                 'scaled': True,
-                 "raw_format": "complex", }
-
-        self.set_attributes(**state)
-
-        fit_results_compare = self.dataset.raw_spectra(
-            fit_results=self.dataset.SHO_fit_results())
-
-        raw_SHO = self.dataset.raw_spectra()
-
-        index1, mse1, d1, d2 = SHO_Model.get_rankings(
-            raw_SHO, fit_results_compare, n=1)
-
-        d1 = np.swapaxes(d1, 1, 2)
-        d2 = np.swapaxes(d2, 1, 2)
-
-        d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
-        d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
-
-        d1 = np.array(self.dataset.to_magnitude(d1))
-        d2 = np.array(self.dataset.to_magnitude(d2))
-
-        d1 = np.swapaxes(d1, 0, 1)
-        d2 = np.swapaxes(d2, 0, 1)
-
+            if "measurement_state" in out_state.keys():
+                if out_state["measurement_state"] == "magnitude spectrum":
+                    d1 = convert_to_mag(d1)
+                    d2 = convert_to_mag(d2)
+                    labels = ["Magnitude Spectrum", "Phase"]
+            elif "scaled" in out_state.keys():
+                if out_state["scaled"] == False:
+                    d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
+                    d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
+                    label = ["Scaled " + s for s in label]
+                 
+        
+                
         fig, ax = subfigures(3, 2, gaps=(.8, .9), size=(1.25, 1.25))
-
-        x = self.get_freq_values(d1[0][1])
+        
+        x1 = self.get_freq_values(d1[0][1])
+        x2 = self.get_freq_values(d2[0][1])
 
         ax.reverse()
-
+        
         for i, (true, prediction) in enumerate(zip(d1, d2)):
-            print(mse1[i])
+    
             ax_ = ax[i*2]
-            ax_.plot(x, prediction[0].flatten(), 'b',
-                     label="LSQF Amplitude")
+            ax_.plot(x2, prediction[0].flatten(), 'b',
+                     label=f"NN {label[0]}")
             ax1 = ax_.twinx()
-            ax1.plot(x, prediction[1].flatten(), 'r',
-                     label="LSQF Phase")
+            ax1.plot(x2, prediction[1].flatten(), 'r',
+                     label=f"NN {label[1]}]")
 
-            ax_.plot(x, true[0].flatten(), 'bo',
-                     label="Raw Amplitude")
-            ax1.plot(x, true[1].flatten(), 'ro',
-                     label="Raw Phase")
-
+            ax_.plot(x1, true[0].flatten(), 'bo',
+                     label=f"Raw {label[0]}")
+            ax1.plot(x1, true[1].flatten(), 'ro',
+                     label=f"Raw {label[1]}")
+            
             ax_.set_xlabel("Frequency (Hz)")
-            ax_.set_ylabel("Amplitude (Arb. U.)")
-            ax1.set_ylabel("Phase (rad)")
+
+            if out_state is not None:
+                ax_.set_ylabel("Amplitude (Arb. U.)")
+                ax1.set_ylabel("Phase (rad)")
+            else:
+                ax_.set_ylabel("Real (Arb. U.)")
+                ax1.set_ylabel("Imag (Arb. U.)") 
+        
+        if "returns" in kwargs.keys():
+            if kwargs["returns"] == True:
+                return d1, d2, index1, mse1        
 
 
-# Class BE_Viz:
+#     def best_median_worst_fit_comparison(self):
 
-#     def __init__(self, dataset, shift=None, **kwargs):
+#         # for the SHO curves it makes sense to determine the error based on the normalized fit results in complex form.
+#         state = {'fitter': 'LSQF',
+#                  'resampled': False,
+#                  'scaled': True,
+#                  "raw_format": "complex", }
 
-#         self.dataset = dataset
-#         self.shift = shift
+#         self.set_attributes(**state)
+
+#         fit_results_compare = self.dataset.raw_spectra(
+#             fit_results=self.dataset.SHO_fit_results())
+
+#         raw_SHO = self.dataset.raw_spectra()
+
+#         index1, mse1, d1, d2 = SHO_Model.get_rankings(
+#             raw_SHO, fit_results_compare, n=1)
+
+#         d1 = np.swapaxes(d1, 1, 2)
+#         d2 = np.swapaxes(d2, 1, 2)
+
+#         d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
+#         d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
+
+#         d1 = np.array(self.dataset.to_magnitude(d1))
+#         d2 = np.array(self.dataset.to_magnitude(d2))
+
+#         d1 = np.swapaxes(d1, 0, 1)
+#         d2 = np.swapaxes(d2, 0, 1)
+
+#         fig, ax = subfigures(3, 2, gaps=(.8, .9), size=(1.25, 1.25))
+
+#         x = self.get_freq_values(d1[0][1])
+
+#         ax.reverse()
+
+#         for i, (true, prediction) in enumerate(zip(d1, d2)):
+#             print(mse1[i])
+#             ax_ = ax[i*2]
+#             ax_.plot(x, prediction[0].flatten(), 'b',
+#                      label="LSQF Amplitude")
+#             ax1 = ax_.twinx()
+#             ax1.plot(x, prediction[1].flatten(), 'r',
+#                      label="LSQF Phase")
+
+#             ax_.plot(x, true[0].flatten(), 'bo',
+#                      label="Raw Amplitude")
+#             ax1.plot(x, true[1].flatten(), 'ro',
+#                      label="Raw Phase")
+
+#             ax_.set_xlabel("Frequency (Hz)")
+#             ax_.set_ylabel("Amplitude (Arb. U.)")
+#             ax1.set_ylabel("Phase (rad)")
 
 
-# class Viz:
+# # Class BE_Viz:
 
-#        def __init__(self, dataset, state='lsqf', shift=None):
+# #     def __init__(self, dataset, shift=None, **kwargs):
 
-#             self.shift = shift
+# #         self.dataset = dataset
+# #         self.shift = shift
 
-#             self.dataset = dataset
-#             self.state = state
-#             self.printing = self.dataset.printing
 
-#             self.labels = [{'title': "Amplitude",
-#                             'y_label': "Amplitude (Arb. U.)",
-#                             'attr': "SHO_fit_amp"},
-#                            {'title': "Resonance Frequency",
-#                             'y_label': "Resonance Frequency (Hz)",
-#                             'attr': "SHO_fit_resonance"},
-#                            {'title': "Dampening",
-#                             'y_label': "Quality Factor (Arb. U.)",
-#                             'attr': "SHO_fit_q"},
-#                            {'title': "Phase",
-#                             'y_label': "Phase (rad)",
-#                             'attr': "SHO_fit_phase"}]
+# # class Viz:
 
-#         def raw_be(self, filename="Figure_1_random_cantilever_resonance_results"):
+# #        def __init__(self, dataset, state='lsqf', shift=None):
 
-#             # Select a random point and time step to plot
-#             pixel = np.random.randint(0, self.dataset.num_pix)
-#             voltagestep = np.random.randint(self.dataset.voltage_steps)
+# #             self.shift = shift
 
-#             # prints the pixel and time step
-#             print(pixel, voltagestep)
+# #             self.dataset = dataset
+# #             self.state = state
+# #             self.printing = self.dataset.printing
 
-#             # Plots the amplitude and phase for the selected pixel and time step
-#             fig, ax = layout_fig(5, 5, figsize=(6 * 11.2, 10))
+# #             self.labels = [{'title': "Amplitude",
+# #                             'y_label': "Amplitude (Arb. U.)",
+# #                             'attr': "SHO_fit_amp"},
+# #                            {'title': "Resonance Frequency",
+# #                             'y_label': "Resonance Frequency (Hz)",
+# #                             'attr': "SHO_fit_resonance"},
+# #                            {'title': "Dampening",
+# #                             'y_label': "Quality Factor (Arb. U.)",
+# #                             'attr': "SHO_fit_q"},
+# #                            {'title': "Phase",
+# #                             'y_label': "Phase (rad)",
+# #                             'attr': "SHO_fit_phase"}]
 
-#             # constructs the BE waveform and plot
-#             be_voltagesteps = len(self.dataset.be_waveform) / \
-#                 self.dataset.be_repeats
+# #         def raw_be(self, filename="Figure_1_random_cantilever_resonance_results"):
 
-#             # plots the BE waveform
-#             ax[0].plot(self.dataset.be_waveform[: int(be_voltagesteps)])
-#             ax[0].set(xlabel="Time (sec)", ylabel="Voltage (V)")
-#             ax[0].set_title("BE Waveform")
+# #             # Select a random point and time step to plot
+# #             pixel = np.random.randint(0, self.dataset.num_pix)
+# #             voltagestep = np.random.randint(self.dataset.voltage_steps)
 
-#             # plots the resonance graph
-#             resonance_graph = np.fft.fft(
-#                 self.dataset.be_waveform[: int(be_voltagesteps)])
-#             fftfreq = fftpack.fftfreq(int(be_voltagesteps)) * \
-#                 self.dataset.sampling_rate
-#             ax[1].plot(
-#                 fftfreq[: int(be_voltagesteps) //
-#                         2], np.abs(resonance_graph[: int(be_voltagesteps) // 2])
-#             )
-#             ax[1].axvline(
-#                 x=self.dataset.be_center_frequency,
-#                 ymax=np.max(resonance_graph[: int(be_voltagesteps) // 2]),
-#                 linestyle="--",
-#                 color="r",
-#             )
-#             ax[1].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
-#             ax[1].set_xlim(
-#                 self.dataset.be_center_frequency - self.dataset.be_bandwidth -
-#                 self.dataset.be_bandwidth * 0.25,
-#                 self.dataset.be_center_frequency + self.dataset.be_bandwidth +
-#                 self.dataset.be_bandwidth * 0.25,
-#             )
+# #             # prints the pixel and time step
+# #             print(pixel, voltagestep)
 
-#             # manually set the x limits
-#             x_start = 120
-#             x_end = 140
+# #             # Plots the amplitude and phase for the selected pixel and time step
+# #             fig, ax = layout_fig(5, 5, figsize=(6 * 11.2, 10))
 
-#             # plots the hysteresis waveform and zooms in
-#             ax[2].plot(self.dataset.hysteresis_waveform)
-#             ax_new = fig.add_axes([0.52, 0.6, 0.3/5.5, 0.25])
-#             ax_new.plot(np.repeat(self.dataset.hysteresis_waveform, 2))
-#             ax_new.set_xlim(x_start, x_end)
-#             ax_new.set_ylim(0, 15)
-#             ax_new.set_xticks(np.linspace(x_start, x_end, 6))
-#             ax_new.set_xticklabels([60, 62, 64, 66, 68, 70])
-#             fig.add_artist(
-#                 ConnectionPatch(
-#                     xyA=(x_start // 2,
-#                          self.dataset.hysteresis_waveform[x_start // 2]),
-#                     coordsA=ax[2].transData,
-#                     xyB=(105, 16),
-#                     coordsB=ax[2].transData,
-#                     color="green",
-#                 )
-#             )
-#             fig.add_artist(
-#                 ConnectionPatch(
-#                     xyA=(x_end // 2,
-#                          self.dataset.hysteresis_waveform[x_end // 2]),
-#                     coordsA=ax[2].transData,
-#                     xyB=(105, 4.5),
-#                     coordsB=ax[2].transData,
-#                     color="green",
-#                 )
-#             )
-#             ax[2].set_xlabel("Voltage Steps")
-#             ax[2].set_ylabel("Voltage (V)")
+# #             # constructs the BE waveform and plot
+# #             be_voltagesteps = len(self.dataset.be_waveform) / \
+# #                 self.dataset.be_repeats
 
-#             # plots the magnitude spectrum for and phase for the selected pixel and time step
-#             ax[3].plot(
-#                 original_x,
-#                 self.dataset.get_spectra(
-#                     self.dataset.magnitude_spectrum_amplitude, pixel, voltagestep),
-#             )
-#             ax[3].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
-#             ax2 = ax[3].twinx()
-#             ax2.plot(
-#                 original_x,
-#                 self.dataset.get_spectra(
-#                     self.dataset.magnitude_spectrum_phase, pixel, voltagestep),
-#                 "r+",
-#             )
-#             ax2.set(xlabel="Frequency (Hz)", ylabel="Phase (rad)")
+# #             # plots the BE waveform
+# #             ax[0].plot(self.dataset.be_waveform[: int(be_voltagesteps)])
+# #             ax[0].set(xlabel="Time (sec)", ylabel="Voltage (V)")
+# #             ax[0].set_title("BE Waveform")
 
-#             # plots the real and imaginary components for the selected pixel and time step
-#             ax[4].plot(original_x, self.dataset.get_spectra(
-#                 self.dataset.complex_spectrum_real, pixel, voltagestep), label="Real")
-#             ax[4].set(xlabel="Frequency (Hz)", ylabel="Real (Arb. U.)")
-#             ax3 = ax[4].twinx()
-#             ax3.plot(
-#                 original_x, self.dataset.get_spectra(
-#                     self.dataset.complex_spectrum_imag, pixel, voltagestep), 'r', label="Imaginary")
-#             ax3.set(xlabel="Frequency (Hz)", ylabel="Imag (Arb. U.)")
+# #             # plots the resonance graph
+# #             resonance_graph = np.fft.fft(
+# #                 self.dataset.be_waveform[: int(be_voltagesteps)])
+# #             fftfreq = fftpack.fftfreq(int(be_voltagesteps)) * \
+# #                 self.dataset.sampling_rate
+# #             ax[1].plot(
+# #                 fftfreq[: int(be_voltagesteps) //
+# #                         2], np.abs(resonance_graph[: int(be_voltagesteps) // 2])
+# #             )
+# #             ax[1].axvline(
+# #                 x=self.dataset.be_center_frequency,
+# #                 ymax=np.max(resonance_graph[: int(be_voltagesteps) // 2]),
+# #                 linestyle="--",
+# #                 color="r",
+# #             )
+# #             ax[1].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
+# #             ax[1].set_xlim(
+# #                 self.dataset.be_center_frequency - self.dataset.be_bandwidth -
+# #                 self.dataset.be_bandwidth * 0.25,
+# #                 self.dataset.be_center_frequency + self.dataset.be_bandwidth +
+# #                 self.dataset.be_bandwidth * 0.25,
+# #             )
 
-#             # saves the figure
-#             self.printing.savefig(
-#                 fig, filename, tight_layout=False)
+# #             # manually set the x limits
+# #             x_start = 120
+# #             x_end = 140
 
-#         def SHO_hist(self, filename="Figure_3_SHO_fit_results_before_scaling", data_type=None):
+# #             # plots the hysteresis waveform and zooms in
+# #             ax[2].plot(self.dataset.hysteresis_waveform)
+# #             ax_new = fig.add_axes([0.52, 0.6, 0.3/5.5, 0.25])
+# #             ax_new.plot(np.repeat(self.dataset.hysteresis_waveform, 2))
+# #             ax_new.set_xlim(x_start, x_end)
+# #             ax_new.set_ylim(0, 15)
+# #             ax_new.set_xticks(np.linspace(x_start, x_end, 6))
+# #             ax_new.set_xticklabels([60, 62, 64, 66, 68, 70])
+# #             fig.add_artist(
+# #                 ConnectionPatch(
+# #                     xyA=(x_start // 2,
+# #                          self.dataset.hysteresis_waveform[x_start // 2]),
+# #                     coordsA=ax[2].transData,
+# #                     xyB=(105, 16),
+# #                     coordsB=ax[2].transData,
+# #                     color="green",
+# #                 )
+# #             )
+# #             fig.add_artist(
+# #                 ConnectionPatch(
+# #                     xyA=(x_end // 2,
+# #                          self.dataset.hysteresis_waveform[x_end // 2]),
+# #                     coordsA=ax[2].transData,
+# #                     xyB=(105, 4.5),
+# #                     coordsB=ax[2].transData,
+# #                     color="green",
+# #                 )
+# #             )
+# #             ax[2].set_xlabel("Voltage Steps")
+# #             ax[2].set_ylabel("Voltage (V)")
 
-#             if data_type == 'scaled':
-#                 postfix = '_scaled'
-#             else:
-#                 postfix = ''
+# #             # plots the magnitude spectrum for and phase for the selected pixel and time step
+# #             ax[3].plot(
+# #                 original_x,
+# #                 self.dataset.get_spectra(
+# #                     self.dataset.magnitude_spectrum_amplitude, pixel, voltagestep),
+# #             )
+# #             ax[3].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
+# #             ax2 = ax[3].twinx()
+# #             ax2.plot(
+# #                 original_x,
+# #                 self.dataset.get_spectra(
+# #                     self.dataset.magnitude_spectrum_phase, pixel, voltagestep),
+# #                 "r+",
+# #             )
+# #             ax2.set(xlabel="Frequency (Hz)", ylabel="Phase (rad)")
 
-#             # check distributions of each parameter before and after scaling
-#             fig, axs = layout_fig(4, 4, figsize=(20, 4))
+# #             # plots the real and imaginary components for the selected pixel and time step
+# #             ax[4].plot(original_x, self.dataset.get_spectra(
+# #                 self.dataset.complex_spectrum_real, pixel, voltagestep), label="Real")
+# #             ax[4].set(xlabel="Frequency (Hz)", ylabel="Real (Arb. U.)")
+# #             ax3 = ax[4].twinx()
+# #             ax3.plot(
+# #                 original_x, self.dataset.get_spectra(
+# #                     self.dataset.complex_spectrum_imag, pixel, voltagestep), 'r', label="Imaginary")
+# #             ax3.set(xlabel="Frequency (Hz)", ylabel="Imag (Arb. U.)")
 
-#             for ax, label in zip(axs.flat, self.labels):
-#                 data = getattr(self.dataset, label['attr'] + postfix)
-#                 if label['attr'] == "SHO_fit_phase" and self.shift is not None and postfix == "":
-#                     data = self.shift_phase(data)
+# #             # saves the figure
+# #             self.printing.savefig(
+# #                 fig, filename, tight_layout=False)
 
-#                 ax.hist(data.flatten(), 100)
-#                 ax.set(xlabel=label['y_label'], ylabel="counts")
-#                 ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
+# #         def SHO_hist(self, filename="Figure_3_SHO_fit_results_before_scaling", data_type=None):
 
-#             plt.tight_layout()
+# #             if data_type == 'scaled':
+# #                 postfix = '_scaled'
+# #             else:
+# #                 postfix = ''
 
-#             self.printing.savefig(fig, filename)
+# #             # check distributions of each parameter before and after scaling
+# #             fig, axs = layout_fig(4, 4, figsize=(20, 4))
 
-#         def SHO_loops(self, pix=None, filename="Figure_2_random_SHO_fit_results"):
-#             if pix is None:
-#                 # selects a random pixel to plot
-#                 pix = np.random.randint(0, 3600)
+# #             for ax, label in zip(axs.flat, self.labels):
+# #                 data = getattr(self.dataset, label['attr'] + postfix)
+# #                 if label['attr'] == "SHO_fit_phase" and self.shift is not None and postfix == "":
+# #                     data = self.shift_phase(data)
 
-#             # plots the SHO fit results for the selected pixel
-#             fig, ax = layout_fig(4, 4, figsize=(30, 6))
+# #                 ax.hist(data.flatten(), 100)
+# #                 ax.set(xlabel=label['y_label'], ylabel="counts")
+# #                 ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
 
-#             for ax, label in zip(ax, self.labels):
+# #             plt.tight_layout()
 
-#                 data = getattr(
-#                     self.dataset, label['attr'])[pix, :]
+# #             self.printing.savefig(fig, filename)
 
-#                 if label['attr'] == "SHO_fit_phase" and self.shift is not None:
-#                     data = self.shift_phase(data)
+# #         def SHO_loops(self, pix=None, filename="Figure_2_random_SHO_fit_results"):
+# #             if pix is None:
+# #                 # selects a random pixel to plot
+# #                 pix = np.random.randint(0, 3600)
 
-#                 ax.plot(self.dataset.dc_voltage, data)
-#                 ax.set_title(label['title'])
-#                 ax.set_ylabel(label['y_label'])
+# #             # plots the SHO fit results for the selected pixel
+# #             fig, ax = layout_fig(4, 4, figsize=(30, 6))
 
-#             fig.tight_layout()
-#             self.printing.savefig(fig, filename)
+# #             for ax, label in zip(ax, self.labels):
 
-#         def shift_phase(self, phase, shift_=None):
+# #                 data = getattr(
+# #                     self.dataset, label['attr'])[pix, :]
 
-#             if shift_ is None:
-#                 shift = self.shift
-#             else:
-#                 shift = shift_
+# #                 if label['attr'] == "SHO_fit_phase" and self.shift is not None:
+# #                     data = self.shift_phase(data)
 
-#             phase_ = phase.copy()
-#             phase_ += np.pi
-#             phase_[phase_ <= shift] += 2 *\
-#                 np.pi  # shift phase values greater than pi
-#             return phase_ - shift - np.pi
+# #                 ax.plot(self.dataset.dc_voltage, data)
+# #                 ax.set_title(label['title'])
+# #                 ax.set_ylabel(label['y_label'])
 
-#         def raw_data(self,
-#                      original,
-#                      predict,
-#                      predict_label=None,
-#                      filename=None):
+# #             fig.tight_layout()
+# #             self.printing.savefig(fig, filename)
 
-#             if predict_label is not None:
-#                 predict_label = ' ' + predict_label
+# #         def shift_phase(self, phase, shift_=None):
 
-#             if len(original) == len(self.dataset.wvec_freq):
-#                 original_x = self.dataset.wvec_freq
-#             elif len(original) == len(original_x):
-#                 original_x = self.dataset.frequency_bins
-#             else:
-#                 raise ValueError(
-#                     "original data must be the same length as the frequency bins or the resampled frequency bins")
+# #             if shift_ is None:
+# #                 shift = self.shift
+# #             else:
+# #                 shift = shift_
 
-#             # plot real and imaginary components of resampled data
-#             fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(14, 6))
+# #             phase_ = phase.copy()
+# #             phase_ += np.pi
+# #             phase_[phase_ <= shift] += 2 *\
+# #                 np.pi  # shift phase values greater than pi
+# #             return phase_ - shift - np.pi
 
-#             def plot_curve(axs, x, y, label, color, key=''):
-#                 axs.plot(
-#                     x,
-#                     y,
-#                     key,
-#                     label=label,
-#                     color=color,
-#                 )
+# #         def raw_data(self,
+# #                      original,
+# #                      predict,
+# #                      predict_label=None,
+# #                      filename=None):
 
-#             plot_curve(axs[0], original_x,
-#                        np.abs(original),
-#                        "amplitude", 'b')
+# #             if predict_label is not None:
+# #                 predict_label = ' ' + predict_label
 
-#             plot_curve(axs[0], self.dataset.wvec_freq,
-#                        np.abs(predict),
-#                        f"amplitude {predict_label}", 'b', key='o')
+# #             if len(original) == len(self.dataset.wvec_freq):
+# #                 original_x = self.dataset.wvec_freq
+# #             elif len(original) == len(original_x):
+# #                 original_x = self.dataset.frequency_bins
+# #             else:
+# #                 raise ValueError(
+# #                     "original data must be the same length as the frequency bins or the resampled frequency bins")
 
-#             axs[0].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
+# #             # plot real and imaginary components of resampled data
+# #             fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(14, 6))
 
-#             ax2 = axs[0].twinx()
+# #             def plot_curve(axs, x, y, label, color, key=''):
+# #                 axs.plot(
+# #                     x,
+# #                     y,
+# #                     key,
+# #                     label=label,
+# #                     color=color,
+# #                 )
 
-#             plot_curve(ax2, original_x,
-#                        np.angle(original),
-#                        label="phase", color='r', key='s')
+# #             plot_curve(axs[0], original_x,
+# #                        np.abs(original),
+# #                        "amplitude", 'b')
 
-#             plot_curve(ax2, self.dataset.wvec_freq,
-#                        np.angle(predict),
-#                        label=f"phase {predict_label}", color='r')
+# #             plot_curve(axs[0], self.dataset.wvec_freq,
+# #                        np.abs(predict),
+# #                        f"amplitude {predict_label}", 'b', key='o')
 
-#             ax2.set(xlabel="Frequency (Hz)", ylabel="Phase (rad)")
+# #             axs[0].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
 
-#             plot_curve(axs[1], original_x,
-#                        np.real(original),
-#                        "real", 'b', key='o')
+# #             ax2 = axs[0].twinx()
 
-#             plot_curve(axs[1], self.dataset.wvec_freq,
-#                        np.real(predict),
-#                        f"real {predict_label}", 'b')
+# #             plot_curve(ax2, original_x,
+# #                        np.angle(original),
+# #                        label="phase", color='r', key='s')
 
-#             axs[1].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
+# #             plot_curve(ax2, self.dataset.wvec_freq,
+# #                        np.angle(predict),
+# #                        label=f"phase {predict_label}", color='r')
 
-#             ax3 = axs[1].twinx()
+# #             ax2.set(xlabel="Frequency (Hz)", ylabel="Phase (rad)")
 
-#             plot_curve(ax3, original_x,
-#                        np.imag(original),
-#                        label="imaginary",
-#                        color='r', key='s')
+# #             plot_curve(axs[1], original_x,
+# #                        np.real(original),
+# #                        "real", 'b', key='o')
 
-#             plot_curve(ax3, self.dataset.wvec_freq,
-#                        np.imag(predict),
-#                        label=f"imaginary {predict_label}", color='r')
+# #             plot_curve(axs[1], self.dataset.wvec_freq,
+# #                        np.real(predict),
+# #                        f"real {predict_label}", 'b')
 
-#             ax3.set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
+# #             axs[1].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
 
-#             fig.legend(bbox_to_anchor=(1.16, 0.93),
-#                        loc="upper right", borderaxespad=0.0)
-#             if filename is not None:
-#                 self.dataset.printing.savefig(fig, filename)
+# #             ax3 = axs[1].twinx()
 
-#         def raw_resampled_data(self, filename="Figure_4_raw_and_resampled_raw_data"):
+# #             plot_curve(ax3, original_x,
+# #                        np.imag(original),
+# #                        label="imaginary",
+# #                        color='r', key='s')
 
-#             # Select a random point and time step to plot
-#             pixel = np.random.randint(0, self.dataset.num_pix)
-#             voltagestep = np.random.randint(self.dataset.voltage_steps)
+# #             plot_curve(ax3, self.dataset.wvec_freq,
+# #                        np.imag(predict),
+# #                        label=f"imaginary {predict_label}", color='r')
 
-#             self.raw_data(self.dataset.raw_data.reshape(self.dataset.num_pix, -1, self.dataset.num_bins)[pixel, voltagestep],
-#                           self.dataset.raw_data_resampled[pixel, voltagestep],
-#                           predict_label=' resampled',
-#                           filename=filename)
+# #             ax3.set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
+
+# #             fig.legend(bbox_to_anchor=(1.16, 0.93),
+# #                        loc="upper right", borderaxespad=0.0)
+# #             if filename is not None:
+# #                 self.dataset.printing.savefig(fig, filename)
+
+# #         def raw_resampled_data(self, filename="Figure_4_raw_and_resampled_raw_data"):
+
+# #             # Select a random point and time step to plot
+# #             pixel = np.random.randint(0, self.dataset.num_pix)
+# #             voltagestep = np.random.randint(self.dataset.voltage_steps)
+
+# #             self.raw_data(self.dataset.raw_data.reshape(self.dataset.num_pix, -1, self.dataset.num_bins)[pixel, voltagestep],
+# #                           self.dataset.raw_data_resampled[pixel, voltagestep],
+# #                           predict_label=' resampled',
+# #                           filename=filename)

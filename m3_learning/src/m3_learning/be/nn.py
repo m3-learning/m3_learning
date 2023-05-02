@@ -331,25 +331,28 @@ class SHO_Model(AE_Fitter_SHO):
                 data = np.array([tensor.numpy() for tensor in data])
                 
             data = np.array(data)
-                 
+            
+            # data is in the form for [channels, batch, voltage]
+            
+            
+            # if listed in pixels flatten the pixel dimension     
             if np.ndim(data) == 4:
                 data = data.reshape(data.shape[0], -1, data.shape[3])
                 
+            # this makes sure the index is the first channel
+            # this makes sense when taking the mean     
             data =  np.swapaxes(data, 0, 1)    
             return data
 
         true = type_conversion(true)
         prediction = type_conversion(prediction)
-        
-        print(f"shaper = {true.shape}")
 
         errors = np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
-        
-        print(f"errors = {errors.shape}")
-        
+                
         index = np.argsort(errors)
 
         if curves:
+            # true will be in the form [ranked error, channel, timestep]
             return index, errors[index], true[index], prediction[index]
 
         return index, errors[index]
