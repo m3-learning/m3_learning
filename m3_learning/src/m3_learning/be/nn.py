@@ -324,28 +324,18 @@ class SHO_Model(AE_Fitter_SHO):
     @staticmethod
     def mse_rankings(true, prediction, curves=False):
         
-        def type_conversion(data):            
-            if isinstance(data[0], torch.Tensor):
-                data = [tensor.numpy() for tensor in data]
-            if isinstance(data[0], torch.Tensor):
-                data = np.array([tensor.numpy() for tensor in data])
+        def type_conversion(data):  
+            
+            data = np.array(data)   
+            data = np.rollaxis(data, 0,data.ndim-1)       
                 
-            data = np.array(data)
-            
-            # data is in the form for [channels, batch, voltage]
-            
-            
-            # if listed in pixels flatten the pixel dimension     
-            if np.ndim(data) == 4:
-                data = data.reshape(data.shape[0], -1, data.shape[3])
-                
-            # this makes sure the index is the first channel
-            # this makes sense when taking the mean     
-            data =  np.swapaxes(data, 0, 1)    
             return data
+
 
         true = type_conversion(true)
         prediction = type_conversion(prediction)
+        
+        print(true.shape, prediction.shape)
 
         errors = np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
                 
@@ -378,12 +368,18 @@ class SHO_Model(AE_Fitter_SHO):
         end_index = start_index + n
 
         ind = np.hstack(
-            (index[:n], index[start_index:end_index], index[-n:]))
+            (index[:n], index[start_index:end_index], index[-n:])).flatten().astype(int)
         mse = np.hstack(
             (mse[:n], mse[start_index:end_index], mse[-n:]))
+        
+        print(d1.shape)
+        d1 = np.hstack(
+            (d1[:n], d1[start_index:end_index], d1[-n:]))
+        d2 = np.hstack(
+            (d2[:n], d2[start_index:end_index], d2[-n:]))
 
         #return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
-        return ind, mse, d1[ind], d2[ind]
+        return ind, mse, d1, d2
 
 
 # def SHO_fit_func_nn(paramss,
