@@ -194,17 +194,17 @@ class Viz:
                 "original data must be the same length as the frequency bins or the resampled frequency bins")
         return x
 
-    def get_voltagestep(self, voltagestep):
-        if voltagestep is None:
+    def get_voltagestep(self, voltage_step):
+        if voltage_step is None:
 
             if self.dataset.measurement_state == 'on' or self.dataset.measurement_state == 'off':
-                voltagestep = np.random.randint(
+                voltage_step = np.random.randint(
                     0, self.dataset.voltage_steps // 2)
             else:
-                voltagestep = np.random.randint(0, self.dataset.voltage_steps)
-        return voltagestep
+                voltage_step = np.random.randint(0, self.dataset.voltage_steps)
+        return voltage_step
 
-    def fit_tester(self, true, predict, pixel=None, voltagestep=None, **kwargs):
+    def fit_tester(self, true, predict, pixel=None, voltage_step=None, **kwargs):
 
         # if a pixel is not provided it will select a random pixel
         if pixel is None:
@@ -213,15 +213,15 @@ class Viz:
             pixel = np.random.randint(0, self.dataset.num_pix)
 
         # gets the voltagestep with consideration of the current state
-        voltagestep = self.get_voltagestep(voltagestep)
+        voltage_step = self.get_voltagestep(voltage_step)
 
-        params = self.dataset.SHO_LSQF(pixel=pixel, voltage_step=voltagestep)
+        params = self.dataset.SHO_LSQF(pixel=pixel, voltage_step=voltage_step)
 
         self.raw_data_comparison(
-            true, predict, pixel=pixel, voltagestep=voltagestep, fit_results=params, **kwargs)
+            true, predict, pixel=pixel, voltage_step=voltage_step, fit_results=params, **kwargs)
 
     def nn_checker(self, state, filename=None,
-                   pixel=None, voltagestep=None, legend=True, **kwargs):
+                   pixel=None, voltage_step=None, legend=True, **kwargs):
 
         # if a pixel is not provided it will select a random pixel
         if pixel is None:
@@ -230,11 +230,11 @@ class Viz:
             pixel = np.random.randint(0, self.dataset.num_pix)
 
         # gets the voltagestep with consideration of the current state
-        voltagestep = self.get_voltagestep(voltagestep)
+        voltage_step = self.get_voltagestep(voltage_step)
 
         self.set_attributes(**state)
 
-        data = self.dataset.raw_spectra(pixel=pixel, voltage_step=voltagestep)
+        data = self.dataset.raw_spectra(pixel=pixel, voltage_step=voltage_step)
 
         # plot real and imaginary components of resampled data
         fig = plt.figure(figsize=(3, 1.25), layout='compressed')
@@ -242,7 +242,7 @@ class Viz:
 
         self.dataset.raw_format = "complex"
 
-        x, data = self._get_data(pixel, voltagestep, **kwargs)
+        data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
 
         axs.plot(x, data[0].flatten(), 'k',
                  label=self.dataset.label + " Real")
@@ -270,22 +270,22 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
 
-    def _get_data(self, pixel, voltagestep, **kwargs):
+    # def _get_data(self, pixel, voltagestep, **kwargs):
 
-        data = self.dataset.raw_spectra(pixel=pixel,
-                                        voltage_step=voltagestep,
-                                        **kwargs)
+    #     data = self.dataset.raw_spectra(pixel=pixel,
+    #                                     voltage_step=voltagestep,
+    #                                     **kwargs)
 
-        # get the correct frequency
-        x = self.get_freq_values(data[0])
-        return x, data
+    #     # get the correct frequency
+    #     x = self.get_freq_values(data[0])
+    #     return x, data
 
     def raw_data_comparison(self,
                             true,
                             predict=None,
                             filename=None,
                             pixel=None,
-                            voltagestep=None,
+                            voltage_step=None,
                             legend=True,
                             **kwargs):
 
@@ -301,12 +301,12 @@ class Viz:
             pixel = np.random.randint(0, self.dataset.num_pix)
 
         # gets the voltagestep with consideration of the current state
-        voltagestep = self.get_voltagestep(voltagestep)
+        voltage_step = self.get_voltagestep(voltage_step)
 
         # sets the dataset state to grab the magnitude spectrum
         self.dataset.raw_format = "magnitude spectrum"
 
-        x, data = self._get_data(pixel, voltagestep, **kwargs)
+        data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
 
         axs[0].plot(x, data[0].flatten(), 'b',
                     label=self.dataset.label + " Amplitude")
@@ -316,7 +316,7 @@ class Viz:
 
         if predict is not None:
             self.set_attributes(**predict)
-            x, data = self._get_data(pixel, voltagestep)
+            data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
             axs[0].plot(x, data[0].flatten(), 'bo',
                         label=self.dataset.label + " Amplitude")
             ax1.plot(x, data[1].flatten(), 'ro',
@@ -329,7 +329,7 @@ class Viz:
 
         self.dataset.raw_format = "complex"
 
-        x, data = self._get_data(pixel, voltagestep, **kwargs)
+        data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
 
         axs[1].plot(x, data[0].flatten(), 'k',
                     label=self.dataset.label + " Real")
@@ -342,7 +342,7 @@ class Viz:
 
         if predict is not None:
             self.set_attributes(**predict)
-            x, data = self._get_data(pixel, voltagestep)
+            data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
             axs[1].plot(x, data[0].flatten(), 'ko',
                         label=self.dataset.label + " Real")
             ax2.plot(x, data[1].flatten(), 'gs',
@@ -408,12 +408,12 @@ class Viz:
                     pixel = np.random.randint(0, self.dataset.num_pix)
 
                 # gets the voltagestep with consideration of the current state
-                voltagestep = self.get_voltagestep(voltagestep)
+                voltage_step = self.get_voltagestep(voltage_step)
 
                 # gets the data based on a specific pixel and voltagestep
-                x, data = self._get_data(pixel, voltagestep, **kwargs)
+                data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
 
-                SHO_results = self.dataset.SHO_LSQF(pixel, voltagestep)
+                SHO_results = self.dataset.SHO_LSQF(pixel, voltage_step)
 
         # if a smaller manual dataset is provided it will use that
         if data is not None:
@@ -590,30 +590,35 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
 
-    def validate_nn_best_median_worst(self, raw_state,
-                                      X_data, model=None,
+    def validate_nn_best_median_worst(self, true_state,
+                                      prediction = None, model=None,
                                       out_state=None, 
                                       n=1, **kwargs):
 
-        self.set_attributes(**raw_state)
+        if type(true_state) is dict:
 
+            self.set_attributes(**true_state)
+            
+            # the data must be scaled to rank the results
+            self.dataset.scaled = True
+
+            true, x1 = self.dataset.raw_spectra(frequency = True)
+            
         # holds the raw state
         current_state = self.dataset.get_state
 
-        # sets the phase shift to zero for parameters
-        # This is important if doing the fits because the fits will be wrong if the phase is shifted.
-        self.dataset.NN_phase_shift = 0
-
-        # the data must be scaled to rank the results
-        self.dataset.scaled = True
-
-        true = self.dataset.raw_spectra()
-
         if model is not None:
-            pred_data, scaled_params, params = model.predict(X_data)
+            
+            # sets the phase shift to zero for parameters
+            # This is important if doing the fits because the fits will be wrong if the phase is shifted.
+            self.dataset.NN_phase_shift = 0 
+            
+            data = self.dataset.to_nn(true)
+            
+            pred_data, scaled_params, params = model.predict(data)
 
-        prediction = self.dataset.raw_spectra(fit_results=params)
-        
+            prediction, x2 = self.dataset.raw_spectra(fit_results=params, frequency = True)
+                                
         # this must take the scaled data
         index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
 
@@ -626,25 +631,22 @@ class Viz:
         label = ["real", "imaginary"]
         
         if out_state is not None:
-            if "measurement_state" in out_state.keys():
+            if "measurement state" in out_state.keys():
                 if out_state["measurement_state"] == "magnitude spectrum":
                     d1 = convert_to_mag(d1)
                     d2 = convert_to_mag(d2)
-                    labels = ["Magnitude Spectrum", "Phase"]
+                    labels = ["Amplitude", "Phase"]
             elif "scaled" in out_state.keys():
                 if out_state["scaled"] == False:
                     d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
                     d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
                     label = ["Scaled " + s for s in label]
                  
-        
                 
         fig, ax = subfigures(3, 2, gaps=(.8, .9), size=(1.25, 1.25))
-        
-        x1 = self.get_freq_values(d1[0][1])
-        x2 = self.get_freq_values(d2[0][1])
 
-        ax.reverse()
+        
+        print(d1[0].shape)
         
         for i, (true, prediction) in enumerate(zip(d1, d2)):
     
@@ -662,9 +664,10 @@ class Viz:
             
             ax_.set_xlabel("Frequency (Hz)")
 
-            if out_state is not None:
-                ax_.set_ylabel("Amplitude (Arb. U.)")
-                ax1.set_ylabel("Phase (rad)")
+            if "measurement state" in out_state.keys():
+                if out_state["measurement_state"] == "magnitude spectrum":
+                    ax_.set_ylabel("Amplitude (Arb. U.)")
+                    ax1.set_ylabel("Phase (rad)")
             else:
                 ax_.set_ylabel("Real (Arb. U.)")
                 ax1.set_ylabel("Imag (Arb. U.)") 

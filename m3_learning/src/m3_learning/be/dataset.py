@@ -391,7 +391,7 @@ class BE_Dataset:
     @staticmethod
     def is_complex(data):
         data = data[0]
-        
+
         if type(data) == torch.Tensor:
             complex_ = data.is_complex()
 
@@ -545,7 +545,7 @@ class BE_Dataset:
 
             return data
 
-    def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_="numpy"):
+    def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_="numpy", frequency=False):
         """Raw spectra"""
         with h5py.File(self.dataset, "r+") as h5_f:
 
@@ -553,11 +553,10 @@ class BE_Dataset:
 
             if self.resampled:
                 bins = self.resample_bins
-                frequency_bins = resample(self.frequency_bin,
-                                          self.resampled_bins)
+                frequency_bins = self.get_freq_values(bins)
             else:
-                frequency_bins = self.frequency_bin
                 bins = self.num_bins
+                frequency_bins = self.get_freq_values(bins)
 
             if fit_results is None:
                 if self.resampled:
@@ -575,18 +574,10 @@ class BE_Dataset:
                 # reshapes the parameters for fitting functions
                 params = torch.tensor(fit_results.reshape(-1, 4))
 
-                # # have to do the inverse transform before fitting if the SHO params are scaled
-                # if self.scaled:
-                #     params = self.SHO_scaler.inverse_transform(
-                #         params.reshape(-1, 4))
-                #     params = torch.tensor(params)
-
                 data = eval(
                     f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)")
 
-                data = data.reshape(*params_shape[:-1], -1)
-
-            data_shape = data.shape
+                data = self.shaper(data, pixel, voltage_step)
 
             # does not sample if just a pixel is returned
             if pixel is None or voltage_step is None:
@@ -601,19 +592,80 @@ class BE_Dataset:
             if self.raw_format == 'complex':
                 # computes the scaler on the raw data
                 if self.scaled:
-                    print(data.shape)
                     data = self.raw_data_scaler.transform(
-                        data.reshape(-1, bins)).reshape(data_shape)
+                        data.reshape(-1, bins))
+
+                data = self.shaper(data, pixel, voltage_step)
+
                 data = [np.real(data), np.imag(data)]
+                
             elif self.raw_format == "magnitude spectrum":
+
+                data = self.shaper(data, pixel, voltage_step)
+
                 data = [np.abs(data), np.angle(data)]
 
-                # if a tensor converts to a numpy array
-                try:
-                    data[0] = data[0].numpy()
-                except:
-                    pass
-            return data
+            # if a tensor converts to a numpy array
+            try:
+                data[0] = data[0].numpy()
+                data[1] = data[1].numpy()
+            except:
+                pass
+
+            if frequency:
+                return data, frequency_bins
+            else:
+                return data
+
+    def get_freq_values(self, data):
+
+        try:
+            data = data.flatten()
+        except:
+            pass
+
+        if np.isscalar(data):
+            length = data
+        else: 
+            length = len(data)
+                        
+        if length == self.resampled_bins:
+            x = resample(self.frequency_bin,
+                         self.resampled_bins)
+        elif length == len(self.frequency_bin):
+            x = self.frequency_bin
+        else:
+            raise ValueError(
+                "original data must be the same length as the frequency bins or the resampled frequency bins")
+        return x
+
+    def shaper(self, data, pixel = None, voltage_steps = None):
+        
+        # reshapes if you just grab a pixel.
+        if pixel is not None:
+            try:
+                num_pix = len(pixel)
+            except: 
+                num_pix = 1
+        else:
+            num_pix = self.num_pix
+            
+        if voltage_steps is not None:
+            try:                 
+                voltage_steps = len(voltage_steps)
+            except:
+                voltage_steps = 1 
+        else:
+            voltage_steps = self.voltage_steps
+        
+        """Reshapes the data to the correct output shape"""
+        if self.output_shape == "pixels":
+            data = data.reshape(num_pix, voltage_steps, -1)
+        elif self.output_shape == "index":
+            data = data.reshape(num_pix * voltage_steps, -1)
+        else:
+            raise ValueError("output_shape must be either 'pixel' or 'index'")
+        return data
 
     def set_raw_data_resampler(self,
                                basepath="Measurement_000/Channel_000",
@@ -646,8 +698,8 @@ class BE_Dataset:
                   LSQF Phase Shift = {self.LSQF_phase_shift}
                   NN Phase Shift = {self.NN_phase_shift}
                   ''')
-    
-    @property    
+
+    @property
     def get_state(self):
         return {'resampled': self.resampled,
                 'raw_format': self.raw_format,
@@ -669,7 +721,20 @@ class BE_Dataset:
         self.scaled = scaled
 
         # gets the raw spectra
-        real, imag = self.raw_spectra()
+        data = self.raw_spectra()
+
+        x_data = self.to_nn(data)
+
+        # gets the SHO fit results these values are scaled
+        y_data = self.SHO_fit_results().reshape(-1, 4)
+
+        y_data = torch.tensor(y_data, dtype=torch.float32)
+
+        return x_data, y_data
+
+    def to_nn(self, data):
+
+        real, imag = data
 
         # reshapes the data to be samples x timesteps
         real = real.reshape(-1, self.resample_bins)
@@ -680,12 +745,7 @@ class BE_Dataset:
 
         x_data = torch.tensor(x_data, dtype=torch.float32)
 
-        # gets the SHO fit results these values are scaled
-        y_data = self.SHO_fit_results().reshape(-1, 4)
-
-        y_data = torch.tensor(y_data, dtype=torch.float32)
-
-        return x_data, y_data
+        return x_data
 
     def test_train_split_(self, test_size=0.2, random_state=42, resampled=True, scaled=True, shuffle=False):
 
