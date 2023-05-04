@@ -332,11 +332,11 @@ class SHO_Model(AE_Fitter_SHO):
             return data
 
 
+        print(f"this thing {true[0].shape}")
+
         true = type_conversion(true)
         prediction = type_conversion(prediction)
         
-        print(true.shape, prediction.shape)
-
         errors = np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
                 
         index = np.argsort(errors)
@@ -372,11 +372,10 @@ class SHO_Model(AE_Fitter_SHO):
         mse = np.hstack(
             (mse[:n], mse[start_index:end_index], mse[-n:]))
         
-        print(d1.shape)
-        d1 = np.hstack(
-            (d1[:n], d1[start_index:end_index], d1[-n:]))
-        d2 = np.hstack(
-            (d2[:n], d2[start_index:end_index], d2[-n:]))
+        d1 = np.stack(
+            (d1[:n], d1[start_index:end_index], d1[-n:])).squeeze()
+        d2 = np.stack(
+            (d2[:n], d2[start_index:end_index], d2[-n:])).squeeze()
 
         #return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
         return ind, mse, d1, d2
