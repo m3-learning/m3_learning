@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from m3_learning.be.nn import SHO_fit_func_nn
 
 
+
 def resample(y, num_points, axis=0):
    # Get the shape of the input array
     shape = y.shape
@@ -548,6 +549,8 @@ class BE_Dataset:
     def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_="numpy", frequency=False):
         """Raw spectra"""
         with h5py.File(self.dataset, "r+") as h5_f:
+            
+            shaper_=True
 
             voltage_step = self.measurement_state_voltage(voltage_step)
 
@@ -576,32 +579,42 @@ class BE_Dataset:
 
                 data = eval(
                     f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)")
+                
+                # checks if the full dataset was used and thus the data can be reshaped
+                if bins*self.num_pix*self.voltage_steps*2 == len(data.flatten()):
+                    pass
+                else: 
+                    shaper_ = False
 
-                data = self.shaper(data, pixel, voltage_step)
+                if shaper_:
+                    data = self.shaper(data, pixel, voltage_step)
 
-            # does not sample if just a pixel is returned
-            if pixel is None or voltage_step is None:
-                # only does this if getting the full dataset, will reduce to off and on state
-                if self.measurement_state == 'all':
-                    data = data
-                elif self.measurement_state == 'on':
-                    data = data[:, 1::2, :]
-                elif self.measurement_state == 'off':
-                    data = data[:, ::2, :]
+            if shaper_:
+                # does not sample if just a pixel is returned
+                if pixel is None or voltage_step is None:
+                    # only does this if getting the full dataset, will reduce to off and on state
+                    if self.measurement_state == 'all':
+                        data = data
+                    elif self.measurement_state == 'on':
+                        data = data[:, 1::2, :]
+                    elif self.measurement_state == 'off':
+                        data = data[:, ::2, :]
 
             if self.raw_format == 'complex':
                 # computes the scaler on the raw data
                 if self.scaled:
                     data = self.raw_data_scaler.transform(
                         data.reshape(-1, bins))
-
-                data = self.shaper(data, pixel, voltage_step)
+                
+                if shaper_:
+                    data = self.shaper(data, pixel, voltage_step)
 
                 data = [np.real(data), np.imag(data)]
                 
             elif self.raw_format == "magnitude spectrum":
 
-                data = self.shaper(data, pixel, voltage_step)
+                if shaper_:
+                    data = self.shaper(data, pixel, voltage_step)
 
                 data = [np.abs(data), np.angle(data)]
 
@@ -623,23 +636,24 @@ class BE_Dataset:
             data = data.flatten()
         except:
             pass
-
-        if np.isscalar(data):
+        
+        
+        if np.isscalar(data) or len(data) == 1:
             length = data
         else: 
             length = len(data)
-                        
+        
         if length == self.resampled_bins:
             x = resample(self.frequency_bin,
                          self.resampled_bins)
-        elif length == len(self.frequency_bin):
+        elif length == self.num_bins:
             x = self.frequency_bin
         else:
             raise ValueError(
                 "original data must be the same length as the frequency bins or the resampled frequency bins")
         return x
 
-    def shaper(self, data, pixel = None, voltage_steps = None):
+    def shaper(self, data, pixel = None, voltage_steps = None, length = None ):
         
         # reshapes if you just grab a pixel.
         if pixel is not None:
@@ -733,12 +747,20 @@ class BE_Dataset:
         return x_data, y_data
 
     def to_nn(self, data):
+        
+        if type(data) == torch.Tensor:
+            return data
+        
+        if self.resampled:
+            bins = self.resample_bins
+        else: 
+            bins = self.num_bins    
 
         real, imag = data
 
         # reshapes the data to be samples x timesteps
-        real = real.reshape(-1, self.resample_bins)
-        imag = imag.reshape(-1, self.resample_bins)
+        real = real.reshape(-1, bins)
+        imag = imag.reshape(-1, bins)
 
         # stacks the real and imaginary components
         x_data = np.stack((real, imag), axis=2)

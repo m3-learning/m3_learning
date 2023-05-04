@@ -242,7 +242,8 @@ class Viz:
 
         self.dataset.raw_format = "complex"
 
-        data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
+        data, x = self.dataset.raw_spectra(
+            pixel, voltage_step, frequency=True, **kwargs)
 
         axs.plot(x, data[0].flatten(), 'k',
                  label=self.dataset.label + " Real")
@@ -306,7 +307,8 @@ class Viz:
         # sets the dataset state to grab the magnitude spectrum
         self.dataset.raw_format = "magnitude spectrum"
 
-        data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
+        data, x = self.dataset.raw_spectra(
+            pixel, voltage_step, frequency=True, **kwargs)
 
         axs[0].plot(x, data[0].flatten(), 'b',
                     label=self.dataset.label + " Amplitude")
@@ -316,7 +318,8 @@ class Viz:
 
         if predict is not None:
             self.set_attributes(**predict)
-            data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
+            data, x = self.dataset.raw_spectra(
+                pixel, voltage_step, frequency=True, **kwargs)
             axs[0].plot(x, data[0].flatten(), 'bo',
                         label=self.dataset.label + " Amplitude")
             ax1.plot(x, data[1].flatten(), 'ro',
@@ -329,7 +332,8 @@ class Viz:
 
         self.dataset.raw_format = "complex"
 
-        data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
+        data, x = self.dataset.raw_spectra(
+            pixel, voltage_step, frequency=True, **kwargs)
 
         axs[1].plot(x, data[0].flatten(), 'k',
                     label=self.dataset.label + " Real")
@@ -342,7 +346,8 @@ class Viz:
 
         if predict is not None:
             self.set_attributes(**predict)
-            data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
+            data, x = self.dataset.raw_spectra(
+                pixel, voltage_step, frequency=True, **kwargs)
             axs[1].plot(x, data[0].flatten(), 'ko',
                         label=self.dataset.label + " Real")
             ax2.plot(x, data[1].flatten(), 'gs',
@@ -411,7 +416,8 @@ class Viz:
                 voltage_step = self.get_voltagestep(voltage_step)
 
                 # gets the data based on a specific pixel and voltagestep
-                data, x = self.dataset.raw_spectra(pixel, voltage_step, frequency = True, **kwargs)
+                data, x = self.dataset.raw_spectra(
+                    pixel, voltage_step, frequency=True, **kwargs)
 
                 SHO_results = self.dataset.SHO_LSQF(pixel, voltage_step)
 
@@ -531,8 +537,6 @@ class Viz:
         mse = np.hstack(
             (mse[0:3], mse[len(index)//2-1:len(index)//2+2], mse[-3:]))
 
-        print(ind)
-
         x = self.get_freq_values(true[0, :, 0])
 
         # unscales the data
@@ -590,35 +594,51 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
 
-    def validate_nn_best_median_worst(self, true_state,
-                                      prediction = None, model=None,
-                                      out_state=None, 
-                                      n=1, **kwargs):
+    def get_best_median_worst(self, 
+                              true_state,
+                              prediction=None, 
+                            model=None,
+                              out_state=None,
+                              n=1, **kwargs):
 
         if type(true_state) is dict:
 
             self.set_attributes(**true_state)
-            
+
             # the data must be scaled to rank the results
             self.dataset.scaled = True
 
-            true, x1 = self.dataset.raw_spectra(frequency = True)
+            true, x1 = self.dataset.raw_spectra(frequency=True)
+        
+        # condition if x_data is passed
+        else:
             
+            # converts to a standard form which is a list 
+            true = self.dataset.to_real_imag(true_state)
+            
+            # converts to numpy from tensor
+            true = [data.numpy() for data in true]
+            
+            # gets the frequency values
+            if true[0].ndim == 2:
+                x1 = self.dataset.get_freq_values(true[0].shape[1])
+                                
         # holds the raw state
         current_state = self.dataset.get_state
 
         if model is not None:
-            
+
             # sets the phase shift to zero for parameters
             # This is important if doing the fits because the fits will be wrong if the phase is shifted.
-            self.dataset.NN_phase_shift = 0 
-            
+            self.dataset.NN_phase_shift = 0
+
             data = self.dataset.to_nn(true)
-            
+
             pred_data, scaled_params, params = model.predict(data)
 
-            prediction, x2 = self.dataset.raw_spectra(fit_results=params, frequency = True)
-                                
+            prediction, x2 = self.dataset.raw_spectra(
+                fit_results=params, frequency=True)      
+            
         # this must take the scaled data
         index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
 
@@ -626,10 +646,9 @@ class Viz:
             data = self.dataset.to_complex(data)
             data = self.dataset.raw_data_scaler.inverse_transform(data)
             return self.dataset.to_magnitude(data)
-        
-        
-        label = ["real", "imaginary"]
-        
+
+        labels = ["real", "imaginary"]
+
         if out_state is not None:
             if "measurement state" in out_state.keys():
                 if out_state["measurement_state"] == "magnitude spectrum":
@@ -640,17 +659,40 @@ class Viz:
                 if out_state["scaled"] == False:
                     d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
                     d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
-                    label = ["Scaled " + s for s in label]
-                 
-                
-        fig, ax = subfigures(3, 2, gaps=(.8, .9), size=(1.25, 1.25))
+                    labels = ["Scaled " + s for s in labels]
+                    
+        self.set_attributes(**current_state)
 
+        return d1, d2, x1, x2, labels, index1, mse1
+
+    def bmw_nn(self, true_state,
+               prediction=None,
+               model=None,
+               out_state=None,
+               n=1, 
+               gaps = (.8,.33),
+               size = (1.25,1.25),
+               filename = None, 
+               **kwargs):
+ 
         
-        print(d1[0].shape)
+        d1, d2, x1, x2, label, index1, mse1 = self.get_best_median_worst(
+                                            true_state,
+                                            prediction=prediction, 
+                                            model=model,
+                                            out_state=out_state,
+                                            n=n,
+                                            **kwargs)
+
+        print(d1.shape, d2.shape)
+
+        fig, ax = subfigures(1, 3, gaps=gaps, size=size)
         
-        for i, (true, prediction) in enumerate(zip(d1, d2)):
-    
-            ax_ = ax[i*2]
+        ax.reverse()
+        
+        for i, (true, prediction, error) in enumerate(zip(d1, d2, mse1)):
+
+            ax_ = ax[i]
             ax_.plot(x2, prediction[0].flatten(), 'b',
                      label=f"NN {label[0]}")
             ax1 = ax_.twinx()
@@ -661,8 +703,15 @@ class Viz:
                      label=f"Raw {label[0]}")
             ax1.plot(x1, true[1].flatten(), 'ro',
                      label=f"Raw {label[1]}")
-            
+
             ax_.set_xlabel("Frequency (Hz)")
+            
+            
+            # Position text at (1 inch, 2 inches) from the bottom left corner of the figure
+            text_position_in_inches = (
+                -1*(gaps[0] + size[0])*((2-i) % 3) + size[0]/2, (gaps[1] + size[1])*(1.25-i//3-1.25) - gaps[1])
+            text = f'MSE: {error:0.4f}'
+            add_text_to_figure(fig, text, text_position_in_inches, fontsize=6, ha='center')
 
             if "measurement state" in out_state.keys():
                 if out_state["measurement_state"] == "magnitude spectrum":
@@ -670,11 +719,21 @@ class Viz:
                     ax1.set_ylabel("Phase (rad)")
             else:
                 ax_.set_ylabel("Real (Arb. U.)")
-                ax1.set_ylabel("Imag (Arb. U.)") 
+                ax1.set_ylabel("Imag (Arb. U.)")
+                
+        # add a legend just for the last one
+        lines, labels = ax_.get_legend_handles_labels()
+        lines2, labels2 = ax1.get_legend_handles_labels()
+        ax_.legend(lines + lines2, labels + labels2, loc='upper right')
         
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename, style='b')
+                
+
         if "returns" in kwargs.keys():
             if kwargs["returns"] == True:
-                return d1, d2, index1, mse1        
+                return d1, d2, index1, mse1
 
 
 #     def best_median_worst_fit_comparison(self):
