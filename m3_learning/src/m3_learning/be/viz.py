@@ -271,15 +271,6 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
 
-    # def _get_data(self, pixel, voltagestep, **kwargs):
-
-    #     data = self.dataset.raw_spectra(pixel=pixel,
-    #                                     voltage_step=voltagestep,
-    #                                     **kwargs)
-
-    #     # get the correct frequency
-    #     x = self.get_freq_values(data[0])
-    #     return x, data
 
     def raw_data_comparison(self,
                             true,
@@ -664,6 +655,13 @@ class Viz:
         self.set_attributes(**current_state)
 
         return d1, d2, x1, x2, labels, index1, mse1
+    
+    def bmw_compare(self, 
+                    true_state, 
+                    predictions):
+        pass
+        
+        
 
     def bmw_nn(self, true_state,
                prediction=None,
