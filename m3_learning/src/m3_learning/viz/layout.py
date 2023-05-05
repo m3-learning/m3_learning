@@ -524,6 +524,15 @@ def add_scalebar(ax, scalebar_):
 
 
 def get_axis_pos_inches(fig, ax):
+    """gets the position of the axis in inches
+
+    Args:
+        fig (matplotlib.Figure): figure where the plot is located
+        ax (maplotlib.axes): axes on the plot
+
+    Returns:
+        array: the position of the center bottom of the axis in inches
+    """    
 
     # Get the bounding box of the axis in normalized coordinates (relative to the figure)
     axis_bbox = ax.get_position()
@@ -532,6 +541,7 @@ def get_axis_pos_inches(fig, ax):
     center_bottom_x = axis_bbox.x0 + axis_bbox.width / 2
     center_bottom_y = axis_bbox.y0
     
+    # Convert the center bottom point from normalized coordinates to display units
     center_bottom_display = fig.transFigure.transform((center_bottom_x, center_bottom_y))
 
     return center_bottom_display/fig.dpi
