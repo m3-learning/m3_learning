@@ -39,6 +39,8 @@ def subfigures(nrows, ncols, size = (1.25, 1.25), gaps = (.8, .33), figsize=None
                 size[0]/figsize[0], size[1]/figsize[1]] #transforms.Bbox.from_bounds()
         ax.append(fig.add_axes(pos1))
         
+    ax.reverse()
+        
     return fig, ax
 
 def add_text_to_figure(fig, text, text_position_in_inches, **kwargs):
