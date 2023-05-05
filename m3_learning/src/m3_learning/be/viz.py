@@ -588,9 +588,10 @@ class Viz:
     def get_best_median_worst(self,
                               true_state,
                               prediction=None,
-                              model=None,
                               out_state=None,
-                              n=1, **kwargs):
+                              n=1, 
+                              SHO_results = False, 
+                              **kwargs):
 
         if type(true_state) is dict:
 
@@ -617,7 +618,9 @@ class Viz:
         # holds the raw state
         current_state = self.dataset.get_state
 
-        if model is not None:
+        if isinstance(prediction, SHO_Model):
+            
+            fitter = "NN"
 
             # sets the phase shift to zero for parameters
             # This is important if doing the fits because the fits will be wrong if the phase is shifted.
@@ -625,27 +628,54 @@ class Viz:
 
             data = self.dataset.to_nn(true)
 
-            pred_data, scaled_params, params = model.predict(data)
+            pred_data, scaled_params, params = prediction.predict(data)
 
+            self.dataset.scaled = True
+            
             prediction, x2 = self.dataset.raw_spectra(
                 fit_results=params, frequency=True)
+            
+        elif isinstance(prediction, dict):
+            
+            fitter = prediction["fitter"]
+            
+            exec(f"self.dataset.{prediction['fitter']}_phase_shift =0")
+            
+            self.dataset.scaled = False
+            
+            params = self.dataset.SHO_fit_results()
+            
+            self.dataset.scaled = True
+            
+            prediction, x2 = self.dataset.raw_spectra(
+                    fit_results=params, frequency=True)
+            
+        if "x2" not in locals():
+            
+            # if you do not use the model will run the 
+            x2 = self.dataset.get_freq_values(prediction[0].shape[1])
 
         # this must take the scaled data
         index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
 
         def convert_to_mag(data):
-            data = self.dataset.to_complex(data)
+            data = self.dataset.to_complex(data, axis = 1)
             data = self.dataset.raw_data_scaler.inverse_transform(data)
-            return self.dataset.to_magnitude(data)
-
+            data = self.dataset.to_magnitude(data)
+            data = np.array(data)   
+            data = np.rollaxis(data, 0,data.ndim-1) 
+            return data
+        
         labels = ["real", "imaginary"]
 
         if out_state is not None:
-            if "measurement state" in out_state.keys():
+            
+            if "measurement_state" in out_state.keys():
                 if out_state["measurement_state"] == "magnitude spectrum":
                     d1 = convert_to_mag(d1)
                     d2 = convert_to_mag(d2)
                     labels = ["Amplitude", "Phase"]
+            
             elif "scaled" in out_state.keys():
                 if out_state["scaled"] == False:
                     d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
@@ -654,7 +684,14 @@ class Viz:
 
         self.set_attributes(**current_state)
 
-        return d1, d2, x1, x2, labels, index1, mse1
+        # if statement that will return the values for the SHO Results
+        if SHO_results:
+            if eval(f"self.dataset.{fitter}_phase_shift") is not None:
+                params[:, 3] = eval(
+                    f"self.dataset.shift_phase(params[:, 3], self.dataset.{fitter}_phase_shift)")
+            return (d1, d2, x1, x2, labels, index1, mse1, params)
+        else:
+            return (d1, d2, x1, x2, labels, index1, mse1)
     
     def bmw_compare(self, 
                     true_state, 
@@ -706,13 +743,14 @@ class Viz:
             add_text_to_figure(
                 fig, text, text_position_in_inches, fontsize=6, ha='center')
 
-            if "measurement state" in out_state.keys():
-                if out_state["measurement_state"] == "magnitude spectrum":
-                    ax_.set_ylabel("Amplitude (Arb. U.)")
-                    ax1.set_ylabel("Phase (rad)")
-            else:
-                ax_.set_ylabel("Real (Arb. U.)")
-                ax1.set_ylabel("Imag (Arb. U.)")
+            if out_state is not None:
+                if "measurement state" in out_state.keys():
+                    if out_state["measurement_state"] == "magnitude spectrum":
+                        ax_.set_ylabel("Amplitude (Arb. U.)")
+                        ax1.set_ylabel("Phase (rad)")
+                else:
+                    ax_.set_ylabel("Real (Arb. U.)")
+                    ax1.set_ylabel("Imag (Arb. U.)")
 
         # add a legend just for the last one
         lines, labels = ax_.get_legend_handles_labels()

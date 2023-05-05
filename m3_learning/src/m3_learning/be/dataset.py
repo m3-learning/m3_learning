@@ -413,7 +413,7 @@ class BE_Dataset:
         return [np.real(data), np.imag(data)]
 
     @staticmethod
-    def to_complex(data):
+    def to_complex(data, axis = None):
         if type(data) == list:
             data = np.array(data)
 
@@ -422,12 +422,19 @@ class BE_Dataset:
 
         if type(data) == list:
             data = np.array(data)
-        elif data.ndim == 1:
-            return data[0] + 1j * data[1]
-        elif data.ndim == 2:
-            return data[:, 0] + 1j * data[:, 1]
-        elif data.ndim == 3:
-            return data[:, :, 0] + 1j * data[:, :, 1]
+        
+        if axis is not None:
+            pass
+        else:
+            axis = data.ndim - 1
+    
+        # elif data.ndim == 1:
+        #     return data[0] + 1j * data[1]
+        # elif data.ndim == 2:
+        #     return data[:, 0] + 1j * data[:, 1]
+        # elif data.ndim == 3:
+        #     return data[:, :, 0] + 1j * data[:, :, 1]
+        return np.take(data, 0, axis = axis) + 1j * np.take(data, 1, axis = axis)
 
     def set_SHO_LSQF(self, basepath="Raw_Data-SHO_Fit_000", save_loc='SHO_LSQF'):
         """Utility function to convert the SHO fit results to an array
