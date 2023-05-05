@@ -149,7 +149,9 @@ class AE_Fitter_SHO(nn.Module):
         if self.training == True:
             return out, unscaled_param
         if self.training == False:
-            return out, embedding, unscaled_param
+            # this is a scaling that includes the corrections for shifts in the data 
+            embeddings = (unscaled_param.cuda() - torch.tensor(self.dataset.SHO_scaler.mean_).cuda())/torch.tensor(self.dataset.SHO_scaler.var_ ** 0.5).cuda()
+            return out, embeddings, unscaled_param
 
 
 class SHO_Model(AE_Fitter_SHO):
@@ -287,7 +289,8 @@ class SHO_Model(AE_Fitter_SHO):
         # preallocate the predictions
         num_elements = len(dataloader.dataset)
         num_batches = len(dataloader)
-        predictions = torch.zeros_like(torch.tensor(data))
+        data = torch.tensor(data)
+        predictions = torch.zeros_like(data.clone().detach())
         params_scaled = torch.zeros((data.shape[0], 4))
         params = torch.zeros((data.shape[0], 4))
 
@@ -330,9 +333,6 @@ class SHO_Model(AE_Fitter_SHO):
             data = np.rollaxis(data, 0,data.ndim-1)       
                 
             return data
-
-
-        print(f"this thing {true[0].shape}")
 
         true = type_conversion(true)
         prediction = type_conversion(prediction)
@@ -379,6 +379,29 @@ class SHO_Model(AE_Fitter_SHO):
 
         #return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
         return ind, mse, d1, d2
+    
+    def print_mse(self, data, labels):
+        """prints the MSE of the model
+
+        Args:
+            data (tuple): tuple of datasets to calculate the MSE
+            labels (list): List of strings with the names of the datasets
+        """        
+        
+        # instantiates the MSE loss function
+        mse = nn.MSELoss()
+        
+        # loops around the dataset and labels and prints the MSE for each
+        for data, label in zip(data, labels):
+            
+            # computes the predictions
+            pred_data, scaled_param, parm = self.predict(data)
+            
+            # Computes the MSE
+            out = mse(data, pred_data)
+            
+            # prints the MSE
+            print(f"{label} Mean Squared Error: {out:0.4f}")
 
 
 # def SHO_fit_func_nn(paramss,
