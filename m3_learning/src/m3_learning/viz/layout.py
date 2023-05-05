@@ -330,8 +330,34 @@ def labelfigs(axes, number = None, style="wb",
     if number is not None:
         text += number_to_letters(number) 
 
-    text_ = axes.text(x, y, text, va='center', ha='center', 
-            path_effects=[patheffects.withStroke(linewidth=formatting["linewidth"], foreground="k")],
+        # allows for double letter index
+        else:
+            axes.text(
+                x_value,
+                y_value,
+                string.ascii_lowercase[0] +
+                string.ascii_lowercase[number - 26],
+                size=size,
+                weight="bold",
+                ha=text_pos,
+                va="center",
+                color=formatting["color"],
+                path_effects=[
+                    patheffects.withStroke(
+                        linewidth=formatting["linewidth"], foreground="k"
+                    )
+                ],
+            )
+    else:
+        # writes the text to the figure
+        axes.text(
+            x_value,
+            y_value,
+            string_add,
+            size=size,
+            weight="bold",
+            ha=text_pos,
+            va="center",
             color=formatting["color"],
                 )
     

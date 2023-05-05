@@ -79,7 +79,6 @@ class RHEED_parameter_dataset():
         self._sample_name = sample_name
         
     @property
-    @property
     def data_info(self):
         with h5py.File(self.path, mode='r') as h5:
             for g in h5.keys():
@@ -97,7 +96,6 @@ class RHEED_parameter_dataset():
 
 
     def growth_dataset(self, growth, spot, metric, index = None):
-    def growth_dataset(self, growth, spot, metric, index = None):
         '''
         Options for metric: "raw_image", "reconstructed_image", "img_sum", "img_max", "img_mean", 
         "img_rec_sum", "img_rec_max", "img_rec_mean", "height", "x", "y", "width_x", "width_y".
@@ -107,9 +105,7 @@ class RHEED_parameter_dataset():
         with h5py.File(self.path, mode='r') as h5:
             if index is None:
                 return np.array(h5[growth][spot][metric])
-                return np.array(h5[growth][spot][metric])
             else:
-                if index<0 or index>h5[growth][spot][metric].shape[0]:
                 if index<0 or index>h5[growth][spot][metric].shape[0]:
                     raise ValueError('Index out of range')
                 else:
