@@ -1,4 +1,3 @@
-# import h5py
 import numpy as np
 from scipy import signal
 from scipy.optimize import curve_fit
@@ -6,31 +5,6 @@ from scipy.stats import zscore
 from scipy.signal import savgol_filter
 from sklearn.decomposition import PCA
 from m3_learning.RHEED.Viz import Viz
-# import matplotlib.pyplot as plt
-
-# import sys
-# sys.path.append('./')
-# from Viz import plot_curve, show_grid_plots
-# from Viz import draw_background_colors, plot_scatter, plot_lineplot, set_labels, label_curves
-
-def load_curve(h5_para_file, growth, spot, metric, camera_freq, x_start):
-    h5_para = h5py.File(h5_para_file, mode='r')
-    curve_y = np.array(h5_para[growth][spot][metric])
-    curve_x = np.linspace(x_start, x_start+len(curve_y)-1, len(curve_y))/camera_freq
-    return curve_x, curve_y
-
-# def load_multiple_curves(h5_para_file, growth_dict, spot, metric, camera_freq=500, x_start=0, interval=200):
-#     x_all, y_all = [], []
-#     for growth_name in list(growth_dict.keys()):
-#         curve_x, curve_y = load_curve(h5_para_file, growth_name, spot, metric, camera_freq, x_start)
-#         x_start = x_start+len(curve_y)+interval
-#         x_all.append(curve_x)
-#         y_all.append(curve_y)
-        
-#     x_all = np.concatenate(x_all)
-#     y_all = np.concatenate(y_all)
-#     return x_all, y_all
-
 
 def detect_peaks(curve_x, curve_y, camera_freq, laser_freq, step_size, prominence):
     dist = int(camera_freq/laser_freq*0.6)
