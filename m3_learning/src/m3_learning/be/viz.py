@@ -651,13 +651,59 @@ class Viz:
                     fit_results=params, frequency=True)
             
         if "x2" not in locals():
-            
+
             # if you do not use the model will run the 
             x2 = self.dataset.get_freq_values(prediction[0].shape[1])
 
         # this must take the scaled data
         index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
+        
+        print(d1.shape)
+        
+        
+        d1, labels = self.out_state(d1, out_state)
+        d2, labels = self.out_state(d2, out_state)
+    
 
+        # def convert_to_mag(data):
+        #     data = self.dataset.to_complex(data, axis = 1)
+        #     data = self.dataset.raw_data_scaler.inverse_transform(data)
+        #     data = self.dataset.to_magnitude(data)
+        #     data = np.array(data)   
+        #     data = np.rollaxis(data, 0,data.ndim-1) 
+        #     return data
+        
+        # labels = ["real", "imaginary"]
+
+        # if out_state is not None:
+            
+        #     if "measurement_state" in out_state.keys():
+        #         if out_state["measurement_state"] == "magnitude spectrum":
+        #             d1 = convert_to_mag(d1)
+        #             d2 = convert_to_mag(d2)
+        #             labels = ["Amplitude", "Phase"]
+            
+        #     elif "scaled" in out_state.keys():
+        #         if out_state["scaled"] == False:
+        #             d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
+        #             d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
+        #             labels = ["Scaled " + s for s in labels]
+
+        # self.set_attributes(**current_state)
+
+        # if statement that will return the values for the SHO Results
+        if SHO_results:
+            if eval(f"self.dataset.{fitter}_phase_shift") is not None:
+                params[:, 3] = eval(
+                    f"self.dataset.shift_phase(params[:, 3], self.dataset.{fitter}_phase_shift)")
+            return (d1, d2, x1, x2, labels, index1, mse1, params)
+        else:
+            return (d1, d2, x1, x2, labels, index1, mse1)
+        
+    def out_state(self, data, out_state):
+        # holds the raw state
+        current_state = self.dataset.get_state
+        
         def convert_to_mag(data):
             data = self.dataset.to_complex(data, axis = 1)
             data = self.dataset.raw_data_scaler.inverse_transform(data)
@@ -672,26 +718,17 @@ class Viz:
             
             if "measurement_state" in out_state.keys():
                 if out_state["measurement_state"] == "magnitude spectrum":
-                    d1 = convert_to_mag(d1)
-                    d2 = convert_to_mag(d2)
+                    data = convert_to_mag(data)
                     labels = ["Amplitude", "Phase"]
             
             elif "scaled" in out_state.keys():
                 if out_state["scaled"] == False:
-                    d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
-                    d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
+                    data = self.dataset.raw_data_scaler.inverse_transform(data)
                     labels = ["Scaled " + s for s in labels]
 
         self.set_attributes(**current_state)
-
-        # if statement that will return the values for the SHO Results
-        if SHO_results:
-            if eval(f"self.dataset.{fitter}_phase_shift") is not None:
-                params[:, 3] = eval(
-                    f"self.dataset.shift_phase(params[:, 3], self.dataset.{fitter}_phase_shift)")
-            return (d1, d2, x1, x2, labels, index1, mse1, params)
-        else:
-            return (d1, d2, x1, x2, labels, index1, mse1)
+        
+        return data, labels
     
     def bmw_compare(self, 
                     true_state, 
