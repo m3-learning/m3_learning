@@ -1,10 +1,10 @@
 import numpy as np
-from m3_learning.viz.layout import layout_fig, inset_connector, add_box, subfigures, add_text_to_figure
+from m3_learning.viz.layout import layout_fig, inset_connector, add_box, subfigures, add_text_to_figure, get_axis_pos_inches
 from scipy.signal import resample
 from scipy import fftpack
 import matplotlib.pyplot as plt
 from m3_learning.be.nn import SHO_Model
-
+import m3_learning
 
 class Viz:
 
@@ -618,7 +618,7 @@ class Viz:
         # holds the raw state
         current_state = self.dataset.get_state
 
-        if isinstance(prediction, SHO_Model):
+        if isinstance(prediction, m3_learning.be.nn.SHO_Model):
             
             fitter = "NN"
 
@@ -657,39 +657,10 @@ class Viz:
 
         # this must take the scaled data
         index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
-        
-        print(d1.shape)
-        
+
         
         d1, labels = self.out_state(d1, out_state)
         d2, labels = self.out_state(d2, out_state)
-    
-
-        # def convert_to_mag(data):
-        #     data = self.dataset.to_complex(data, axis = 1)
-        #     data = self.dataset.raw_data_scaler.inverse_transform(data)
-        #     data = self.dataset.to_magnitude(data)
-        #     data = np.array(data)   
-        #     data = np.rollaxis(data, 0,data.ndim-1) 
-        #     return data
-        
-        # labels = ["real", "imaginary"]
-
-        # if out_state is not None:
-            
-        #     if "measurement_state" in out_state.keys():
-        #         if out_state["measurement_state"] == "magnitude spectrum":
-        #             d1 = convert_to_mag(d1)
-        #             d2 = convert_to_mag(d2)
-        #             labels = ["Amplitude", "Phase"]
-            
-        #     elif "scaled" in out_state.keys():
-        #         if out_state["scaled"] == False:
-        #             d1 = self.dataset.raw_data_scaler.inverse_transform(d1)
-        #             d2 = self.dataset.raw_data_scaler.inverse_transform(d2)
-        #             labels = ["Scaled " + s for s in labels]
-
-        # self.set_attributes(**current_state)
 
         # if statement that will return the values for the SHO Results
         if SHO_results:
@@ -730,12 +701,145 @@ class Viz:
         
         return data, labels
     
-    def bmw_compare(self, 
-                    true_state, 
-                    predictions):
-        pass
+    def get_mse_index(self, index, model):
         
+        # gets the raw data
+        data, _ = self.dataset.NN_data()
         
+        data = data[[index]]
+        
+        if isinstance(model, m3_learning.be.nn.SHO_Model):
+            
+            predictions, params_scaled, params = model.predict(data)
+        
+        print(data.shape, predictions.shape)          
+        return SHO_Model.MSE(data.detach().numpy(), predictions.detach().numpy())
+    
+    def SHO_Fit_comparison(self, data, gaps=(.8, .9), 
+                       size=(1.25, 1.25), model_comparison = None, 
+                       out_state = None, 
+                       filename = None, **kwargs):
+    
+        # gets the number of fits
+        num_fits = len(data)
+        
+        # builds the subfigures
+        fig, ax = subfigures(3, num_fits, gaps=gaps, size=size)
+        
+        # loops around the number of fits, and the data
+        for step, data in enumerate(data):
+            
+            #unpack the data
+            d1, d2, x1, x2, label, index1, mse1, params = data
+            
+            for bmw, (true, prediction, error, SHO, index1) in enumerate(zip(d1, d2, mse1, params, index1)):
+                i = bmw * num_fits + step
+                
+                ax_ = ax[i]
+                ax_.plot(x2, prediction[0].flatten(), 'b',
+                            label=f"NN {label[0]}")
+                ax1 = ax_.twinx()
+                ax1.plot(x2, prediction[1].flatten(), 'r',
+                            label=f"NN {label[1]}]")
+
+                ax_.plot(x1, true[0].flatten(), 'bo',
+                            label=f"Raw {label[0]}")
+                ax1.plot(x1, true[1].flatten(), 'ro',
+                            label=f"Raw {label[1]}")
+                            
+                if model_comparison is not None:
+                    if model_comparison[step] is not None:
+                    
+                        pred_data, params, labels = self.get_SHO_params(index1, 
+                                                                model = model_comparison[step], 
+                                                                out_state = out_state)
+                        
+                        error_compare = SHO_Model.mse(true, pred_data)
+                        
+                        print(error_compare)
+                        
+                        ax_.plot(x2, pred_data.squeeze()[0].flatten(), 'g',
+                                label=f"NN {labels[0]}")
+                        ax1.plot(x2, pred_data.squeeze()[1].flatten(), 'y',
+                                label=f"NN {labels[1]}]")
+
+                ax_.set_xlabel("Frequency (Hz)")
+                
+                center = get_axis_pos_inches(fig, ax[i])
+                
+                text_position_in_inches = (center[0], center[1] - 0.33)
+                
+                text = f'MSE: {error:0.4f}'
+                add_text_to_figure(
+                    fig, text, text_position_in_inches, fontsize=6, ha='center')
+
+                if out_state is not None:
+                    if "measurement_state" in out_state.keys():
+                        if out_state["measurement_state"] == "magnitude spectrum":
+                            ax_.set_ylabel("Amplitude (Arb. U.)")
+                            ax1.set_ylabel("Phase (rad)")
+                    else:
+                        ax_.set_ylabel("Real (Arb. U.)")
+                        ax1.set_ylabel("Imag (Arb. U.)")
+                        
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename, label_figs=ax, style='b')
+        
+    def get_SHO_params(self, index, model, out_state):
+        """Function that gets the SHO parameters for a given index based on a specific model
+
+        Args:
+            index (list): list of indexes to get the SHO parameters for
+            model (any): model or description of model that is used to compute the SHO results. 
+            out_state (dict): dictionary that specifies the output state of the data.
+
+        Returns:
+            array, array, list: returns the output data, the SHO parameters, and the labels for the data
+        """        
+        
+    
+        pixel, voltage = np.unravel_index(index, (self.dataset.num_pix, self.dataset.voltage_steps))
+        
+        if isinstance(model, SHO_Model):
+            
+            X_data, Y_data = self.dataset.NN_data()
+            
+            X_data = X_data[[index]]
+            
+            pred_data, scaled_param, params = model.predict(X_data)
+            
+            pred_data = np.array(pred_data)
+            
+
+        if isinstance(model, dict):
+            
+            # holds the raw state
+            current_state = self.dataset.get_state
+            
+            params_shifted = self.dataset.SHO_fit_results()
+                
+            exec(f"self.dataset.{model['fitter']}_phase_shift =0")
+            
+            self.dataset.scaled = False
+            
+            params = self.dataset.SHO_fit_results()
+            
+            self.dataset.scaled = True
+            
+            pred_data = self.dataset.raw_spectra(
+                    fit_results=params)
+            
+            pred_data = pred_data[[index]]
+            params = params_shifted[[index]]
+            
+            self.set_attributes(**current_state)
+            
+        pred_data = np.swapaxes(pred_data, 1, 2)
+                    
+        pred_data, labels =  self.out_state(pred_data, out_state)
+            
+        return pred_data, params, labels  
 
     def bmw_nn(self, true_state,
                prediction=None,
