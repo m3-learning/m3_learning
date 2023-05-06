@@ -289,7 +289,7 @@ class SHO_Model(AE_Fitter_SHO):
         # preallocate the predictions
         num_elements = len(dataloader.dataset)
         num_batches = len(dataloader)
-        data = torch.tensor(data)
+        data = data.clone().detach().requires_grad_(True)
         predictions = torch.zeros_like(data.clone().detach())
         params_scaled = torch.zeros((data.shape[0], 4))
         params = torch.zeros((data.shape[0], 4))
@@ -337,7 +337,7 @@ class SHO_Model(AE_Fitter_SHO):
         true = type_conversion(true)
         prediction = type_conversion(prediction)
         
-        errors = np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
+        errors = SHO_Model.MSE(prediction, true)
                 
         index = np.argsort(errors)
 
@@ -346,6 +346,11 @@ class SHO_Model(AE_Fitter_SHO):
             return index, errors[index], true[index], prediction[index]
 
         return index, errors[index]
+    
+    @staticmethod
+    def MSE(true, prediction):
+        return np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
+
 
     @staticmethod
     def get_rankings(raw_data, pred, n=1, curves=True):

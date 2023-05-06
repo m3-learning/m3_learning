@@ -22,6 +22,8 @@ from m3_learning.be.processing import convert_amp_phase
 from sklearn.model_selection import train_test_split
 from m3_learning.be.nn import SHO_fit_func_nn
 
+import m3_learning
+
 
 
 def resample(y, num_points, axis=0):
@@ -841,6 +843,8 @@ class BE_Dataset:
             imag = self.imag_scaler.inverse_transform(imag)
 
             return real + 1j*imag
+        
+    
 
 
 # from m3_learning.util.h5_util import print_tree
