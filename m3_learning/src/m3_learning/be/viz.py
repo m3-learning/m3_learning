@@ -754,7 +754,7 @@ class Viz:
                                                                 model = model_comparison[step], 
                                                                 out_state = out_state)
                         
-                        error_compare = SHO_Model.mse(true, pred_data)
+                        error_compare = self.get_mse_index(index1, model_comparison[step])
                         
                         print(error_compare)
                         
@@ -767,7 +767,7 @@ class Viz:
                 
                 center = get_axis_pos_inches(fig, ax[i])
                 
-                text_position_in_inches = (center[0], center[1] - 0.33)
+                text_position_in_inches = (center[0], center[1] - 0.4)
                 
                 text = f'MSE: {error:0.4f}'
                 add_text_to_figure(
