@@ -475,17 +475,19 @@ class BE_Dataset:
             shift = shift_
 
         if shift > 0:
-            phase_ = phase.copy()
+            phase_ = phase
             phase_ += np.pi
             phase_[phase_ <= shift] += 2 *\
                 np.pi  # shift phase values greater than pi
             return phase_ - shift - np.pi
         else:
-            phase_ = phase.copy()
+            phase_ = phase
             phase_ -= np.pi
             phase_[phase_ >= shift] -= 2 *\
                 np.pi  # shift phase values greater than pi
             return phase_ - shift + np.pi
+        
+        # removed copy TODO delete
 
     def raw_data_resampled(self, pixel=None, voltage_step=None):
         """Resampled real part of the complex data resampled"""
