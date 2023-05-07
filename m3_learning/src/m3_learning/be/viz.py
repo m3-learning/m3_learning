@@ -6,6 +6,16 @@ import matplotlib.pyplot as plt
 from m3_learning.be.nn import SHO_Model
 import m3_learning
 
+color_palette = {
+"LSQF_A" : "#003f5c",
+"LSQF_P" : "#444e86",
+"NN_A": "#955196",
+"NN_P": "#dd5182",
+"other" : "#ff6e54",
+"other_2" : "#ffa600"
+}
+
+
 class Viz:
 
     def __init__(self, dataset, Printer=None, verbose=False, labelfigs_=True):
@@ -25,6 +35,8 @@ class Viz:
                            {'title': "Phase",
                             'y_label': "Phase \n (rad)"}
                            ]
+        
+        self.color_palette = color_palette
 
     def raw_be(self,
                dataset,
@@ -922,15 +934,15 @@ class Viz:
         for i, (true, prediction, error) in enumerate(zip(d1, d2, mse1)):
 
             ax_ = ax[i]
-            ax_.plot(x2, prediction[0].flatten(), 'b',
+            ax_.plot(x2, prediction[0].flatten(), color_palette["NN_A"],
                      label=f"NN {label[0]}")
             ax1 = ax_.twinx()
-            ax1.plot(x2, prediction[1].flatten(), 'r',
+            ax1.plot(x2, prediction[1].flatten(), color_palette["NN_P"],
                      label=f"NN {label[1]}]")
 
-            ax_.plot(x1, true[0].flatten(), 'bo',
+            ax_.plot(x1, true[0].flatten(), 'o', color = color_palette["NN_A"],
                      label=f"Raw {label[0]}")
-            ax1.plot(x1, true[1].flatten(), 'ro',
+            ax1.plot(x1, true[1].flatten(), 'o', color = color_palette["NN_P"],
                      label=f"Raw {label[1]}")
 
             ax_.set_xlabel("Frequency (Hz)")
