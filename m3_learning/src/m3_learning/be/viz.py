@@ -5,6 +5,7 @@ from scipy import fftpack
 import matplotlib.pyplot as plt
 from m3_learning.be.nn import SHO_Model
 import m3_learning
+from m3_learning.util.rand_util import get_tuple_names
 
 color_palette = {
 "LSQF_A" : "#003f5c",
@@ -674,6 +675,14 @@ class Viz:
         d1, labels = self.out_state(d1, out_state)
         d2, labels = self.out_state(d2, out_state)
 
+        print(params.shape)
+        # saves just the parameters that are needed
+        params = params[index1]
+        print(params.shape)
+        
+        # resets the current state to apply the phase shifts
+        self.set_attributes(**current_state)
+        
         # if statement that will return the values for the SHO Results
         if SHO_results:
             if eval(f"self.dataset.{fitter}_phase_shift") is not None:
@@ -772,41 +781,57 @@ class Viz:
             # restores the state to the original state
             self.set_attributes(**current_state)
         
-        print(data.shape, predictions.shape)          
         return SHO_Model.MSE(data.detach().numpy(), predictions)
     
     
-    def SHO_Fit_comparison(self, data, gaps=(.8, .9), 
+    def SHO_Fit_comparison(self, 
+                           data, 
+                           names, 
+                           gaps=(.8, .9), 
                        size=(1.25, 1.25), model_comparison = None, 
                        out_state = None, 
-                       filename = None, **kwargs):
-    
+                       filename = None,
+                       display = None,
+                       **kwargs):
+            
         # gets the number of fits
         num_fits = len(data)
         
         # builds the subfigures
         fig, ax = subfigures(3, num_fits, gaps=gaps, size=size)
         
+        
         # loops around the number of fits, and the data
-        for step, data in enumerate(data):
+        for step, (data, name) in enumerate(zip(data, names)):
             
             #unpack the data
             d1, d2, x1, x2, label, index1, mse1, params = data
             
+            # loops around the datasets to compare
             for bmw, (true, prediction, error, SHO, index1) in enumerate(zip(d1, d2, mse1, params, index1)):
+                
+                #builds an empty dictionary to hold the errors, SHOs
+                errors = {}
+                SHOs = {}
+                
+                # selects the graph where the data is plot (rows, columns)
                 i = bmw * num_fits + step
                 
                 ax_ = ax[i]
-                ax_.plot(x2, prediction[0].flatten(), 'b',
-                            label=f"NN {label[0]}")
+                ax_.plot(x2, prediction[0].flatten(), color = color_palette[f"{name}_A"],
+                            label=f"{name} {label[0]}")
                 ax1 = ax_.twinx()
-                ax1.plot(x2, prediction[1].flatten(), 'r',
-                            label=f"NN {label[1]}]")
+                ax1.plot(x2, prediction[1].flatten(), color = color_palette[f"{name}_P"],
+                            label=f"{name} {label[1]}]")
 
-                ax_.plot(x1, true[0].flatten(), 'bo',
+                ax_.plot(x1, true[0].flatten(), 'o', color = color_palette["LSQF_A"],
                             label=f"Raw {label[0]}")
-                ax1.plot(x1, true[1].flatten(), 'ro',
+                ax1.plot(x1, true[1].flatten(), 'o', color = color_palette["LSQF_P"],
                             label=f"Raw {label[1]}")
+                
+                # saves error to the correct error name
+                errors[name] = error
+                SHOs[name] = SHO
                             
                 if model_comparison is not None:
                     if model_comparison[step] is not None:
@@ -815,24 +840,49 @@ class Viz:
                                                                 model = model_comparison[step], 
                                                                 out_state = out_state)
                         
-                        error_compare = self.get_mse_index(index1, model_comparison[step])
                         
-                        print(error_compare)
+                        # checks if using a neural network and saves the error
+                        if isinstance(model_comparison[step], m3_learning.be.nn.SHO_Model):
+                            
+                            # saves the color prefix
+                            color = "NN"
+                            
+                        # if the model is a dictionary then it is an LSQF model
+                        if isinstance(model_comparison[step], dict):
+                            
+                            # saves the color prefix
+                            color = "LSQF"
+                            
+                        # saves error to the correct error name
+                        errors[color]=  self.get_mse_index(index1, model_comparison[step])
+                        SHOs[color] = np.array(params).squeeze() # might need to turn this into a numpy array and squeeze it
                         
-                        ax_.plot(x2, pred_data.squeeze()[0].flatten(), 'g',
-                                label=f"NN {labels[0]}")
-                        ax1.plot(x2, pred_data.squeeze()[1].flatten(), 'y',
-                                label=f"NN {labels[1]}]")
+                        # plots the comparison graph
+                        ax_.plot(x2, pred_data.squeeze()[0].flatten(), color = color_palette[f"{color}_A"],
+                                label=f"{color} {labels[0]}")
+                        ax1.plot(x2, pred_data.squeeze()[1].flatten(), color = color_palette[f"{color}_P"],
+                                label=f"{color} {labels[1]}]")
+                        if display is None or display == "all": 
+                            error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}\n AMP - LSQF:{SHOs['LSQF'][0]:0.2e} NN:{SHOs['NN'][0]:0.2e}\n\u03C9 - LSQF: {SHOs['LSQF'][1]/1000:0.1f} NN: {SHOs['NN'][1]/1000:0.1f} Hz\nQ- LSQF: {SHOs['LSQF'][2]:0.1f} NN: {SHOs['NN'][2]:0.1f}\n\u03C6- LSQF: {SHOs['LSQF'][3]:0.2f} NN: {SHOs['NN'][3]:0.1f} rad"
+                        else:
+                            error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}"
 
+                # sets the xlabel, this is always frequency (HZ)
                 ax_.set_xlabel("Frequency (Hz)")
                 
+                # gets the axis position in inches - gets the bottom center
                 center = get_axis_pos_inches(fig, ax[i])
                 
-                text_position_in_inches = (center[0], center[1] - 0.4)
+                # selects the text position as an offset from the bottom center
+                text_position_in_inches = (center[0], center[1] - 0.33)
                 
-                text = f'MSE: {error:0.4f}'
+                if "error_string" not in locals():
+                    error_string = f'MSE: {error:0.4f}'
+                    
                 add_text_to_figure(
-                    fig, text, text_position_in_inches, fontsize=6, ha='center')
+                    fig, error_string, 
+                    text_position_in_inches, 
+                    fontsize=6, ha='center', va = 'top',)
 
                 if out_state is not None:
                     if "measurement_state" in out_state.keys():
@@ -859,10 +909,11 @@ class Viz:
             array, array, list: returns the output data, the SHO parameters, and the labels for the data
         """        
         
+        current_state = self.dataset.get_state
     
         pixel, voltage = np.unravel_index(index, (self.dataset.num_pix, self.dataset.voltage_steps))
         
-        if isinstance(model, SHO_Model):
+        if isinstance(model, m3_learning.be.nn.SHO_Model):
             
             X_data, Y_data = self.dataset.NN_data()
             
@@ -878,11 +929,11 @@ class Viz:
             # holds the raw state
             current_state = self.dataset.get_state
             
+            self.dataset.scaled = False
+            
             params_shifted = self.dataset.SHO_fit_results()
                 
             exec(f"self.dataset.{model['fitter']}_phase_shift =0")
-            
-            self.dataset.scaled = False
             
             params = self.dataset.SHO_fit_results()
             
@@ -908,6 +959,9 @@ class Viz:
         pred_data = np.swapaxes(pred_data, 1, 2)
                     
         pred_data, labels =  self.out_state(pred_data, out_state)
+        
+        # returns the state to the original state
+        self.set_attributes(**current_state)
             
         return pred_data, params, labels  
 

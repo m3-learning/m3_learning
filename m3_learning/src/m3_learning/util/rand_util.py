@@ -27,3 +27,31 @@ def set_seeds(seed=42):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+
+def get_tuple_names(data):    
+    """takes a tuple of variables and returns a list of the variable names
+
+    Args:
+        data (tuple): tuple to extract the variable names
+
+    Returns:
+        list: list of strings of the variable names
+    """    
+    
+    # names for the inner variables
+    inner_variable_names = []
+
+    # iterate over the tuple
+    for element in data:
+        
+        # iterate over the global variables
+        for inner_name, inner_value in globals().items():
+            
+            # check if the inner value is the same as the element
+            if inner_value is element:
+                
+                # check if the inner name is not element
+                if inner_name != "element":
+                    inner_variable_names.append(inner_name)
+                            
+    return inner_variable_names
