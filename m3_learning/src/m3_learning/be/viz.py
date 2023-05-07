@@ -704,16 +704,65 @@ class Viz:
     def get_mse_index(self, index, model):
         
         # gets the raw data
+        # returns the raw spectra in (samples, voltage steps, real/imaginary) 
         data, _ = self.dataset.NN_data()
         
+        # gets the index of the data selected
+        # (samples, voltage steps, real/imaginary)
         data = data[[index]]
         
         if isinstance(model, m3_learning.be.nn.SHO_Model):
             
+            # gets the predictions from the neural network
             predictions, params_scaled, params = model.predict(data)
+            
+            # detaches the tensor and converts to numpy
+            predictions = predictions.detach().numpy()
+            
+        if isinstance(model, dict):
+            
+            # holds the raw state
+            current_state = self.dataset.get_state
+            
+            # sets the phase shift to zero for the specific fitter - this is a requirement for using the fitting function                
+            exec(f"self.dataset.{model['fitter']}_phase_shift =0")
+            
+            # Ensures that we get the unscaled parameters
+            # Only the unscaled parameters can be used to calculate the raw data
+            self.dataset.scaled = False
+            
+            # Gets the parameters 
+            params = self.dataset.SHO_fit_results()
+            
+            # sets the dataset to scaled
+            # we compare the MSE using the scaled parameters
+            self.dataset.scaled = True
+            
+            # Ensures that the measurement state is complex
+            self.dataset.measurement_state = "complex"
+            
+            # This returns the raw data based on the parameters
+            # this returns a list of the real and imaginary data
+            pred_data = self.dataset.raw_spectra(
+                    fit_results=params)
+            
+            # makes the data an array
+            # (real/imaginary, samples, voltage steps)
+            pred_data = np.array(pred_data)
+            
+            # rolls the axis to (samples, voltage steps, real/imaginary)
+            pred_data = np.rollaxis(pred_data, 0, pred_data.ndim)
+            
+            # gets the index of the data selected
+            # (samples, voltage steps, real/imaginary)
+            predictions = pred_data[[index]]
+            
+            # restores the state to the original state
+            self.set_attributes(**current_state)
         
         print(data.shape, predictions.shape)          
-        return SHO_Model.MSE(data.detach().numpy(), predictions.detach().numpy())
+        return SHO_Model.MSE(data.detach().numpy(), predictions)
+    
     
     def SHO_Fit_comparison(self, data, gaps=(.8, .9), 
                        size=(1.25, 1.25), model_comparison = None, 
@@ -830,11 +879,20 @@ class Viz:
             pred_data = self.dataset.raw_spectra(
                     fit_results=params)
             
+            # output (channels, samples, voltage steps)
+            pred_data = np.array([pred_data[0], pred_data[1]])
+            
+            # output (samples, channels, voltage steps)
+            pred_data = np.swapaxes(pred_data, 0, 1)
+            
+            # output (samples, voltage steps, channels)
+            pred_data = np.swapaxes(pred_data, 1, 2)
+            
             pred_data = pred_data[[index]]
             params = params_shifted[[index]]
             
             self.set_attributes(**current_state)
-            
+        
         pred_data = np.swapaxes(pred_data, 1, 2)
                     
         pred_data, labels =  self.out_state(pred_data, out_state)

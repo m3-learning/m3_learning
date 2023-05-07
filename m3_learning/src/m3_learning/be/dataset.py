@@ -554,6 +554,10 @@ class BE_Dataset:
             if self.scaled:
                 data = self.SHO_scaler.transform(
                     data.reshape(-1, 4)).reshape(data_shape)
+            
+            # reshapes the data to be (index, SHO_params)    
+            if self.output_shape == "index":
+                return data.reshape(-1, 4)
 
             return data
 
