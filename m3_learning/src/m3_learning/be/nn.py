@@ -349,7 +349,16 @@ class SHO_Model(AE_Fitter_SHO):
     
     @staticmethod
     def MSE(true, prediction):
-        return np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
+        
+        # calculates the mse
+        mse = np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
+        
+        # converts to a scalar if there is only one value
+        if mse.shape[0] == 1:
+            return mse.item()
+        
+        
+        return mse
 
 
     @staticmethod
