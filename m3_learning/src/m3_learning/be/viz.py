@@ -708,8 +708,8 @@ class Viz:
 
         if out_state is not None:
             
-            if "measurement_state" in out_state.keys():
-                if out_state["measurement_state"] == "magnitude spectrum":
+            if "raw_format" in out_state.keys():
+                if out_state["raw_format"] == "magnitude spectrum":
                     data = convert_to_mag(data)
                     labels = ["Amplitude", "Phase"]
             
@@ -760,7 +760,7 @@ class Viz:
             self.dataset.scaled = True
             
             # Ensures that the measurement state is complex
-            self.dataset.measurement_state = "complex"
+            self.dataset.raw_format = "complex"
             
             # This returns the raw data based on the parameters
             # this returns a list of the real and imaginary data
@@ -893,8 +893,8 @@ class Viz:
                         fontsize=6, ha='center', va = 'top',)
 
                 if out_state is not None:
-                    if "measurement_state" in out_state.keys():
-                        if out_state["measurement_state"] == "magnitude spectrum":
+                    if "raw_format" in out_state.keys():
+                        if out_state["raw_format"] == "magnitude spectrum":
                             ax_.set_ylabel("Amplitude (Arb. U.)")
                             ax1.set_ylabel("Phase (rad)")
                     else:
@@ -1024,7 +1024,7 @@ class Viz:
 
             if out_state is not None:
                 if "measurement state" in out_state.keys():
-                    if out_state["measurement_state"] == "magnitude spectrum":
+                    if out_state["raw_format"] == "magnitude spectrum":
                         ax_.set_ylabel("Amplitude (Arb. U.)")
                         ax1.set_ylabel("Phase (rad)")
                 else:
