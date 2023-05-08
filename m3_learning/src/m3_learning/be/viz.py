@@ -791,11 +791,17 @@ class Viz:
                        size=(1.25, 1.25), model_comparison = None, 
                        out_state = None, 
                        filename = None,
-                       display = None,
+                       display_results = "all",
                        **kwargs):
             
         # gets the number of fits
         num_fits = len(data)
+        
+        # changes the gaps if the results are displayed
+        if display_results == "MSE":
+            gaps = (.8, .45)
+        elif display_results is None: 
+            gaps = (.8, .33)
         
         # builds the subfigures
         fig, ax = subfigures(3, num_fits, gaps=gaps, size=size)
@@ -822,7 +828,7 @@ class Viz:
                             label=f"{name} {label[0]}")
                 ax1 = ax_.twinx()
                 ax1.plot(x2, prediction[1].flatten(), color = color_palette[f"{name}_P"],
-                            label=f"{name} {label[1]}]")
+                            label=f"{name} {label[1]}")
 
                 ax_.plot(x1, true[0].flatten(), 'o', color = color_palette["LSQF_A"],
                             label=f"Raw {label[0]}")
@@ -861,28 +867,30 @@ class Viz:
                         ax_.plot(x2, pred_data.squeeze()[0].flatten(), color = color_palette[f"{color}_A"],
                                 label=f"{color} {labels[0]}")
                         ax1.plot(x2, pred_data.squeeze()[1].flatten(), color = color_palette[f"{color}_P"],
-                                label=f"{color} {labels[1]}]")
-                        if display is None or display == "all": 
+                                label=f"{color} {labels[1]}")
+                        if display_results == "all": 
                             error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}\n AMP - LSQF:{SHOs['LSQF'][0]:0.2e} NN:{SHOs['NN'][0]:0.2e}\n\u03C9 - LSQF: {SHOs['LSQF'][1]/1000:0.1f} NN: {SHOs['NN'][1]/1000:0.1f} Hz\nQ- LSQF: {SHOs['LSQF'][2]:0.1f} NN: {SHOs['NN'][2]:0.1f}\n\u03C6- LSQF: {SHOs['LSQF'][3]:0.2f} NN: {SHOs['NN'][3]:0.1f} rad"
-                        else:
+                        elif display_results == "MSE":
                             error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}"
 
                 # sets the xlabel, this is always frequency (HZ)
                 ax_.set_xlabel("Frequency (Hz)")
                 
-                # gets the axis position in inches - gets the bottom center
-                center = get_axis_pos_inches(fig, ax[i])
-                
-                # selects the text position as an offset from the bottom center
-                text_position_in_inches = (center[0], center[1] - 0.33)
-                
-                if "error_string" not in locals():
-                    error_string = f'MSE: {error:0.4f}'
+                # if wants to display the results
+                if display_results is not None:
+                    # gets the axis position in inches - gets the bottom center
+                    center = get_axis_pos_inches(fig, ax[i])
                     
-                add_text_to_figure(
-                    fig, error_string, 
-                    text_position_in_inches, 
-                    fontsize=6, ha='center', va = 'top',)
+                    # selects the text position as an offset from the bottom center
+                    text_position_in_inches = (center[0], center[1] - 0.33)
+                    
+                    if "error_string" not in locals():
+                        error_string = f'MSE: {error:0.4f}'
+                        
+                    add_text_to_figure(
+                        fig, error_string, 
+                        text_position_in_inches, 
+                        fontsize=6, ha='center', va = 'top',)
 
                 if out_state is not None:
                     if "measurement_state" in out_state.keys():
@@ -892,6 +900,12 @@ class Viz:
                     else:
                         ax_.set_ylabel("Real (Arb. U.)")
                         ax1.set_ylabel("Imag (Arb. U.)")
+                
+                if i < num_fits:        
+                    # add a legend just for the last one
+                    lines, labels = ax_.get_legend_handles_labels()
+                    lines2, labels2 = ax1.get_legend_handles_labels()
+                    ax_.legend(lines + lines2, labels + labels2, loc='upper right')
                         
         # prints the figure
         if self.Printer is not None and filename is not None:
