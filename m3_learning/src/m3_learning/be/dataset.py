@@ -578,8 +578,17 @@ class BE_Dataset:
             data = data[:, ::2, :]
             
         return data
+    
+    def get_cycle(self, data, axis = 0,  **kwargs):
+        data = np.array_split(data, self.num_cycles, axis = axis, **kwargs)
+        data = data[self.cycle -1]
+        return data 
             
-            
+    def get_measurement_cycle(self, data, cycle = None, axis = 1):
+        if cycle is not None: 
+            self.cycle = cycle
+        data = self.get_voltage_state(data)
+        return self.get_cycle(data, axis = axis)        
 
     def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_="numpy", frequency=False):
         """Raw spectra"""

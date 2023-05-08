@@ -389,7 +389,7 @@ def labelfigs(
             x_value,
             y_value,
             string_add,
-            size=14,
+            size=size,
             weight="bold",
             ha=text_pos,
             va="center",
