@@ -280,6 +280,11 @@ class BE_Dataset:
         """Number of pixels in the data"""
         with h5py.File(self.dataset, "r+") as h5_f:
             return h5_f["Measurement_000"].attrs["num_pix"]
+        
+    @property
+    def num_cycles(self):
+        with h5py.File(self.dataset, "r+") as h5_f:
+            return h5_f["Measurement_000"].attrs["VS_number_of_cycles"]
 
     @property
     def num_pix_1d(self):
@@ -560,6 +565,8 @@ class BE_Dataset:
                 return data.reshape(-1, 4)
 
             return data
+        
+        
 
     def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_="numpy", frequency=False):
         """Raw spectra"""
