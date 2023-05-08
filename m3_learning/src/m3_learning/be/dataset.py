@@ -548,13 +548,7 @@ class BE_Dataset:
 
             # does not sample if just a pixel is returned
             if pixel is None or voltage_step is None:
-                # only does this if getting the full dataset, will reduce to off and on state
-                if self.measurement_state == 'all':
-                    data = data
-                elif self.measurement_state == 'on':
-                    data = data[:, 1::2, :]
-                elif self.measurement_state == 'off':
-                    data = data[:, ::2, :]
+                data = self.get_voltage_state(data)
 
             if self.scaled:
                 data = self.SHO_scaler.transform(
@@ -566,7 +560,26 @@ class BE_Dataset:
 
             return data
         
-        
+    def get_voltage_state(self, data):
+        """function to get the voltage state of the data
+
+        Args:
+            data (any): BE data
+
+        Returns:
+            any: data with just the selected voltage state
+        """                
+        # only does this if getting the full dataset, will reduce to off and on state
+        if self.measurement_state == 'all':
+            data = data
+        elif self.measurement_state == 'on':
+            data = data[:, 1::2, :]
+        elif self.measurement_state == 'off':
+            data = data[:, ::2, :]
+            
+        return data
+            
+            
 
     def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_="numpy", frequency=False):
         """Raw spectra"""
@@ -614,13 +627,7 @@ class BE_Dataset:
             if shaper_:
                 # does not sample if just a pixel is returned
                 if pixel is None or voltage_step is None:
-                    # only does this if getting the full dataset, will reduce to off and on state
-                    if self.measurement_state == 'all':
-                        data = data
-                    elif self.measurement_state == 'on':
-                        data = data[:, 1::2, :]
-                    elif self.measurement_state == 'off':
-                        data = data[:, ::2, :]
+                    data = self.get_voltage_state(data)
 
             if self.raw_format == 'complex':
                 # computes the scaler on the raw data
