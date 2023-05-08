@@ -402,17 +402,19 @@ class SHO_Model(AE_Fitter_SHO):
             labels (list): List of strings with the names of the datasets
         """        
         
-        # instantiates the MSE loss function
-        mse = nn.MSELoss()
-        
         # loops around the dataset and labels and prints the MSE for each
         for data, label in zip(data, labels):
             
-            # computes the predictions
-            pred_data, scaled_param, parm = self.predict(data)
-            
+            if isinstance(data, torch.Tensor):
+                # computes the predictions
+                pred_data, scaled_param, parm = self.predict(data)
+            elif isinstance(data, dict):
+                pred_data, _ = self.model.dataset.get_raw_data_from_LSQF_SHO(data)
+                data, _ = self.model.dataset.NN_data()
+                pred_data = torch.Tensor(pred_data)
+                
             # Computes the MSE
-            out = mse(data, pred_data)
+            out = nn.MSELoss()(data, pred_data)
             
             # prints the MSE
             print(f"{label} Mean Squared Error: {out:0.4f}")

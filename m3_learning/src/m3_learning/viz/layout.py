@@ -545,3 +545,43 @@ def get_axis_pos_inches(fig, ax):
     center_bottom_display = fig.transFigure.transform((center_bottom_x, center_bottom_y))
 
     return center_bottom_display/fig.dpi
+
+
+class fig_dim_converter:
+    """class to convert between relative and inches dimensions of a figure
+    """    
+    
+    
+    def __init__(self, figsize):
+        """initializes the class
+
+        Args:
+            figsize (tuple): figure size in inches
+        """    
+            
+        self.fig_width = figsize[0]
+        self.fig_height = figsize[1]
+    
+    def to_inches(self, x):
+        """Converts position from relative to inches
+
+        Args:
+            x (tuple): position in relative coordinates (left, bottom, width, height)
+
+        Returns:
+            tuple: position in inches (left, bottom, width, height)
+        """        
+        
+        return (x[0] * self.fig_width, x[1] * self.fig_height, x[2] * self.fig_width, x[3] * self.fig_height)
+    
+    def to_relative(self, x):
+        """Converts position from inches to relative
+
+        Args:
+            x (tuple): position in inches (left, bottom, width, height)
+
+        Returns:
+            tuple: position in relative coordinates (left, bottom, width, height)
+        """        
+        
+        return (x[0] / self.fig_width, x[1] / self.fig_height, x[2] / self.fig_width, x[3] / self.fig_height)
