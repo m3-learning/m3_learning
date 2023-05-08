@@ -588,7 +588,45 @@ class BE_Dataset:
         if cycle is not None: 
             self.cycle = cycle
         data = self.get_voltage_state(data)
-        return self.get_cycle(data, axis = axis)        
+        return self.get_cycle(data, axis = axis)
+    
+    def get_raw_data_from_LSQF_SHO(self, model, index = None):
+        # holds the raw state
+        current_state = self.get_state
+        
+        self.scaled = False
+        
+        params_shifted = self.SHO_fit_results()
+            
+        exec(f"self.{model['fitter']}_phase_shift =0")
+        
+        params = self.SHO_fit_results()
+        
+        self.scaled = True
+        
+        pred_data = self.raw_spectra(
+                fit_results=params)
+        
+        # output (channels, samples, voltage steps)
+        pred_data = np.array([pred_data[0], pred_data[1]])
+        
+        # output (samples, channels, voltage steps)
+        pred_data = np.swapaxes(pred_data, 0, 1)
+        
+        # output (samples, voltage steps, channels)
+        pred_data = np.swapaxes(pred_data, 1, 2)
+        
+        if index is not None:
+            pred_data = pred_data[[index]]
+            params = params_shifted[[index]]
+        
+        self.set_attributes(**current_state)
+        
+        return pred_data, params
+    
+    def set_attributes(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def raw_spectra(self, pixel=None, voltage_step=None, fit_results=None, type_="numpy", frequency=False):
         """Raw spectra"""
