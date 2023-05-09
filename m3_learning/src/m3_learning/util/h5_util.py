@@ -26,7 +26,7 @@ def make_group(base, group):
         group (string): name of the 
     """
     try: 
-        base.create_group(group)
+        return base.create_group(group)
     except:
         print('could not add group - it might already exist')
     
