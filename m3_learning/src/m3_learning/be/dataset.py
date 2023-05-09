@@ -157,7 +157,9 @@ class BE_Dataset:
             except KeyError:
                 print("Dataset not found, could not be deleted")
 
-    def SHO_Fitter(self, force=False, max_cores=-1, max_mem=1024*8, dataset_name = "Raw_Data"):
+    def SHO_Fitter(self, force=False, max_cores=-1, max_mem=1024*8, 
+                   dataset_name = "Raw_Data",
+                   h5_sho_targ_grp = None):
         """Function that computes the SHO fit results
 
         Args:
@@ -186,24 +188,33 @@ class BE_Dataset:
 
         else:
             pass
-
+        
+        # splits the path and the folder name
         folder_path, h5_raw_file_name = os.path.split(h5_path)
+        
         h5_file = h5py.File(h5_path, "r+")
         print("Working on:\n" + h5_path)
 
+        # get the main dataset
         h5_main = usid.hdf_utils.find_dataset(h5_file, dataset_name)[0]
 
+        # grabs some useful parameters from the dataset
         h5_pos_inds = h5_main.h5_pos_inds
         pos_dims = h5_main.pos_dim_sizes
         pos_labels = h5_main.pos_dim_labels
         print(pos_labels, pos_dims)
 
+        # gets the measurement group name
         h5_meas_grp = h5_main.parent.parent
 
+        # gets all of the attributes of the grout
         parm_dict = sidpy.hdf_utils.get_attributes(h5_meas_grp)
 
+        # gets the data type of the dataset
         expt_type = usid.hdf_utils.get_attr(h5_file, "data_type")
+        
 
+        # code for using cKPFM Data
         is_ckpfm = expt_type == "cKPFMData"
         if is_ckpfm:
             num_write_steps = parm_dict["VS_num_DC_write_steps"]
@@ -228,7 +239,7 @@ class BE_Dataset:
         sho_fit_points = 5  # The number of data points at each step to use when fitting
         sho_override = force  # Force recompute if True
 
-        h5_sho_targ_grp = None
+        # h5_sho_targ_grp = None
         h5_sho_file_path = os.path.join(
             folder_path, h5_raw_file_name)
 
@@ -237,7 +248,12 @@ class BE_Dataset:
         if os.path.exists(h5_sho_file_path):
             f_open_mode = "r+"
         h5_sho_file = h5py.File(h5_sho_file_path, mode=f_open_mode)
-        h5_sho_targ_grp = h5_sho_file
+        
+        if h5_sho_targ_grp is None:
+            h5_sho_targ_grp = h5_sho_file
+        else: 
+            h5_sho_targ_grp = make_group(h5_file, h5_sho_targ_grp)
+
 
         sho_fitter = belib.analysis.BESHOfitter(
             h5_main, cores=max_cores, verbose=False, h5_target_group=h5_sho_targ_grp
