@@ -157,7 +157,7 @@ class BE_Dataset:
             except KeyError:
                 print("Dataset not found, could not be deleted")
 
-    def SHO_Fitter(self, force=False, max_cores=-1, max_mem=1024*8):
+    def SHO_Fitter(self, force=False, max_cores=-1, max_mem=1024*8, dataset_name = "Raw_Data"):
         """Function that computes the SHO fit results
 
         Args:
@@ -170,16 +170,19 @@ class BE_Dataset:
         # if force:
         #     self.delete(None)
 
+        # the start time of the fit
         start_time_lsqf = time.time()
 
+        # splits the directory path and the file name
         (data_dir, filename) = os.path.split(self.dataset)
+
 
         if self.dataset.endswith(".h5"):
             # No translation here
             h5_path = self.dataset
 
-            tl = belib.translators.LabViewH5Patcher()
-            tl.translate(h5_path, force_patch=force)
+            # tl = belib.translators.LabViewH5Patcher()
+            # tl.translate(h5_path, force_patch=force)
 
         else:
             pass
@@ -188,7 +191,7 @@ class BE_Dataset:
         h5_file = h5py.File(h5_path, "r+")
         print("Working on:\n" + h5_path)
 
-        h5_main = usid.hdf_utils.find_dataset(h5_file, "Raw_Data")[0]
+        h5_main = usid.hdf_utils.find_dataset(h5_file, dataset_name)[0]
 
         h5_pos_inds = h5_main.h5_pos_inds
         pos_dims = h5_main.pos_dim_sizes
