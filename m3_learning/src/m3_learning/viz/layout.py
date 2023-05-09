@@ -547,7 +547,7 @@ def get_axis_pos_inches(fig, ax):
     return center_bottom_display/fig.dpi
 
 
-class fig_dim_converter:
+class FigDimConverter:
     """class to convert between relative and inches dimensions of a figure
     """    
     
