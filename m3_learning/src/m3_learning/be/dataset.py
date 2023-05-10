@@ -391,13 +391,10 @@ class BE_Dataset:
 
     def SHO_Scaler(self,
                    save_loc='SHO_LSQF_scaled',
-                   basepath="Raw_Data-SHO_Fit_000"):
+                   dataset="Raw_Data-SHO_Fit_000"):
 
         self.SHO_scaler = StandardScaler()
-        data = self.SHO_LSQF().reshape(-1, 4)
-        data_shape = data.shape
-
-        phase_data = data[:, 3]
+        data = self.SHO_LSQF(dataset).reshape(-1, 4)
 
         self.SHO_scaler.fit(data)
 
@@ -406,17 +403,11 @@ class BE_Dataset:
         self.SHO_scaler.var_[3] = 1
         self.SHO_scaler.scale_[3] = 1
 
-        # fit_results_scaled = self.SHO_scaler.transform(
-        #     data).reshape(data_shape)
 
-        # with h5py.File(self.dataset, "r+") as h5_f:
-        #     self.data_writer(
-        #         basepath, save_loc, fit_results_scaled)
-
-    def SHO_LSQF(self, pixel=None, voltage_step=None):
+    def SHO_LSQF(self, data = "Raw_Data-SHO_Fit_000", pixel=None, voltage_step=None):
         with h5py.File(self.dataset, "r+") as h5_f:
             # dataset_ = h5_f['/Raw_Data-SHO_Fit_000/SHO_LSQF']
-            dataset_ = self.SHO_LSQF_data
+            dataset_ = self.SHO_LSQF_data[data]
 
             if pixel is not None and voltage_step is not None:
                 return dataset_[[pixel], :, :][:, [voltage_step], :]
@@ -472,7 +463,9 @@ class BE_Dataset:
         #     return data[:, :, 0] + 1j * data[:, :, 1]
         return np.take(data, 0, axis = axis) + 1j * np.take(data, 1, axis = axis)
 
-    def set_SHO_LSQF(self, basepath="Raw_Data-SHO_Fit_000", save_loc='SHO_LSQF'):
+    def set_SHO_LSQF(self, 
+                     scaler="Raw_Data-SHO_Fit_000", 
+                     save_loc='SHO_LSQF'):
         """Utility function to convert the SHO fit results to an array
 
         Args:
@@ -481,30 +474,44 @@ class BE_Dataset:
         Returns:
             np.array: SHO fit results
         """
+        
+        # data groups in file
+        SHO_fits = find_groups_with_string(self.dataset, 'Raw_Data-SHO_Fit_000')
+        
+        # initializes the dictionary
+        self.SHO_LSQF_data = {}
+                
         with h5py.File(self.dataset, "r+") as h5_f:
-
-            # create a list for parameters
-            SHO_LSQF_list = []
-            for sublist in np.array(
-                h5_f['/Raw_Data-SHO_Fit_000/Fit']
-            ):
-                for item in sublist:
-                    for i in item:
-                        SHO_LSQF_list.append(i)
-
-            data_ = np.array(SHO_LSQF_list).reshape(
-                -1, 5)
-
-            # # writes all but the r2
-            # self.data_writer(
-            #     basepath, save_loc, data_.reshape(
-            #         self.num_pix, self.voltage_steps, 5)[:, :, :-1])
             
-            # TODO it would be good to make this a dictonary
-            self.SHO_LSQF_data = data_.reshape(
-                            self.num_pix, self.voltage_steps, 5)[:, :, :-1]
+            # loops around the found SHO_fits
+            for SHO_fit in SHO_fits:
+                
+                # extract the name of the fit
+                name = SHO_fit.split('/')[1]
+            
+                # create a list for parameters
+                SHO_LSQF_list = []
+                for sublist in np.array(
+                    h5_f[f'{SHO_fit}/Fit']
+                ):
+                    for item in sublist:
+                        for i in item:
+                            SHO_LSQF_list.append(i)
 
-            self.SHO_Scaler()
+                data_ = np.array(SHO_LSQF_list).reshape(
+                    -1, 5)
+
+                # # writes all but the r2
+                # self.data_writer(
+                #     basepath, save_loc, data_.reshape(
+                #         self.num_pix, self.voltage_steps, 5)[:, :, :-1])
+                
+                self.SHO_LSQF_data[name] = data_.reshape(
+                                self.num_pix, self.voltage_steps, 5)[:, :, :-1]
+                
+                # computes the scaler of the data
+                if name == scaler:
+                    self.SHO_Scaler(dataset = name)
 
     @staticmethod
     def shift_phase(phase, shift_=None):
