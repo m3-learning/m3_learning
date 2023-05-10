@@ -77,3 +77,15 @@ def find_groups_with_string(filename, desired_string, start_path="/"):
         search_groups(start_path)
 
     return group_paths_with_string
+
+def find_measurement(file, search_string, group):
+    with h5py.File(file, 'r') as f:
+        names = []
+        for name in f[group]:
+            if search_string in name:
+                names.append(name)
+                
+        if len(names) == 1:
+            return names[0]
+        return names
+    return None
