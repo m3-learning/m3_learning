@@ -56,7 +56,7 @@ class BE_Dataset:
                  output_shape='pixels',
                  measurement_state='all',
                  resampled=False,
-                 resampled_bins=80,
+                 resampled_bins=None,
                  LSQF_phase_shift=None,
                  NN_phase_shift=None,
                  verbose=False,
