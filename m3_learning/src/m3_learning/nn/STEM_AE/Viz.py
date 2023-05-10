@@ -1,14 +1,19 @@
-from m3_learning.util.file_IO import make_folder
-from m3_learning.viz.layout import layout_fig
+from util.file_IO import make_folder
+from viz.layout import layout_fig
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from ...viz.layout import layout_fig, imagemap, labelfigs, find_nearest, add_scalebar
+from viz.layout import layout_fig, imagemap, labelfigs, find_nearest, add_scalebar
 from os.path import join as pjoin
+<<<<<<< HEAD
 from m3_learning.viz.nn import embeddings as embeddings_
 import h5py
 import glob
+=======
+from viz.nn import embeddings as embeddings_
+
+>>>>>>> bb5168e (adapt import for local)
 class Viz:
 
     """Visualization class for the STEM_AE class

@@ -6,7 +6,7 @@ class STEM_Dataset:
     """Class for the STEM dataset.
     """
 
-    def __init__(self, data_path):
+    def __init__(self, data_path,**kwargs):
         """Initialization of the class.
 
         Args:
@@ -15,8 +15,7 @@ class STEM_Dataset:
 
         # loads the data
         s = hs.load(data_path,
-                    reader="hspy",
-                    lazy=False,
+                    lazy=False
                     )
 
         # extracts the data

@@ -5,7 +5,7 @@ from os.path import join as pjoin
 from torch.utils.data import Dataset, DataLoader
 from ..Regularization.Regularizers import ContrastiveLoss, DivergenceLoss
 from tqdm import tqdm
-from m3_learning.util.file_IO import make_folder
+from util.file_IO import make_folder
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
