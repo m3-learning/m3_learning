@@ -6,7 +6,7 @@ import sidpy
 import numpy as np
 import h5py
 import time
-from m3_learning.util.h5_util import make_dataset, make_group, find_groups_with_string
+from m3_learning.util.h5_util import make_dataset, make_group, find_groups_with_string, find_measurement
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from m3_learning.viz.layout import layout_fig
@@ -61,6 +61,7 @@ class BE_Dataset:
                  NN_phase_shift=None,
                  verbose=False,
                  noise = 0,
+                 basegroup = '/Measurement_000/Channel_000',
                  SHO_fit_func_LSQF=SHO_fit_func_nn,
                  **kwargs):
 
@@ -71,6 +72,7 @@ class BE_Dataset:
         self.fitter = fitter
         self.output_shape = output_shape
         self.measurement_state = measurement_state
+        self.basegroup = basegroup
         
         # if None assigns it to the length of the original data
         if resampled_bins is None:
@@ -90,6 +92,7 @@ class BE_Dataset:
 
         # make only run if SHO exist
         self.set_preprocessing()
+
     
     
         
@@ -411,9 +414,15 @@ class BE_Dataset:
 
     # raw_be_data as complex
     @property
-    def original_data(self):
+    def get_original_data(self):
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f["Measurement_000"]["Channel_000"]["Raw_Data"][:]
+            if self.dataset == 'Raw_Data-SHO_Fit_000':
+                return h5_f["Measurement_000"]["Channel_000"]["Raw_Data"][:]
+            else:
+                name = find_measurement(self.file, 
+                                        f"original_data_{self.noise}STD", 
+                                        group = self.basegroup)
+                return h5_f["Measurement_000"]["Channel_000"][name][:]
 
     def raw_data(self, pixel=None, voltage_step=None, noise = None):
         """Raw data"""
@@ -424,12 +433,11 @@ class BE_Dataset:
             with h5py.File(self.file, "r+") as h5_f:
                 return self.raw_data_reshaped[:]
 
+    #TODO need to set for all as a dictionary 
     def set_raw_data(self):
         with h5py.File(self.file, "r+") as h5_f:
-            self.raw_data_reshaped = self.original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins)
-            # self.data_writer("Measurement_000/Channel_000", "Raw_Data_Reshaped",
-            #                  self.original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins))
-
+            self.raw_data_reshaped = self.get_original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins)
+            
     def SHO_Scaler(self,
                    save_loc='SHO_LSQF_scaled',
                    dataset="Raw_Data-SHO_Fit_000"):
@@ -541,11 +549,6 @@ class BE_Dataset:
 
                 data_ = np.array(SHO_LSQF_list).reshape(
                     -1, 5)
-
-                # # writes all but the r2
-                # self.data_writer(
-                #     basepath, save_loc, data_.reshape(
-                #         self.num_pix, self.voltage_steps, 5)[:, :, :-1])
                 
                 self.SHO_LSQF_data[name] = data_.reshape(
                                 self.num_pix, self.voltage_steps, 5)[:, :, :-1]
@@ -581,15 +584,9 @@ class BE_Dataset:
         """Resampled real part of the complex data resampled"""
         if pixel is not None and voltage_step is not None:
             return self.resampled_data["raw_data_resampled"][[pixel], :, :][:, [voltage_step], :]
-            # with h5py.File(self.file, "r+") as h5_f:
-            #     return h5_f[
-            #         "Measurement_000/Channel_000/raw_data_resampled"][[pixel], :, :][:, [voltage_step], :]
         else:
             with h5py.File(self.file, "r+") as h5_f:
                 return self.resampled_data["raw_data_resampled"][:]
-            
-                #h5_f[
-                #    "Measurement_000/Channel_000/raw_data_resampled"][:]
 
     def measurement_state_voltage(self, voltage_step):
         """determines the pixel value based on the measurement state
@@ -872,7 +869,6 @@ class BE_Dataset:
             raise ValueError("output_shape must be either 'pixel' or 'index'")
         return data
     
-    
     def static_state_decorator(func):
         """Decorator that stops the function from changing the state
 
@@ -905,24 +901,25 @@ class BE_Dataset:
         with h5py.File(self.file, "r+") as h5_f:
             try:
                 return resample(data.reshape(self.num_pix, -1, self.num_bins),
-                                self.resample_bins, axis=axis)
+                                self.resampled_bins, axis=axis)
             except ValueError:
                 print("Resampling failed, check that the number of bins is defined")
 
     @property
     def extraction_state(self):
         print(f'''
-                  Resample = {self.resampled}
-                  Raw Format = {self.raw_format}
-                  fitter = {self.fitter}
-                  scaled = {self.scaled}
-                  Output Shape = {self.output_shape}
-                  Measurement State = {self.measurement_state}
-                  Resample Resampled = {self.resampled}
-                  Resample Bins = {self.resample_bins}
-                  LSQF Phase Shift = {self.LSQF_phase_shift}
-                  NN Phase Shift = {self.NN_phase_shift}
-                  Noise Level = {self.noise}
+    Dataset = {self.dataset}
+    Resample = {self.resampled}
+    Raw Format = {self.raw_format}
+    fitter = {self.fitter}
+    scaled = {self.scaled}
+    Output Shape = {self.output_shape}
+    Measurement State = {self.measurement_state}
+    Resample Resampled = {self.resampled}
+    Resample Bins = {self.resampled_bins}
+    LSQF Phase Shift = {self.LSQF_phase_shift}
+    NN Phase Shift = {self.NN_phase_shift}
+    Noise Level = {self.noise}
                   ''')
 
     @property
@@ -934,9 +931,10 @@ class BE_Dataset:
                 'output_shape': self.output_shape,
                 'measurement_state': self.measurement_state,
                 'resampled': self.resampled,
-                'resample_bins': self.resample_bins,
+                'resampled_bins': self.resampled_bins,
                 'LSQF_phase_shift': self.LSQF_phase_shift,
-                'NN_phase_shift': self.NN_phase_shift}
+                'NN_phase_shift': self.NN_phase_shift,
+                "noise": self.noise}
 
     def NN_data(self, resampled=True, scaled=True):
 
@@ -964,7 +962,7 @@ class BE_Dataset:
             return data
         
         if self.resampled:
-            bins = self.resample_bins
+            bins = self.resampled_bins
         else: 
             bins = self.num_bins    
 

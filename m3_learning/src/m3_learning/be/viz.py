@@ -39,6 +39,19 @@ class Viz:
                            ]
         
         self.color_palette = color_palette
+        
+    def static_state_decorator(func):
+        """Decorator that stops the function from changing the state
+
+        Args:
+            func (method): any method
+        """        
+        def wrapper(*args, **kwargs):
+            current_state = args[0].dataset.get_state
+            out = func(*args, **kwargs)
+            args[0].dataset.set_attributes(**current_state)
+            return out
+        return wrapper
 
     def raw_be(self,
                dataset,
@@ -285,7 +298,7 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
 
-
+    @static_state_decorator
     def raw_data_comparison(self,
                             true,
                             predict=None,
