@@ -43,3 +43,37 @@ def make_dataset(base, dataset, data):
     except:
         del base[dataset]
         base[dataset] = data
+        
+def find_groups_with_string(filename, desired_string, start_path="/"):
+    """
+    Find all groups in an h5 file with a certain string in their name,
+    even if they are nested within other groups, and return their full paths.
+
+    Args:
+    - filename (str): the name of the h5 file
+    - desired_string (str): the string to search for in the group names
+    - start_path (str): the path within the h5 file to start the search from (default: "/")
+
+    Returns:
+    - A list of full paths to groups that contain the desired string
+    """
+    group_paths_with_string = []
+
+    # open the h5 file
+    with h5py.File(filename, 'r') as file:
+        
+        # recursively search through the groups in the given path
+        def search_groups(path):
+            for name, obj in file[path].items():
+                # if the object is a group, check if it contains the desired string
+                if isinstance(obj, h5py.Group):
+                    group_path = f"{path}/{name}"
+                    if desired_string in name:
+                        group_paths_with_string.append(group_path[1:])
+                    # if the group contains subgroups, recursively search them
+                    search_groups(group_path)
+        
+        # start the search from the specified path (or from the root if not specified)
+        search_groups(start_path)
+
+    return group_paths_with_string

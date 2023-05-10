@@ -6,7 +6,7 @@ import sidpy
 import numpy as np
 import h5py
 import time
-from m3_learning.util.h5_util import make_dataset, make_group
+from m3_learning.util.h5_util import make_dataset, make_group, find_groups_with_string
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from m3_learning.viz.layout import layout_fig
@@ -84,9 +84,16 @@ class BE_Dataset:
         self.set_preprocessing()
 
     def set_preprocessing(self):
+        # extract the raw data and reshapes is
         self.set_raw_data()
+        
+        # resamples the data if necessary
         self.set_raw_data_resampler()
+        
+        # computes the scalar on the raw data
         self.raw_data_scaler = self.Raw_Data_Scaler(self.raw_data())
+        
+        
         try:
             self.set_SHO_LSQF()
         except:
@@ -815,13 +822,15 @@ class BE_Dataset:
         return data
 
     def set_raw_data_resampler(self,
-                               basepath="Measurement_000/Channel_000",
-                               save_loc='raw_data_resampled'):
+                               save_loc='raw_data_resampled',
+                               **kwargs):
         with h5py.File(self.dataset, "r+") as h5_f:
             resampled_ = self.resampler(
                 self.raw_data().reshape(-1, self.num_bins), axis=2)
             self.resampled_data[save_loc] = resampled_ 
-            #self.data_writer(basepath, save_loc, resampled_)
+            
+            if kwargs.get("basepath"):
+                self.data_writer(kwargs.get("basepath"), save_loc, resampled_)
 
     def resampler(self, data, axis=2):
         """Resample the data to a given number of bins"""
