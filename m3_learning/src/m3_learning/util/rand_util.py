@@ -2,6 +2,7 @@ import torch
 import os
 import numpy as np
 import random
+import re
 
 def rand_tensor(min=0, max=1, size=(1)):
     """ Function that generates random tensor between a range of an arbitrary size
@@ -55,3 +56,14 @@ def get_tuple_names(data):
                     inner_variable_names.append(inner_name)
                             
     return inner_variable_names
+
+def extract_number(s):
+    match = re.search(r'\d+\.?\d*', s)
+    if match is not None:
+        number_str = match.group()
+        if '.' in number_str:
+            return float(number_str)
+        else:
+            return int(number_str)
+    else:
+        return None
