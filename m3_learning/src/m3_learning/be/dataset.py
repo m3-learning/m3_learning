@@ -60,6 +60,7 @@ class BE_Dataset:
                  LSQF_phase_shift=None,
                  NN_phase_shift=None,
                  verbose=False,
+                 noise = 0,
                  SHO_fit_func_LSQF=SHO_fit_func_nn,
                  **kwargs):
 
@@ -76,6 +77,7 @@ class BE_Dataset:
         self.verbose = verbose
         self.SHO_fit_func_LSQF = SHO_fit_func_LSQF
         self.resampled_data = {}
+        self.noise = noise 
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -832,9 +834,12 @@ class BE_Dataset:
                                save_loc='raw_data_resampled',
                                **kwargs):
         with h5py.File(self.dataset, "r+") as h5_f:
-            resampled_ = self.resampler(
-                self.raw_data().reshape(-1, self.num_bins), axis=2)
-            self.resampled_data[save_loc] = resampled_ 
+            if self.resampled_bins is not None:
+                resampled_ = self.resampler(
+                    self.raw_data().reshape(-1, self.num_bins), axis=2)
+                self.resampled_data[save_loc] = resampled_
+            else: 
+                self.resampled_data[save_loc] = self.raw_data().reshape(-1, self.num_bins)
             
             if kwargs.get("basepath"):
                 self.data_writer(kwargs.get("basepath"), save_loc, resampled_)
@@ -861,6 +866,7 @@ class BE_Dataset:
                   Resample Bins = {self.resample_bins}
                   LSQF Phase Shift = {self.LSQF_phase_shift}
                   NN Phase Shift = {self.NN_phase_shift}
+                  Noise Level = {self.Noise}
                   ''')
 
     @property
