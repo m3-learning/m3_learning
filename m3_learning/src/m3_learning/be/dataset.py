@@ -84,12 +84,33 @@ class BE_Dataset:
         self.SHO_fit_func_LSQF = SHO_fit_func_LSQF
         self.resampled_data = {}
         self.noise = noise 
-
+        
         for key, value in kwargs.items():
             setattr(self, key, value)
 
         # make only run if SHO exist
         self.set_preprocessing()
+    
+    
+        
+    def set_noise_state(self, noise):
+        """function that uses the noise state to set the current dataset
+
+        Args:
+            noise (int): noise value in multiples of the standard deviation
+
+        Raises:
+            ValueError: error if the noise value does not exist in the dataset
+        """   
+        
+        if noise == 0:
+            self.dataset = "Raw_Data-SHO_Fit_000"
+        else:
+            try: 
+                self.dataset = find_groups_with_string(self.file, f"{self.noise}STD_SHO_Fit_000")
+            except:
+                raise ValueError(f"Noise value does not exist in the dataset\n the prefix string, {self.noise}STD_SHO_Fit_000 was not found")
+        
 
     def set_preprocessing(self):
         # extract the raw data and reshapes is
@@ -288,6 +309,18 @@ class BE_Dataset:
                 f"LSQF method took {time.time() - start_time_lsqf} seconds to compute parameters")
 
     @property
+    def noise(self):
+        """Noise value"""
+        return self._noise
+    
+    @noise.setter
+    def noise(self, noise):
+        """Sets the noise value"""
+        self._noise = noise
+        self.set_noise_state(noise)
+        
+    
+    @property
     def spectroscopic_values(self):
         """Spectroscopic values"""
         with h5py.File(self.file, "r+") as h5_f:
@@ -412,10 +445,10 @@ class BE_Dataset:
         self.SHO_scaler.scale_[3] = 1
 
 
-    def SHO_LSQF(self, data = "Raw_Data-SHO_Fit_000", pixel=None, voltage_step=None):
+    def SHO_LSQF(self, pixel=None, voltage_step=None):
         with h5py.File(self.file, "r+") as h5_f:
             # dataset_ = h5_f['/Raw_Data-SHO_Fit_000/SHO_LSQF']
-            dataset_ = self.SHO_LSQF_data[data]
+            dataset_ = self.SHO_LSQF_data[self.dataset]
 
             if pixel is not None and voltage_step is not None:
                 return dataset_[[pixel], :, :][:, [voltage_step], :]
@@ -587,7 +620,7 @@ class BE_Dataset:
 
             voltage_step = self.measurement_state_voltage(voltage_step)
 
-            data = eval(f"self.SHO_{self.fitter}_data[dataset](pixel, voltage_step)")
+            data = eval(f"self.SHO_{self.fitter}(pixel, voltage_step)")
 
             data_shape = data.shape
 
@@ -703,10 +736,11 @@ class BE_Dataset:
             if self.resampled:
                 
                 # get the number of bins to resample
-                bins = self.resample_bins
+                bins = self.resampled_bins
                 
                 # gets the frequency values based on the resampled bins
                 frequency_bins = self.get_freq_values(bins)
+                
             else:
                 
                 # gets the unresampled bins
@@ -799,12 +833,12 @@ class BE_Dataset:
             length = data
         else: 
             length = len(data)
-        
-        if length == self.resampled_bins:
+                    
+        if length == self.num_bins:
+            x = self.frequency_bin
+        elif length == self.resampled_bins:
             x = resample(self.frequency_bin,
                          self.resampled_bins)
-        elif length == self.num_bins:
-            x = self.frequency_bin
         else:
             raise ValueError(
                 "original data must be the same length as the frequency bins or the resampled frequency bins")
@@ -837,7 +871,21 @@ class BE_Dataset:
         else:
             raise ValueError("output_shape must be either 'pixel' or 'index'")
         return data
+    
+    
+    def static_state_decorator(func):
+        """Decorator that stops the function from changing the state
 
+        Args:
+            func (method): any method
+        """        
+        def wrapper(*args, **kwargs):
+            current_state = args[0].get_state
+            out = func(*args, **kwargs)
+            args[0].set_attributes(**current_state)
+            return out
+        return wrapper
+    
     def set_raw_data_resampler(self,
                                save_loc='raw_data_resampled',
                                **kwargs):
@@ -845,9 +893,9 @@ class BE_Dataset:
             if self.resampled_bins != self.num_bins:
                 resampled_ = self.resampler(
                     self.raw_data().reshape(-1, self.num_bins), axis=2)
-                self.resampled_data[save_loc] = resampled_
+                self.resampled_data[save_loc] = resampled_.reshape(self.num_pix, self.voltage_steps, self.resampled_bins)
             else: 
-                self.resampled_data[save_loc] = self.raw_data().reshape(-1, self.num_bins)
+                self.resampled_data[save_loc] = self.raw_data()
             
             if kwargs.get("basepath"):
                 self.data_writer(kwargs.get("basepath"), save_loc, resampled_)
