@@ -49,7 +49,7 @@ def resample(y, num_points, axis=0):
 
 class BE_Dataset:
 
-    def __init__(self, dataset,
+    def __init__(self, file_,
                  scaled=False,
                  raw_format="complex",
                  fitter='LSQF',
@@ -64,14 +64,20 @@ class BE_Dataset:
                  SHO_fit_func_LSQF=SHO_fit_func_nn,
                  **kwargs):
 
-        self.dataset = dataset
+        self.file = file_
         self.resampled = resampled
         self.scaled = scaled
         self.raw_format = raw_format
         self.fitter = fitter
         self.output_shape = output_shape
         self.measurement_state = measurement_state
+        
+        # if None assigns it to the length of the original data
+        if resampled_bins is None:
+            resampled_bins = self.num_bins
+            
         self.resampled_bins = resampled_bins
+        
         self.LSQF_phase_shift = LSQF_phase_shift
         self.NN_phase_shift = NN_phase_shift
         self.verbose = verbose
@@ -121,7 +127,7 @@ class BE_Dataset:
             path (str): path to the h5 file
         """
 
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
 
             # Inspects the h5 file
             usid.hdf_utils.print_tree(h5_f)
@@ -148,7 +154,7 @@ class BE_Dataset:
                     key, h5_f.file["/Measurement_000"].attrs[key]))
 
     def data_writer(self, base, name, data):
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             try:
                 make_dataset(h5_f[base],
                              name,
@@ -161,7 +167,7 @@ class BE_Dataset:
 
     # delete a dataset
     def delete(self, name):
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             try:
                 del h5_f[name]
             except KeyError:
@@ -177,7 +183,7 @@ class BE_Dataset:
             max_cores (int, optional): number of processor cores to use. Defaults to -1.
             max_mem (_type_, optional): maximum ram to use. Defaults to 1024*8.
         """
-        with h5py.File(self.dataset, "r+") as h5_file:
+        with h5py.File(self.file, "r+") as h5_file:
             # TODO fix delete
             # if force:
             #     self.delete(None)
@@ -186,12 +192,12 @@ class BE_Dataset:
             start_time_lsqf = time.time()
 
             # splits the directory path and the file name
-            (data_dir, filename) = os.path.split(self.dataset)
+            (data_dir, filename) = os.path.split(self.file)
 
 
-            if self.dataset.endswith(".h5"):
+            if self.file.endswith(".h5"):
                 # No translation here
-                h5_path = self.dataset
+                h5_path = self.file
 
                 # tl = belib.translators.LabViewH5Patcher()
                 # tl.translate(h5_path, force_patch=force)
@@ -284,82 +290,82 @@ class BE_Dataset:
     @property
     def spectroscopic_values(self):
         """Spectroscopic values"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"]["Channel_000"]["Spectroscopic_Values"][:]
 
     @property
     def be_repeats(self):
         """Number of BE repeats"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f['Measurement_000'].attrs["BE_repeats"]
 
     @property
     def num_bins(self):
         """Number of frequency bins in the data"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"].attrs["num_bins"]
 
     @property
     def dc_voltage(self):
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["/Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
 
     @property
     def num_pix(self):
         """Number of pixels in the data"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"].attrs["num_pix"]
         
     @property
     def num_cycles(self):
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"].attrs["VS_number_of_cycles"]
 
     @property
     def num_pix_1d(self):
         """Number of pixels in the data"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return int(np.sqrt(self.num_pix))
 
     @property
     def voltage_steps(self):
         """Number of DC voltage steps"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"].attrs["num_udvs_steps"]
 
     @property
     def sampling_rate(self):
         """Sampling rate in Hz"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"].attrs["IO_rate_[Hz]"]
 
     @property
     def be_bandwidth(self):
         """BE bandwidth in Hz"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"].attrs["BE_band_width_[Hz]"]
 
     @property
     def be_center_frequency(self):
         """BE center frequency in Hz"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"].attrs["BE_center_frequency_[Hz]"]
 
     @property
     def frequency_bin(self):
         """Frequency bin vector in Hz"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"]["Channel_000"]["Bin_Frequencies"][:]
 
     @property
     def be_waveform(self):
         """BE excitation waveform"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"]["Channel_000"]["Excitation_Waveform"][:]
 
     @property
     def hysteresis_waveform(self, loop_number=2):
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return (
                 self.spectroscopic_values[1, ::len(self.frequency_bin)][int(self.voltage_steps/loop_number):] *
                 self.spectroscopic_values[2, ::len(
@@ -373,20 +379,20 @@ class BE_Dataset:
     # raw_be_data as complex
     @property
     def original_data(self):
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             return h5_f["Measurement_000"]["Channel_000"]["Raw_Data"][:]
 
     def raw_data(self, pixel=None, voltage_step=None, noise = None):
         """Raw data"""
         if pixel is not None and voltage_step is not None:
-            with h5py.File(self.dataset, "r+") as h5_f:
+            with h5py.File(self.file, "r+") as h5_f:
                 return self.raw_data_reshaped[[pixel], :, :][:, [voltage_step], :]
         else:
-            with h5py.File(self.dataset, "r+") as h5_f:
+            with h5py.File(self.file, "r+") as h5_f:
                 return self.raw_data_reshaped[:]
 
     def set_raw_data(self):
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             self.raw_data_reshaped = self.original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins)
             # self.data_writer("Measurement_000/Channel_000", "Raw_Data_Reshaped",
             #                  self.original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins))
@@ -407,7 +413,7 @@ class BE_Dataset:
 
 
     def SHO_LSQF(self, data = "Raw_Data-SHO_Fit_000", pixel=None, voltage_step=None):
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             # dataset_ = h5_f['/Raw_Data-SHO_Fit_000/SHO_LSQF']
             dataset_ = self.SHO_LSQF_data[data]
 
@@ -478,12 +484,12 @@ class BE_Dataset:
         """
         
         # data groups in file
-        SHO_fits = find_groups_with_string(self.dataset, 'Raw_Data-SHO_Fit_000')
+        SHO_fits = find_groups_with_string(self.file, 'Raw_Data-SHO_Fit_000')
         
         # initializes the dictionary
         self.SHO_LSQF_data = {}
                 
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             
             # loops around the found SHO_fits
             for SHO_fit in SHO_fits:
@@ -542,11 +548,11 @@ class BE_Dataset:
         """Resampled real part of the complex data resampled"""
         if pixel is not None and voltage_step is not None:
             return self.resampled_data["raw_data_resampled"][[pixel], :, :][:, [voltage_step], :]
-            # with h5py.File(self.dataset, "r+") as h5_f:
+            # with h5py.File(self.file, "r+") as h5_f:
             #     return h5_f[
             #         "Measurement_000/Channel_000/raw_data_resampled"][[pixel], :, :][:, [voltage_step], :]
         else:
-            with h5py.File(self.dataset, "r+") as h5_f:
+            with h5py.File(self.file, "r+") as h5_f:
                 return self.resampled_data["raw_data_resampled"][:]
             
                 #h5_f[
@@ -573,13 +579,15 @@ class BE_Dataset:
 
         return voltage_step
 
-    def SHO_fit_results(self, pixel=None, voltage_step=None):
+    def SHO_fit_results(self, 
+                        pixel=None, 
+                        voltage_step=None, dataset = 'Raw_Data-SHO_Fit_000'):
         """Fit results"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
 
             voltage_step = self.measurement_state_voltage(voltage_step)
 
-            data = eval(f"self.SHO_{self.fitter}(pixel, voltage_step)")
+            data = eval(f"self.SHO_{self.fitter}_data[dataset](pixel, voltage_step)")
 
             data_shape = data.shape
 
@@ -683,7 +691,7 @@ class BE_Dataset:
         """Raw spectra"""
         
         
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             
             # sets the shaper_ equal to true to correct the shape
             shaper_=True
@@ -833,8 +841,8 @@ class BE_Dataset:
     def set_raw_data_resampler(self,
                                save_loc='raw_data_resampled',
                                **kwargs):
-        with h5py.File(self.dataset, "r+") as h5_f:
-            if self.resampled_bins is not None:
+        with h5py.File(self.file, "r+") as h5_f:
+            if self.resampled_bins != self.num_bins:
                 resampled_ = self.resampler(
                     self.raw_data().reshape(-1, self.num_bins), axis=2)
                 self.resampled_data[save_loc] = resampled_
@@ -846,7 +854,7 @@ class BE_Dataset:
 
     def resampler(self, data, axis=2):
         """Resample the data to a given number of bins"""
-        with h5py.File(self.dataset, "r+") as h5_f:
+        with h5py.File(self.file, "r+") as h5_f:
             try:
                 return resample(data.reshape(self.num_pix, -1, self.num_bins),
                                 self.resample_bins, axis=axis)
@@ -866,7 +874,7 @@ class BE_Dataset:
                   Resample Bins = {self.resample_bins}
                   LSQF Phase Shift = {self.LSQF_phase_shift}
                   NN Phase Shift = {self.NN_phase_shift}
-                  Noise Level = {self.Noise}
+                  Noise Level = {self.noise}
                   ''')
 
     @property
