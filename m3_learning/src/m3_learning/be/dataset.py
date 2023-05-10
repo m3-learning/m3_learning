@@ -6,6 +6,7 @@ import sidpy
 import numpy as np
 import h5py
 import time
+from m3_learning.util.rand_util import extract_number
 from m3_learning.util.h5_util import make_dataset, make_group, find_groups_with_string, find_measurement
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
@@ -24,7 +25,18 @@ from m3_learning.be.nn import SHO_fit_func_nn
 
 import m3_learning
 
+def static_state_decorator(func):
+    """Decorator that stops the function from changing the state
 
+    Args:
+        func (method): any method
+    """        
+    def wrapper(*args, **kwargs):
+        current_state = args[0].get_state
+        out = func(*args, **kwargs)
+        args[0].set_attributes(**current_state)
+        return out
+    return wrapper
 
 def resample(y, num_points, axis=0):
    # Get the shape of the input array
@@ -110,7 +122,7 @@ class BE_Dataset:
             self.dataset = "Raw_Data-SHO_Fit_000"
         else:
             try: 
-                self.dataset = find_groups_with_string(self.file, f"{self.noise}STD_SHO_Fit_000")
+                self.dataset = find_groups_with_string(self.file, f"{self.noise}STD_SHO_Fit_000")[0]
             except:
                 raise ValueError(f"Noise value does not exist in the dataset\n the prefix string, {self.noise}STD_SHO_Fit_000 was not found")
         
@@ -428,15 +440,27 @@ class BE_Dataset:
         """Raw data"""
         if pixel is not None and voltage_step is not None:
             with h5py.File(self.file, "r+") as h5_f:
-                return self.raw_data_reshaped[[pixel], :, :][:, [voltage_step], :]
+                return self.raw_data_reshaped[self.dataset][[pixel], :, :][:, [voltage_step], :]
         else:
             with h5py.File(self.file, "r+") as h5_f:
-                return self.raw_data_reshaped[:]
+                return self.raw_data_reshaped[self.dataset][:]
 
-    #TODO need to set for all as a dictionary 
+    @static_state_decorator 
     def set_raw_data(self):
         with h5py.File(self.file, "r+") as h5_f:
-            self.raw_data_reshaped = self.get_original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins)
+            self.raw_data_reshaped = {}
+            self.noise = 0 
+            self.raw_data_reshaped[self.dataset] = self.get_original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins)
+
+            names = find_measurement(self.file, 
+                                        f"original_data_", 
+                                        group = self.basegroup, 
+                                        list_all = True)
+            
+            for name in names:
+                self.noise = extract_number(name)
+                self.raw_data_reshaped[self.dataset] = self.get_original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins)
+         
             
     def SHO_Scaler(self,
                    save_loc='SHO_LSQF_scaled',
@@ -868,19 +892,6 @@ class BE_Dataset:
         else:
             raise ValueError("output_shape must be either 'pixel' or 'index'")
         return data
-    
-    def static_state_decorator(func):
-        """Decorator that stops the function from changing the state
-
-        Args:
-            func (method): any method
-        """        
-        def wrapper(*args, **kwargs):
-            current_state = args[0].get_state
-            out = func(*args, **kwargs)
-            args[0].set_attributes(**current_state)
-            return out
-        return wrapper
     
     def set_raw_data_resampler(self,
                                save_loc='raw_data_resampled',
