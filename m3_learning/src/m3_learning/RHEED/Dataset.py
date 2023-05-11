@@ -31,11 +31,12 @@ class RHEED_spot_Dataset:
                 else:
                     return np.array(h5[growth][index])
                                 
-    def viz_RHEED_spot(self, growth, index, figsize=None, clim=None, filename = None, printing=None, **kwargs):
-        if figsize is None: figsize = (1.5, 1.5)
+    def viz_RHEED_spot(self, growth, index, figsize=(1.5, 1.5), clim=None, filename = None, printing=None, **kwargs):
+        
         fig, axes = layout_fig(1, figsize=figsize)
-#         fig, ax = plt.subplots(figsize = figsize)
+
         data = self.growth_dataset(growth, index)
+        
         imagemap(axes[0], data, clim=clim, divider_=True)
 
         if filename is True: 
@@ -46,9 +47,8 @@ class RHEED_spot_Dataset:
             printing.savefig(fig, filename, **kwargs)
         plt.show()
 
-    def viz_RHEED_spot(self, growth, index, figsize=None, clim=None, filename = None, printing=None, **kwargs):
+    def viz_RHEED_spot(self, growth, index, figsize=(1.5, 1.5), clim=None, filename = None, printing=None, **kwargs):
 
-        if figsize is None: figsize = (1.5, 1.5)
         fig, axes = layout_fig(1, figsize=figsize)
 #         fig, ax = plt.subplots(figsize = figsize)
         data = self.growth_dataset(growth, index)
