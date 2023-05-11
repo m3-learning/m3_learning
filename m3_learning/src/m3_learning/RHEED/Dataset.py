@@ -33,10 +33,10 @@ class RHEED_spot_Dataset:
                                 
     def viz_RHEED_spot(self, growth, index, figsize=None, clim=None, filename = None, printing=None, **kwargs):
         if figsize is None: figsize = (1.5, 1.5)
-        fig, axes = layout_fig(1, figsize=figsize)
-#         fig, ax = plt.subplots(figsize = figsize)
+        # fig, axes = layout_fig(1, figsize=figsize)
+        fig, ax = plt.subplots(1, 1, figsize = figsize, layout='compressed')
         data = self.growth_dataset(growth, index)
-        imagemap(axes[0], data, clim=clim, divider_=True)
+        imagemap(ax, data, clim=clim, divider_=True)
 
         if filename is True: 
             filename = f"RHEED_{self.sample_name}_{growth}_{index}"
@@ -49,10 +49,9 @@ class RHEED_spot_Dataset:
     def viz_RHEED_spot(self, growth, index, figsize=None, clim=None, filename = None, printing=None, **kwargs):
 
         if figsize is None: figsize = (1.5, 1.5)
-        fig, axes = layout_fig(1, figsize=figsize)
-#         fig, ax = plt.subplots(figsize = figsize)
+        fig, ax = plt.subplots(1, 1, figsize = figsize, layout='compressed')
         data = self.growth_dataset(growth, index)
-        imagemap(axes[0], data, clim=clim, divider_=True)
+        imagemap(ax, data, clim=clim, divider_=True)
 
         if filename is True: 
             filename = f"RHEED_{self.sample_name}_{growth}_{index}"
@@ -175,7 +174,8 @@ class RHEED_parameter_dataset():
         if metric_list is None:
             metric_list = ['img_sum', 'img_max', 'img_mean', 'img_rec_sum', 'img_rec_max', 'img_rec_mean', 'height', 'x', 'y', 'width_x', 'width_y']
         for i, metric in enumerate(metric_list):
-            fig, ax = plt.subplots(figsize=figsize)
+
+            fig, ax = plt.subplots(1, 1, figsize = figsize, layout='compressed')
             x_curve, y_curve = self.load_multiple_curves(growth_list, spot=spot, metric=metric, **kwargs)
             ax.scatter(x_curve, y_curve, color='k', s=1)
             Viz.set_labels(ax, xlabel='Time (s)', ylabel=f'{metric} (a.u.)')
