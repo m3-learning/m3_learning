@@ -73,9 +73,17 @@ class Viz:
         c2: color 2
         transparency: transparency of the colors
         '''
+
         color_array = np.zeros([len(x_all), 4], dtype=np.float32)
-        color_array[np.isin(x_all, x1)] = [*c1, transparency]
-        color_array[np.isin(x_all, x2)] = [*c2, transparency]
+        if len(c1) < 4:
+            color_array[np.isin(x_all, x1)] = [*c1, transparency]
+        else:
+            color_array[np.isin(x_all, x1)] = c1
+
+        if len(c2) < 4:
+            color_array[np.isin(x_all, x2)] = [*c2, transparency]
+        else:
+            color_array[np.isin(x_all, x2)] = c2
         return color_array
 
 
@@ -110,16 +118,22 @@ class Viz:
 
     @staticmethod
     def set_labels(ax, xlabel=None, ylabel=None, title=None, xlim=None, ylim=None, yaxis_style='sci', 
-                logscale=False, legend=None):
+                logscale=False, legend=None, ticks_both_sides=True):
         if type(xlabel) != type(None): ax.set_xlabel(xlabel)
         if type(ylabel) != type(None): ax.set_ylabel(ylabel)
         if type(title) != type(None): ax.set_title(title)
         if type(xlim) != type(None): ax.set_xlim(xlim)
         if type(ylim) != type(None): ax.set_ylim(ylim)
         if yaxis_style == 'sci':
-            plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useLocale=False)    
-        if logscale: plt.yscale("log") 
-        if legend: plt.legend(legend)
+            ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useLocale=False)    
+        if logscale: ax.set_yscale("log") 
+        if legend: ax.legend(legend)
+        ax.tick_params(axis="x",direction="in")
+        ax.tick_params(axis="y",direction="in")
+        if ticks_both_sides:
+            ax.yaxis.set_ticks_position('both')
+            ax.xaxis.set_ticks_position('both')
+
 
 
     @staticmethod
@@ -131,39 +145,34 @@ class Viz:
                 
                 
     @staticmethod
-    def plot_curve(curve_x, curve_y, curve_x_fit=None, curve_y_fit=None, plot_colors=['k', 'r'], plot_type='scatter', 
+    def plot_curve(ax, curve_x, curve_y, curve_x_fit=None, curve_y_fit=None, plot_colors=['k', 'r'], plot_type='scatter', 
                    markersize=1, xlabel=None, ylabel=None, xlim=None, ylim=None, logscale=False, yaxis_style='sci',
-                   title=None, legend=None, figsize=(12,2.5), filename=None, printing=None, **kwargs):
+                   title=None, legend=None):
         
-        fig, ax = plt.subplots(1, 1, figsize=figsize)
         if plot_type == 'scatter':
             ax.plot(curve_x, curve_y, color=plot_colors[0], markersize=markersize)
             if not isinstance(curve_y_fit, type(None)):
                 if not isinstance(curve_x_fit, type(None)):
-                    plt.scatter(curve_x_fit, curve_y_fit, color=plot_colors[1], markersize=markersize)
+                    ax.scatter(curve_x_fit, curve_y_fit, color=plot_colors[1], markersize=markersize)
                     # plot_scatter(ax, curve_x_fit, curve_y_fit, plot_colors[1], markersize)
                 else:
-                    plt.scatter(curve_x, curve_y_fit, color=plot_colors[1], markersize=markersize)
+                    ax.scatter(curve_x, curve_y_fit, color=plot_colors[1], markersize=markersize)
                     # plot_scatter(ax, curve_x, curve_y_fit, plot_colors[1], markersize)
                     
         if plot_type == 'lineplot':
-            plt.plot(curve_x, curve_y, color=plot_colors[0], markersize=markersize)
+            ax.plot(curve_x, curve_y, color=plot_colors[0], markersize=markersize)
             if not isinstance(curve_y_fit, type(None)):
                 if not isinstance(curve_x_fit, type(None)):
-                    plt.plot(curve_x_fit, curve_y_fit, color=plot_colors[1], markersize=markersize)
+                    ax.plot(curve_x_fit, curve_y_fit, color=plot_colors[1], markersize=markersize)
                     # plot_lineplot(ax, curve_x_fit, curve_y_fit, plot_colors[1], markersize)
                 else:
-                    plt.plot(curve_x, curve_y_fit, color=plot_colors[1], markersize=markersize)
+                    ax.plot(curve_x, curve_y_fit, color=plot_colors[1], markersize=markersize)
                     # plot_lineplot(ax, curve_x, curve_y_fit, plot_colors[1], markersize)
                     
         Viz.set_labels(ax, xlabel=xlabel, ylabel=ylabel, title=title, xlim=xlim, ylim=ylim, yaxis_style=yaxis_style, 
                    logscale=logscale, legend=legend)
         
-        # prints the figure
-        if printing is not None and filename is not None:
-            printing.savefig(fig, filename, **kwargs)  
-        plt.show()
-
+        
     @staticmethod
     def set_index(axes, index, total_length):
         rows, img_per_row = axes.shape    
@@ -188,22 +197,23 @@ class Viz:
         # plt.show()
         
     @staticmethod
-    def plot_loss_difference(x_all, y_all, x_coor_all, loss_diff, color_array, color_blue, title=None):
+    def plot_loss_difference(ax1, x_all, y_all, x_coor_all, loss_diff, color_array, color_2, title=None):
 
-        fig, ax1 = plt.subplots(1, 1, figsize=(8, 2))
         Viz.draw_background_colors(ax1, color_array)
         ax1.scatter(x_all, y_all, c='k', s=1)
         Viz.set_labels(ax1, xlabel='Time (s)', ylabel='Intensity (a.u.)')
         ax1.tick_params(axis="y", labelcolor='k')
         ax1.set_ylabel('Intensity (a.u.)', color='k')
-
+        ax1.tick_params(axis="x",direction="in")
+    
         ax2 = ax1.twinx()
-        ax2.scatter(x_coor_all, loss_diff, color=np.array(color_blue).reshape(1,-1), s=1)
+        ax2.scatter(x_coor_all, loss_diff, color=color_2, s=1)
         Viz.set_labels(ax2, xlabel='Time (s)', ylabel='Loss difference (a.u.)', logscale=True)
-        ax2.tick_params(axis="y", color=color_blue, labelcolor=color_blue)
-        ax2.set_ylabel('Loss difference (a.u.)', color=color_blue)
+        ax2.tick_params(axis="y", color=color_2, labelcolor=color_2)
+        ax2.set_ylabel('Loss difference (a.u.)', color=color_2)
+        ax2.tick_params(axis="x",direction="in")
+
         plt.title(title)
-        plt.show()
 
 
     @staticmethod

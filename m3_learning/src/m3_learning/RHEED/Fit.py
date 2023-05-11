@@ -158,7 +158,6 @@ def show_metrics(data, ranges, plot_ranges):
     return sum_list, max_list, min_list, mean_list, std_list
 
 
-# add referece for Josh's repository
 class Gaussian():
     def __init__(self):
         self.a = 0
