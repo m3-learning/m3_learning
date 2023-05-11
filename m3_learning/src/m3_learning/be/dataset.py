@@ -122,9 +122,9 @@ class BE_Dataset:
             self.dataset = "Raw_Data-SHO_Fit_000"
         else:
             try: 
-                self.dataset = find_groups_with_string(self.file, f"{self.noise}STD_SHO_Fit_000")[0]
+                self.dataset = find_groups_with_string(self.file, f"{self.noise}STD_SHO_Fit_000")[0][1:]
             except:
-                raise ValueError(f"Noise value does not exist in the dataset\n the prefix string, {self.noise}STD_SHO_Fit_000 was not found")
+                pass
         
 
     def set_preprocessing(self):
@@ -140,6 +140,7 @@ class BE_Dataset:
         
         try:
             self.set_SHO_LSQF()
+            self.SHO_Scaler()
         except:
             pass
 
@@ -210,7 +211,7 @@ class BE_Dataset:
                 print("Dataset not found, could not be deleted")
 
     def SHO_Fitter(self, force=False, max_cores=-1, max_mem=1024*8, 
-                   dataset_name = "Raw_Data",
+                   dataset = "Raw_Data",
                    h5_sho_targ_grp = None):
         """Function that computes the SHO fit results
 
@@ -219,6 +220,8 @@ class BE_Dataset:
             max_cores (int, optional): number of processor cores to use. Defaults to -1.
             max_mem (_type_, optional): maximum ram to use. Defaults to 1024*8.
         """
+        
+        # something strange with the fitter
         with h5py.File(self.file, "r+") as h5_file:
             # TODO fix delete
             # if force:
@@ -248,7 +251,7 @@ class BE_Dataset:
             print("Working on:\n" + h5_path)
 
             # get the main dataset
-            h5_main = usid.hdf_utils.find_dataset(h5_file, dataset_name)[0]
+            h5_main = usid.hdf_utils.find_dataset(h5_file, dataset)[0]
 
             # grabs some useful parameters from the dataset
             h5_pos_inds = h5_main.h5_pos_inds
@@ -550,22 +553,23 @@ class BE_Dataset:
         
         # data groups in file
         SHO_fits = find_groups_with_string(self.file, 'Raw_Data-SHO_Fit_000')
-        
+
         # initializes the dictionary
         self.SHO_LSQF_data = {}
                 
         with h5py.File(self.file, "r+") as h5_f:
             
             # loops around the found SHO_fits
-            for SHO_fit in SHO_fits:
-                
+            for SHO_fit_ in SHO_fits:
+
                 # extract the name of the fit
-                name = SHO_fit.split('/')[1]
+                name = SHO_fit_.split('/')[1]
+                
             
                 # create a list for parameters
                 SHO_LSQF_list = []
                 for sublist in np.array(
-                    h5_f[f'{SHO_fit}/Fit']
+                    h5_f[f'{SHO_fit_}/Fit']
                 ):
                     for item in sublist:
                         for i in item:
@@ -577,9 +581,7 @@ class BE_Dataset:
                 self.SHO_LSQF_data[name] = data_.reshape(
                                 self.num_pix, self.voltage_steps, 5)[:, :, :-1]
                 
-                # computes the scaler of the data
-                if name == scaler:
-                    self.SHO_Scaler(dataset = name)
+                
 
     @staticmethod
     def shift_phase(phase, shift_=None):

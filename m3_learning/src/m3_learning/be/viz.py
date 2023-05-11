@@ -230,7 +230,8 @@ class Viz:
             else:
                 voltage_step = np.random.randint(0, self.dataset.voltage_steps)
         return voltage_step
-
+    
+    @static_state_decorator
     def fit_tester(self, true, predict, pixel=None, voltage_step=None, **kwargs):
 
         # if a pixel is not provided it will select a random pixel
@@ -242,8 +243,11 @@ class Viz:
         # gets the voltagestep with consideration of the current state
         voltage_step = self.get_voltagestep(voltage_step)
 
+        self.set_attributes(**predict)
         params = self.dataset.SHO_LSQF(pixel=pixel, voltage_step=voltage_step)
 
+        print(true)
+        
         self.raw_data_comparison(
             true, predict, pixel=pixel, voltage_step=voltage_step, fit_results=params, **kwargs)
 
@@ -326,7 +330,7 @@ class Viz:
         self.dataset.raw_format = "magnitude spectrum"
 
         data, x = self.dataset.raw_spectra(
-            pixel, voltage_step, frequency=True, **kwargs)
+            pixel, voltage_step, frequency=True) # deleted **kwargs here might cause problems later
 
         axs[0].plot(x, data[0].flatten(), 'b',
                     label=self.dataset.label + " Amplitude")
@@ -351,7 +355,8 @@ class Viz:
         self.dataset.raw_format = "complex"
 
         data, x = self.dataset.raw_spectra(
-            pixel, voltage_step, frequency=True, **kwargs)
+            pixel, voltage_step, frequency=True)
+        # had to delete kwargs here too 
 
         axs[1].plot(x, data[0].flatten(), 'k',
                     label=self.dataset.label + " Real")
