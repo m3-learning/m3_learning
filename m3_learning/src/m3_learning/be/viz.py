@@ -208,6 +208,10 @@ class Viz:
     def set_attributes(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self.dataset, key, value)
+        
+        # this makes sure the setter is called
+        if kwargs.get("noise"):
+            self.noise = kwargs.get("noise")
 
     def get_freq_values(self, data):
         data = data.flatten()
