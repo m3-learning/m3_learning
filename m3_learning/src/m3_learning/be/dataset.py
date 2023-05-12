@@ -160,12 +160,9 @@ class BE_Dataset:
         """   
         
         if noise == 0:
-            self.dataset = "Raw_Data-SHO_Fit_000"
+            self.dataset = "Raw_Data"
         else:
-            try: 
-                self.dataset = find_groups_with_string(self.file, f"{self.noise}STD_SHO_Fit_000")[0][1:]
-            except:
-                pass
+            self.dataset = f"Noisy_Data_{noise}"
         
 
     def set_preprocessing(self):
@@ -397,7 +394,7 @@ class BE_Dataset:
     @property
     def dc_voltage(self):
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f["/Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
+            return h5_f[f"{self.dataset}_SHO_Fit/Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
 
     @property
     def num_pix(self):
@@ -469,7 +466,7 @@ class BE_Dataset:
     @property
     def get_original_data(self):
         with h5py.File(self.file, "r+") as h5_f:
-            if self.dataset == 'Raw_Data-SHO_Fit_000':
+            if self.dataset == 'Raw_Data':
                 return h5_f["Measurement_000"]["Channel_000"]["Raw_Data"][:]
             else:
                 name = find_measurement(self.file, 
@@ -493,7 +490,8 @@ class BE_Dataset:
             self.raw_data_reshaped = {}
             
             # list of datasets to be read
-            datasets = []    
+            datasets = []
+            self.raw_datasets = []    
             
             # Finds all the datasets
             datasets.extend(usid.hdf_utils.find_dataset(h5_f['Measurement_000/Channel_000'], 'Noisy'))
@@ -501,14 +499,20 @@ class BE_Dataset:
             
             # loops around all the datasets and stores them reshaped in a dictionary
             for dataset in datasets:
-                self.raw_data_reshaped[dataset] = dataset[:].reshape(self.num_pix, self.voltage_steps, self.num_bins)
-            
+                self.raw_data_reshaped[dataset.name.split('/')[-1]] = dataset[:].reshape(self.num_pix, self.voltage_steps, self.num_bins)
+                
+                self.raw_datasets.extend([dataset.name.split('/')[-1]])
+                
+    @static_state_decorator    
     def SHO_Scaler(self,
                    save_loc='SHO_LSQF_scaled',
-                   dataset="Raw_Data-SHO_Fit_000"):
+                   noise = 0):
+        
+        # set the noise and the dataset
+        self.noise = noise
 
         self.SHO_scaler = StandardScaler()
-        data = self.SHO_LSQF(dataset).reshape(-1, 4)
+        data = self.SHO_LSQF().reshape(-1, 4)
 
         self.SHO_scaler.fit(data)
 
@@ -520,8 +524,8 @@ class BE_Dataset:
 
     def SHO_LSQF(self, pixel=None, voltage_step=None):
         with h5py.File(self.file, "r+") as h5_f:
-            # dataset_ = h5_f['/Raw_Data-SHO_Fit_000/SHO_LSQF']
-            dataset_ = self.SHO_LSQF_data[self.dataset]
+
+            dataset_ = self.SHO_LSQF_data[f"{self.dataset}_SHO_Fit"]
 
             if pixel is not None and voltage_step is not None:
                 return dataset_[[pixel], :, :][:, [voltage_step], :]
@@ -568,13 +572,7 @@ class BE_Dataset:
             pass
         else:
             axis = data.ndim - 1
-    
-        # elif data.ndim == 1:
-        #     return data[0] + 1j * data[1]
-        # elif data.ndim == 2:
-        #     return data[:, 0] + 1j * data[:, 1]
-        # elif data.ndim == 3:
-        #     return data[:, :, 0] + 1j * data[:, :, 1]
+
         return np.take(data, 0, axis = axis) + 1j * np.take(data, 1, axis = axis)
 
     def set_SHO_LSQF(self, 
@@ -589,25 +587,26 @@ class BE_Dataset:
             np.array: SHO fit results
         """
         
-        # data groups in file
-        SHO_fits = find_groups_with_string(self.file, 'Raw_Data-SHO_Fit_000')
-
         # initializes the dictionary
         self.SHO_LSQF_data = {}
-                
-        with h5py.File(self.file, "r+") as h5_f:
             
-            # loops around the found SHO_fits
-            for SHO_fit_ in SHO_fits:
+        for dataset in self.raw_datasets:
+            
+            # data groups in file
+            SHO_fits = find_groups_with_string(self.file, f'{dataset}-SHO_Fit_000')[0]
+            
+                    
+            with h5py.File(self.file, "r+") as h5_f:
+
 
                 # extract the name of the fit
-                name = SHO_fit_.split('/')[1]
+                name = SHO_fits.split('/')[-1]
                 
             
                 # create a list for parameters
                 SHO_LSQF_list = []
                 for sublist in np.array(
-                    h5_f[f'{SHO_fit_}/Fit']
+                    h5_f[f'{SHO_fits}/Fit']
                 ):
                     for item in sublist:
                         for i in item:
@@ -647,10 +646,10 @@ class BE_Dataset:
     def raw_data_resampled(self, pixel=None, voltage_step=None, noise = None):
         """Resampled real part of the complex data resampled"""
         if pixel is not None and voltage_step is not None:
-            return self.resampled_data["raw_data_resampled"][[pixel], :, :][:, [voltage_step], :]
+            return self.resampled_data[self.dataset][[pixel], :, :][:, [voltage_step], :]
         else:
             with h5py.File(self.file, "r+") as h5_f:
-                return self.resampled_data["raw_data_resampled"][:]
+                return self.resampled_data[self.dataset][:]
 
     def measurement_state_voltage(self, voltage_step):
         """determines the pixel value based on the measurement state
@@ -673,11 +672,14 @@ class BE_Dataset:
 
         return voltage_step
 
+    @static_state_decorator
     def SHO_fit_results(self, 
                         pixel=None, 
-                        voltage_step=None, dataset = 'Raw_Data-SHO_Fit_000'):
+                        voltage_step=None, noise = 0):
         """Fit results"""
         with h5py.File(self.file, "r+") as h5_f:
+            
+            self.noise = noise
 
             voltage_step = self.measurement_state_voltage(voltage_step)
 
@@ -938,11 +940,12 @@ class BE_Dataset:
                                **kwargs):
         with h5py.File(self.file, "r+") as h5_f:
             if self.resampled_bins != self.num_bins:
-                resampled_ = self.resampler(
-                    self.raw_data().reshape(-1, self.num_bins), axis=2)
-                self.resampled_data[save_loc] = resampled_.reshape(self.num_pix, self.voltage_steps, self.resampled_bins)
+                for data in self.raw_datasets:
+                    resampled_ = self.resampler(
+                        self.raw_data_reshaped[data].reshape(-1, self.num_bins), axis=2)
+                    self.resampled_data[data] = resampled_.reshape(self.num_pix, self.voltage_steps, self.resampled_bins)
             else: 
-                self.resampled_data[save_loc] = self.raw_data()
+                self.resampled_data = self.raw_data_reshaped
             
             if kwargs.get("basepath"):
                 self.data_writer(kwargs.get("basepath"), save_loc, resampled_)
