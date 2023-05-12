@@ -643,7 +643,7 @@ class BE_Dataset:
         
         # removed copy TODO delete
 
-    def raw_data_resampled(self, pixel=None, voltage_step=None, noise = None):
+    def raw_data_resampled(self, pixel=None, voltage_step=None):
         """Resampled real part of the complex data resampled"""
         if pixel is not None and voltage_step is not None:
             return self.resampled_data[self.dataset][[pixel], :, :][:, [voltage_step], :]
@@ -739,9 +739,10 @@ class BE_Dataset:
         data = self.get_voltage_state(data)
         return self.get_cycle(data, axis = axis)
     
+    @static_state_decorator
     def get_raw_data_from_LSQF_SHO(self, model, index = None):
-        # holds the raw state
-        current_state = self.get_state
+        
+        self.set_attributes(**model)
         
         self.scaled = False
         
@@ -768,9 +769,7 @@ class BE_Dataset:
         if index is not None:
             pred_data = pred_data[[index]]
             params = params_shifted[[index]]
-        
-        self.set_attributes(**current_state)
-        
+                
         return pred_data, params
     
     def set_attributes(self, **kwargs):
@@ -788,6 +787,9 @@ class BE_Dataset:
                     frequency=False,
                     noise = None):
         """Raw spectra"""
+        
+        if noise is not None:
+            self.noise = noise
         
         
         with h5py.File(self.file, "r+") as h5_f:
@@ -823,13 +825,13 @@ class BE_Dataset:
                     
                     # gets the data
                     data = self.raw_data_resampled(
-                        pixel=pixel, voltage_step=voltage_step, noise = noise)
+                        pixel=pixel, voltage_step=voltage_step)
 
                 else:
                     
                     # if not resampled gets the raw data
                     data = self.raw_data(
-                        pixel=pixel, voltage_step=voltage_step, noise = noise)
+                        pixel=pixel, voltage_step=voltage_step)
 
             else:
                 
@@ -837,7 +839,7 @@ class BE_Dataset:
                 params_shape = fit_results.shape
 
                 # reshapes the parameters for fitting functions
-                params = torch.tensor(fit_results.reshape(-1, 4))
+                params = torch.from_numpy(fit_results.reshape(-1, 4))
 
                 # gets the data from the fitting function
                 data = eval(
@@ -993,8 +995,9 @@ class BE_Dataset:
                 'NN_phase_shift': self.NN_phase_shift,
                 "noise": self.noise}
 
+    @static_state_decorator
     def NN_data(self, resampled=True, scaled=True):
-
+        print(self.extraction_state)
         # makes sure you are using the resampled data
         self.resampled = resampled
 

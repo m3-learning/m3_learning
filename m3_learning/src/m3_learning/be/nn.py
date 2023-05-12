@@ -60,6 +60,7 @@ class AE_Fitter_SHO(nn.Module):
             nn.SELU(),
             nn.Conv1d(in_channels=6, out_channels=4, kernel_size=5),
             nn.SELU(),
+            nn.AdaptiveAvgPool1d(64)
         )
 
         # fully connected block
@@ -85,13 +86,13 @@ class AE_Fitter_SHO(nn.Module):
             nn.SELU(),
             nn.Conv1d(in_channels=4, out_channels=4, kernel_size=5),
             nn.SELU(),
-            nn.AvgPool1d(kernel_size=2),
+            nn.AdaptiveAvgPool1d(16),  # Adaptive pooling layer
             nn.Conv1d(in_channels=4, out_channels=2, kernel_size=3),
             nn.SELU(),
-            nn.AvgPool1d(kernel_size=2),
+            nn.AdaptiveAvgPool1d(8),  # Adaptive pooling layer
             nn.Conv1d(in_channels=2, out_channels=2, kernel_size=3),
             nn.SELU(),
-            nn.AvgPool1d(kernel_size=2),
+            nn.AdaptiveAvgPool1d(4),  # Adaptive pooling layer
         )
 
         # Flatten layer
@@ -99,7 +100,7 @@ class AE_Fitter_SHO(nn.Module):
 
         # Final embedding block - Output 4 values - linear
         self.hidden_embedding = nn.Sequential(
-            nn.Linear(26, 16),
+            nn.Linear(28, 16),
             nn.SELU(),
             nn.Linear(16, 8),
             nn.SELU(),
@@ -117,6 +118,7 @@ class AE_Fitter_SHO(nn.Module):
         x = torch.reshape(x, (n, 2, 128))
         x = self.hidden_x2(x)
         cnn_flat = self.flatten_layer(x)
+
         encoded = torch.cat((cnn_flat, xfc), 1)  # merge dense and 1d conv.
         embedding = self.hidden_embedding(encoded)  # output is 4 parameters
 
@@ -411,7 +413,7 @@ class SHO_Model(AE_Fitter_SHO):
             elif isinstance(data, dict):
                 pred_data, _ = self.model.dataset.get_raw_data_from_LSQF_SHO(data)
                 data, _ = self.model.dataset.NN_data()
-                pred_data = torch.Tensor(pred_data)
+                pred_data = torch.from_numpy(pred_data)
                 
             # Computes the MSE
             out = nn.MSELoss()(data, pred_data)

@@ -691,7 +691,7 @@ class Viz:
                     fit_results=params, frequency=True)
             
         if "x2" not in locals():
-
+            
             # if you do not use the model will run the 
             x2 = self.dataset.get_freq_values(prediction[0].shape[1])
         
@@ -700,9 +700,7 @@ class Viz:
             true = [true[0][index],true[1][index]]
             prediction = [prediction[0][index],prediction[1][index]]
             # params = params[index]
-        
-        print(true[0].shape, prediction[0].shape, params.shape)
-            
+                    
         # this must take the scaled data
         index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
         
