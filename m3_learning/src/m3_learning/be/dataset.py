@@ -105,8 +105,49 @@ class BE_Dataset:
         # make only run if SHO exist
         self.set_preprocessing()
 
+    def generate_noisy_data_records(self, noise_levels, 
+                                    basegroup = '/Measurement_000/Channel_000',
+                                    verbose = False, 
+                                    noise_STD = None):
+        
+        if noise_STD is None:
+            noise_STD = np.std(self.get_original_data)
+            
+        if verbose:
+            print(f"The STD of the data is: {noise_STD}")
+        
+        with h5py.File(self.file, "r+") as h5_f:
+            
+            for noise_level in noise_levels:
+                
+                if verbose:
+                    print(f"Adding noise level {noise_level}")
+                
+                
+                    
+                noise_level_ = noise_STD * noise_level
     
-    
+                noise_real = np.random.uniform(-1*noise_level_ , noise_level_, (3600, 63360))
+                noise_imag = np.random.uniform(-1*noise_level_, noise_level_, (3600, 63360))
+                noise = noise_real+noise_imag*1.0j
+                data = self.get_original_data + noise
+                
+                h5_main = usid.hdf_utils.find_dataset(h5_f, "Raw_Data")[0]
+                
+                usid.hdf_utils.write_main_dataset(h5_f[basegroup],  # parent group
+                                                data,  # data to be written
+                                                f'Noisy_Data_{noise_level}',  # Name of the main dataset
+                                                'Piezoresponse',  # quantity
+                                                'V',  # units
+                                                None,  # position dimensions
+                                                None,  # spectroscopic dimensions
+                                                h5_pos_inds=h5_main.h5_pos_inds,
+                                                h5_pos_vals=h5_main.h5_pos_vals,
+                                                h5_spec_inds=h5_main.h5_spec_inds,
+                                                h5_spec_vals=h5_main.h5_spec_vals,
+                                                compression='gzip')
+                
+                
         
     def set_noise_state(self, noise):
         """function that uses the noise state to set the current dataset
@@ -237,9 +278,6 @@ class BE_Dataset:
             if self.file.endswith(".h5"):
                 # No translation here
                 h5_path = self.file
-
-                # tl = belib.translators.LabViewH5Patcher()
-                # tl.translate(h5_path, force_patch=force)
 
             else:
                 pass
