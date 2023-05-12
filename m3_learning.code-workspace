@@ -1,0 +1,15 @@
+{
+  "folders": [
+	{
+		"name": "m3_learning",
+		"path": "."
+	}
+],
+  "settings": {
+    "python.formatting.provider": "none",
+    "cSpell.words": ["spectras", "suptitle"],
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.autopep8"
+    }
+  }
+}
