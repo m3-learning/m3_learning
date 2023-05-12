@@ -525,7 +525,7 @@ class BE_Dataset:
     def SHO_LSQF(self, pixel=None, voltage_step=None):
         with h5py.File(self.file, "r+") as h5_f:
 
-            dataset_ = self.SHO_LSQF_data[f"{self.dataset}_SHO_Fit"]
+            dataset_ = self.SHO_LSQF_data[f"{self.dataset}-SHO_Fit_000"]
 
             if pixel is not None and voltage_step is not None:
                 return dataset_[[pixel], :, :][:, [voltage_step], :]
@@ -776,6 +776,9 @@ class BE_Dataset:
     def set_attributes(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
+            
+        if kwargs.get("noise"):
+            self.noise = kwargs.get("noise")
 
     def raw_spectra(self, 
                     pixel=None, 
