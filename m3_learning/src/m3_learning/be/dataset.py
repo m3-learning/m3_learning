@@ -489,19 +489,19 @@ class BE_Dataset:
     @static_state_decorator 
     def set_raw_data(self):
         with h5py.File(self.file, "r+") as h5_f:
+            # initializes the dictionary
             self.raw_data_reshaped = {}
-            self.noise = 0 
-            self.raw_data_reshaped[self.dataset] = self.get_original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins)
-
-            names = find_measurement(self.file, 
-                                        f"original_data_", 
-                                        group = self.basegroup, 
-                                        list_all = True)
             
-            for name in names:
-                self.noise = extract_number(name)
-                self.raw_data_reshaped[self.dataset] = self.get_original_data.reshape(self.num_pix, self.voltage_steps, self.num_bins)
-         
+            # list of datasets to be read
+            datasets = []    
+            
+            # Finds all the datasets
+            datasets.extend(usid.hdf_utils.find_dataset(h5_f['Measurement_000/Channel_000'], 'Noisy'))
+            datasets.extend(usid.hdf_utils.find_dataset(h5_f['Measurement_000/Channel_000'], 'Raw_Data'))
+            
+            # loops around all the datasets and stores them reshaped in a dictionary
+            for dataset in datasets:
+                self.raw_data_reshaped[dataset] = dataset[:].reshape(self.num_pix, self.voltage_steps, self.num_bins)
             
     def SHO_Scaler(self,
                    save_loc='SHO_LSQF_scaled',
