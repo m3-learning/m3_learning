@@ -1220,10 +1220,10 @@ class Viz:
                 imagemap(ax[i*4+j+1], SHO_[:, ind, j], colorbars=False, cmap="viridis",)
                 
                 if i // rows == 0:
-                    labelfigs(ax[i*4+j+1],j, string_add = names[j], loc = "bm", size = 5)
+                    labelfigs(ax[i*4+j+1], string_add = names[j], loc = "cb", size = 5, inset_fraction=.2)
                 
                 ax[i*4+j+1].images[0].set_clim(clims[j])
-            labelfigs(ax[1::4][i], i, string_add = str(i+1), size = 5)
+            labelfigs(ax[1::4][i], string_add = str(i+1), size = 5, loc = "bl", inset_fraction=.2)
 
         # if add colorbars  
         if colorbars:
@@ -1257,7 +1257,7 @@ class Viz:
                     
         # prints the figure
         if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename, label_figs=ax[1::4], size = 6, loc = 'tr')            
+            self.Printer.savefig(fig, filename, label_figs=ax[1::4], size = 6, loc = 'tl', inset_fraction=.2)          
 
         fig.show()
 
