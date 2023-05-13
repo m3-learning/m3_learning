@@ -641,7 +641,6 @@ class BE_Dataset:
                 np.pi  # shift phase values greater than pi
             return phase_ - shift + np.pi
         
-        # removed copy TODO delete
 
     def raw_data_resampled(self, pixel=None, voltage_step=None):
         """Resampled real part of the complex data resampled"""
@@ -675,11 +674,16 @@ class BE_Dataset:
     @static_state_decorator
     def SHO_fit_results(self, 
                         pixel=None, 
-                        voltage_step=None, noise = 0):
-        """Fit results"""
+                        voltage_step=None, 
+                        noise = 0,
+                        state = None):
+
         with h5py.File(self.file, "r+") as h5_f:
             
             self.noise = noise
+            
+            if state is not None:
+                self.set_attributes(**state)
 
             voltage_step = self.measurement_state_voltage(voltage_step)
 
@@ -778,19 +782,25 @@ class BE_Dataset:
             
         if kwargs.get("noise"):
             self.noise = kwargs.get("noise")
-
+    
+    @static_state_decorator
     def raw_spectra(self, 
                     pixel=None, 
                     voltage_step=None, 
                     fit_results=None, 
                     type_="numpy", 
                     frequency=False,
-                    noise = None):
+                    noise = None,
+                    state = None):
         """Raw spectra"""
         
+        # set the noise
         if noise is not None:
             self.noise = noise
         
+        # sets the state if it is provided
+        if state is not None:
+            self.set_attributes(**state)
         
         with h5py.File(self.file, "r+") as h5_f:
             
@@ -838,8 +848,11 @@ class BE_Dataset:
                 # if a fit result is provided gets the shape of the parameters
                 params_shape = fit_results.shape
 
+                if isinstance(fit_results, np.ndarray):
+                    fit_results = torch.from_numpy(fit_results)
+                    
                 # reshapes the parameters for fitting functions
-                params = torch.from_numpy(fit_results.reshape(-1, 4))
+                params = fit_results.reshape(-1, 4)
 
                 # gets the data from the fitting function
                 data = eval(
