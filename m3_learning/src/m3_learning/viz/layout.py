@@ -288,7 +288,7 @@ def combine_lines(*args):
 
 
 def labelfigs(axes, number = None, style="wb", 
-            loc="br", string_add="", size=8, text_pos="center", inset_fraction=0.05):
+            loc="tl", string_add="", size=8, text_pos="center", inset_fraction=0.15):
     
     # initializes an empty string
     text = ""
