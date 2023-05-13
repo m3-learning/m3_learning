@@ -525,7 +525,7 @@ class BE_Dataset:
     def SHO_LSQF(self, pixel=None, voltage_step=None):
         with h5py.File(self.file, "r+") as h5_f:
 
-            dataset_ = self.SHO_LSQF_data[f"{self.dataset}-SHO_Fit_000"]
+            dataset_ = self.SHO_LSQF_data[f"{self.dataset}-SHO_Fit_000"].copy()
 
             if pixel is not None and voltage_step is not None:
                 return dataset_[[pixel], :, :][:, [voltage_step], :]
@@ -623,7 +623,7 @@ class BE_Dataset:
     @staticmethod
     def shift_phase(phase, shift_=None):
 
-        if shift_ is None:
+        if shift_ is None or shift_ == 0:
             return phase
         else:
             shift = shift_
@@ -752,7 +752,7 @@ class BE_Dataset:
         
         params_shifted = self.SHO_fit_results()
             
-        exec(f"self.{model['fitter']}_phase_shift =0")
+        exec(f"self.{model['fitter']}_phase_shift=0")
         
         params = self.SHO_fit_results()
         
