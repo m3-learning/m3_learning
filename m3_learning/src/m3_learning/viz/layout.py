@@ -287,119 +287,61 @@ def combine_lines(*args):
     return lines, labels
 
 
-def labelfigs(
-    axes, number, style="wb", loc="br", string_add="", size=8, text_pos="center"
-):
-    """Function that labels the figures
-
-    Args:
-        axes (axes object): axes to label
-        number (int): number value of the label in letters
-        style (str, optional): sets the style of the label. Defaults to 'wb'.
-        loc (str, optional): sets the location of the label. Defaults to 'br'.
-        string_add (str, optional): Adds a prefix string. Defaults to ''.
-        size (int, optional): sets the font size. Defaults to 14.
-        text_pos (str, optional): sets the position of the text. Defaults to 'center'.
-
-    Raises:
-        ValueError: The string provided for the style is not valid
-    """
-
+def labelfigs(axes, number = None, style="wb", 
+            loc="br", string_add="", size=8, text_pos="center", inset_fraction=0.05):
+    
+    # initializes an empty string
+    text = ""
+    
     # Sets up various color options
     formatting_key = {
-        "wb": dict(color="w", linewidth=1.5),
+        "wb": dict(color="w", linewidth=.75),
         "b": dict(color="k", linewidth=0),
         "w": dict(color="w", linewidth=0),
     }
-
+    
     # Stores the selected option
     formatting = formatting_key[style]
+    
+    xlim = axes.get_xlim()
+    ylim = axes.get_ylim()
 
-    # finds the position for the label
-    x_min, x_max = axes.get_xlim()
-    y_min, y_max = axes.get_ylim()
-    x_value = 0.08 * (x_max - x_min) + x_min
+    x_inset = (xlim[1] - xlim[0]) * inset_fraction
+    y_inset = (ylim[1] - ylim[0]) * inset_fraction
 
-    # Sets the location of the label on the figure
-    if loc == "br":
-        y_value = y_max - 0.15 * (y_max - y_min)
-        x_value = 0.15 * (x_max - x_min) + x_min
-    elif loc == "tr":
-        y_value = y_max - 0.9 * (y_max - y_min)
-        x_value = 0.08 * (x_max - x_min) + x_min
-    elif loc == "bl":
-        y_value = y_max - 0.1 * (y_max - y_min)
-        x_value = x_max - 0.08 * (x_max - x_min)
-    elif loc == "tl":
-        y_value = y_max - 0.9 * (y_max - y_min)
-        x_value = x_max - 0.08 * (x_max - x_min)
-    elif loc == "tm":
-        y_value = y_max - 0.9 * (y_max - y_min)
-        x_value = x_min + (x_max - x_min) / 2
-    elif loc == "bm":
-        y_value = y_max - 0.1 * (y_max - y_min)
-        x_value = x_min + (x_max - x_min) / 2
+    if loc == 'tl':
+        x, y = xlim[0] + x_inset, ylim[1] - y_inset
+    elif loc == 'tr':
+        x, y = xlim[1] - x_inset, ylim[1] - y_inset
+    elif loc == 'bl':
+        x, y = xlim[0] + x_inset, ylim[0] + y_inset
+    elif loc == 'br':
+        x, y = xlim[1] - x_inset, ylim[0] + y_inset
+    elif loc == 'ct':
+        x, y = (xlim[0] + xlim[1]) / 2, ylim[1] - y_inset
+    elif loc == 'cb':
+        x, y = (xlim[0] + xlim[1]) / 2, ylim[0] + y_inset
     else:
-        raise ValueError(
-            "Unknown string format imported please look at code for acceptable positions"
-        )
+        raise ValueError("Invalid position. Choose from 'tl', 'tr', 'bl', 'br', 'ct', or 'cb'.")
+    
+    text += string_add
+    
+    if number is not None:
+        text += number_to_letters(number) 
 
-    # adds a custom string
-    if string_add == "":
-
-        # Turns to image number into a label
-        if number < 26:
-            axes.text(
-                x_value,
-                y_value,
-                string.ascii_lowercase[number],
-                size=size,
-                weight="bold",
-                ha=text_pos,
-                va="center",
-                color=formatting["color"],
-                path_effects=[
-                    patheffects.withStroke(
-                        linewidth=formatting["linewidth"], foreground="k"
-                    )
-                ],
-            )
-
-        # allows for double letter index
-        else:
-            axes.text(
-                x_value,
-                y_value,
-                string.ascii_lowercase[0] +
-                string.ascii_lowercase[number - 26],
-                size=size,
-                weight="bold",
-                ha=text_pos,
-                va="center",
-                color=formatting["color"],
-                path_effects=[
-                    patheffects.withStroke(
-                        linewidth=formatting["linewidth"], foreground="k"
-                    )
-                ],
-            )
-    else:
-        # writes the text to the figure
-        axes.text(
-            x_value,
-            y_value,
-            string_add,
-            size=size,
-            weight="bold",
-            ha=text_pos,
-            va="center",
+    axes.text(x, y, text, va='center', ha='center', 
+            path_effects=[patheffects.withStroke(linewidth=formatting["linewidth"], foreground="k")],
             color=formatting["color"],
-            path_effects=[
-                patheffects.withStroke(
-                    linewidth=formatting["linewidth"], foreground="k"
                 )
-            ],
-        )
+
+
+def number_to_letters(num):
+    letters = ''
+    while num >= 0:
+        num, remainder = divmod(num, 26)
+        letters = chr(97 + remainder) + letters
+        num -= 1  # decrease num by 1 because we have processed the current digit
+    return letters
 
 
 def scalebar(axes, image_size, scale_size, units="nm", loc="br"):
