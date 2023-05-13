@@ -52,7 +52,8 @@ class Viz:
             args[0].dataset.set_attributes(**current_state)
             return out
         return wrapper
-
+    
+    @static_state_decorator
     def raw_be(self,
                dataset,
                filename="Figure_1_random_cantilever_resonance_results"):
@@ -161,8 +162,13 @@ class Viz:
         if self.Printer is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style='b')
 
-    def SHO_hist(self, SHO_data, filename=""):
+    def SHO_hist(self, SHO_data, filename=None):
+        """Plots the SHO hysterisis parameters
 
+        Args:
+            SHO_data (numpy): SHO fit results
+            filename (str, optional): filename where to save the results. Defaults to "".
+        """        
         SHO_data = SHO_data.reshape(-1, 4)
 
         # check distributions of each parameter before and after scaling
@@ -182,7 +188,7 @@ class Viz:
             self.dataset.extraction_state
 
         # prints the figure
-        if self.Printer is not None:
+        if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=axs, style='b')
 
     def SHO_loops(self, data=None, filename="Figure_2_random_SHO_fit_results"):
@@ -255,6 +261,7 @@ class Viz:
         self.raw_data_comparison(
             true, predict, pixel=pixel, voltage_step=voltage_step, fit_results=params, **kwargs)
 
+    @static_state_decorator
     def nn_checker(self, state, filename=None,
                    pixel=None, voltage_step=None, legend=True, **kwargs):
 
@@ -404,6 +411,7 @@ class Viz:
             self.Printer.savefig(fig, filename, label_figs=[
                                  axs[0], axs[1]], style='b')
 
+    @static_state_decorator
     def nn_validation(self, model,
                       data=None, unscaled=True,
                       pixel=None, voltage_step=None,
@@ -545,6 +553,7 @@ class Viz:
             self.Printer.savefig(fig, filename, label_figs=[
                                  axs[0], axs[1]], style='b')
 
+    @static_state_decorator
     def best_median_worst_reconstructions(self, model, true, SHO_values=None,
                                           labels=["NN", "LSQF"], unscaled=True,
                                           filename=None, **kwargs):
@@ -621,6 +630,7 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style='b')
 
+    @static_state_decorator
     def get_best_median_worst(self,
                               true_state,
                               prediction=None,
@@ -756,6 +766,7 @@ class Viz:
         
         return data, labels
     
+    @static_state_decorator
     def get_mse_index(self, index, model):
         
         # gets the raw data
@@ -817,7 +828,7 @@ class Viz:
         
         return SHO_Model.MSE(data.detach().numpy(), predictions)
     
-    
+    @static_state_decorator
     def SHO_Fit_comparison(self, 
                            data, 
                            names, 
@@ -944,7 +955,8 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style='b')
-        
+    
+    @static_state_decorator    
     def get_SHO_params(self, index, model, out_state):
         """Function that gets the SHO parameters for a given index based on a specific model
 
@@ -1013,6 +1025,7 @@ class Viz:
             
         return pred_data, params, labels  
 
+    @static_state_decorator
     def bmw_nn(self, true_state,
                prediction=None,
                model=None,
@@ -1077,7 +1090,8 @@ class Viz:
         if "returns" in kwargs.keys():
             if kwargs["returns"] == True:
                 return d1, d2, index1, mse1
-
+    
+    @static_state_decorator
     def SHO_switching_maps(self, 
                            SHO_, 
                        colorbars = True,
