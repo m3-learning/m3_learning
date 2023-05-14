@@ -934,7 +934,7 @@ class BE_Dataset:
             except: 
                 num_pix = 1
         else:
-            num_pix = self.num_pix
+            num_pix = self.num_pix.copy()
             
         if voltage_steps is not None:
             try:                 
@@ -942,7 +942,10 @@ class BE_Dataset:
             except:
                 voltage_steps = 1 
         else:
-            voltage_steps = self.voltage_steps
+            voltage_steps = self.voltage_steps.copy()
+            
+        if self.measurement_state in ["on", "off"]:
+            voltage_steps /= 2
         
         """Reshapes the data to the correct output shape"""
         if self.output_shape == "pixels":

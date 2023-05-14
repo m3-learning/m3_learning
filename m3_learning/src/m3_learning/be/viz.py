@@ -7,6 +7,8 @@ from m3_learning.be.nn import SHO_Model
 import m3_learning
 from m3_learning.util.rand_util import get_tuple_names
 import torch 
+import pandas as pd
+import seaborn as sns
 
 color_palette = {
 "LSQF_A" : "#003f5c",
@@ -1011,6 +1013,8 @@ class Viz:
             # output (samples, voltage steps, channels)
             pred_data = np.swapaxes(pred_data, 1, 2)
             
+            params_shifted = params_shifted.reshape(-1,4)
+            
             pred_data = pred_data[[index]]
             params = params_shifted[[index]]
             
@@ -1261,3 +1265,65 @@ class Viz:
 
         fig.show()
 
+    @static_state_decorator
+    def violin_plot_comparison(self, state, model, X_data, filename): 
+        
+        self.set_attributes(**state)
+
+        df = pd.DataFrame()
+
+        #uses the model to get the predictions
+        pred_data, scaled_param, params = model.predict(X_data)
+
+        # scales the parameters
+        scaled_param = self.dataset.SHO_scaler.transform(params)
+
+        # gets the parameters from the SHO LSQF fit
+        true = self.dataset.SHO_fit_results().reshape(-1, 4)
+        
+        # Builds the dataframe for the violin plot
+        true_df = pd.DataFrame(true, columns=["Amplitude", "Resonance", "Q-Factor", "Phase"])
+        predicted_df = pd.DataFrame(
+            scaled_param, columns=["Amplitude", "Resonance", "Q-Factor", "Phase"]
+        )
+
+        # merges the two dataframes
+        df = pd.concat((true_df, predicted_df))
+
+        # adds the labels to the dataframe
+        names = [true, scaled_param]
+        names_str = ["LSQF", "NN"]
+        labels = ["A", "\u03C9", "Q", "\u03C6"] #["Amplitude", "Resonance", "Q-Factor", "Phase"]
+
+        # adds the labels to the dataframe
+        for j, name in enumerate(names):
+            for i, label in enumerate(labels):
+                dict_ = {
+                    "value": name[:, i],
+                    "parameter": np.repeat(label, name.shape[0]),
+                    "dataset": np.repeat(names_str[j], name.shape[0]),
+                }
+
+                df = pd.concat((df, pd.DataFrame(dict_)))
+        
+        # builds the plot        
+        fig, ax = plt.subplots(figsize = (2,2))
+        
+        # plots the data
+        sns.violinplot(data=df, x="parameter", y="value", hue="dataset", split=True, ax = ax)
+        
+        # labels the figure and does some styling
+        labelfigs(ax, 0, style='b')
+        ax.set_ylabel('Scaled SHO Results')
+        ax.set_xlabel('')
+        
+        # Get the legend associated with the plot
+        legend = ax.get_legend()
+        legend.set_title("")
+        
+        # ax.set_aspect(1)
+
+        
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename)   

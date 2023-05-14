@@ -205,7 +205,7 @@ class SHO_Model(AE_Fitter_SHO):
         if optimizer == 'Adam':
             optimizer = torch.optim.Adam(self.model.parameters())
         elif optimizer == "AdaHessian":
-            optimizer = AdaHessian(self.model.parameters(), lr=.1)
+            optimizer = AdaHessian(self.model.parameters(), lr=.5)
         else:
             try:
                 optimizer = optimizer(self.model.parameters())

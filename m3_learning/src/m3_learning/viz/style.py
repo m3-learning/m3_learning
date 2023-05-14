@@ -35,28 +35,6 @@ def set_style(name="default"):
     if name == "printing":
 
         try:
-            import matplotlib.pyplot as plt
-            # setting default plotting params
-            plt.rcParams['image.cmap'] = 'viridis'
-            plt.rcParams['axes.labelsize'] = 6
-            plt.rcParams['xtick.labelsize'] = 5
-            plt.rcParams['ytick.labelsize'] = 5
-            plt.rcParams['figure.titlesize'] = 8
-            plt.rcParams['xtick.direction'] = 'in'
-            plt.rcParams['ytick.direction'] = 'in'
-            plt.rcParams['xtick.top'] = True
-            plt.rcParams['ytick.right'] = True
-            plt.rcParams['lines.markersize'] = .5
-            plt.rcParams['axes.grid'] = False
-            plt.rcParams['lines.linewidth'] = .5
-            plt.rcParams['axes.linewidth'] = .5
-            plt.rcParams['legend.fontsize'] = 5
-            plt.rcParams['legend.loc'] = "upper left"
-            plt.rcParams['legend.frameon'] = False
-        except:
-            pass
-
-        try:
             import seaborn as sns
 
             # resetting default seaborn style
@@ -66,3 +44,22 @@ def set_style(name="default"):
 
         except:
             pass
+        
+        import matplotlib.pyplot as plt
+        # setting default plotting params
+        plt.rcParams['image.cmap'] = 'viridis'
+        plt.rcParams['axes.labelsize'] = 6
+        plt.rcParams['xtick.labelsize'] = 5
+        plt.rcParams['ytick.labelsize'] = 5
+        plt.rcParams['figure.titlesize'] = 8
+        plt.rcParams['xtick.direction'] = 'in'
+        plt.rcParams['ytick.direction'] = 'in'
+        plt.rcParams['xtick.top'] = True
+        plt.rcParams['ytick.right'] = True
+        plt.rcParams['lines.markersize'] = .5
+        plt.rcParams['axes.grid'] = False
+        plt.rcParams['lines.linewidth'] = .5
+        plt.rcParams['axes.linewidth'] = .5
+        plt.rcParams['legend.fontsize'] = 5
+        plt.rcParams['legend.loc'] = "upper left"
+        plt.rcParams['legend.frameon'] = False
