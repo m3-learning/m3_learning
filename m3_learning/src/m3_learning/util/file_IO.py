@@ -7,6 +7,7 @@ import shutil
 import os.path
 import numpy as np
 from os.path import exists
+import csv
 
 
 def make_folder(folder, **kwargs):
@@ -125,3 +126,22 @@ def download_and_unzip(filename, url, save_path, force=False):
         if os.path.isfile(path):
             print(f'extracting {path}')
             unzip(path, save_path)
+
+
+def append_to_csv(file_path, data, headers):
+    """
+    Appends a row of data to a CSV file.
+    
+    If the file doesn't exist, it creates a new file and writes the header row.
+
+    Args:
+        file_path (str): The path to the CSV file.
+        data (list): A list of values representing a row of data to be appended.
+        headers (list): A list of header values for the CSV file.
+    """
+    file_exists = os.path.isfile(file_path)
+    with open(file_path, 'a', newline='') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(headers)  # Write header row if the file is newly created
+        writer.writerow(data)

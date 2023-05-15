@@ -140,7 +140,7 @@ class Viz:
             dataset.frequency_bin,
             data_[0].flatten(),
         )
-        ax[3].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)")
+        ax[3].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)", facecolor='none')
         ax2 = ax[3].twinx()
         ax2.plot(
             dataset.frequency_bin,
@@ -148,6 +148,7 @@ class Viz:
             "r",
         )
         ax2.set(xlabel="Frequency (Hz)", ylabel="Phase (rad)")
+        ax[3].set_zorder(ax2.get_zorder() + 1)
 
         dataset.raw_format = "complex"
         data_ = dataset.raw_spectra(pixel, voltagestep)
@@ -158,7 +159,8 @@ class Viz:
         ax3 = ax[4].twinx()
         ax3.plot(
             dataset.frequency_bin, data_[1].flatten(), 'r', label="Imaginary")
-        ax3.set(xlabel="Frequency (Hz)", ylabel="Imag (Arb. U.)")
+        ax3.set(xlabel="Frequency (Hz)", ylabel="Imag (Arb. U.)", facecolor='none')
+        ax[4].set_zorder(ax3.get_zorder() + 1)
 
         # prints the figure
         if self.Printer is not None:
@@ -1264,6 +1266,61 @@ class Viz:
             self.Printer.savefig(fig, filename, label_figs=ax[1::4], size = 6, loc = 'tl', inset_fraction=.2)          
 
         fig.show()
+        
+    @static_state_decorator       
+    def noisy_datasets(self, state, noise_level = None, pixel = None, 
+                       voltage_step = None, filename = None):
+        
+        if pixel is None:
+            # Select a random point and time step to plot
+            pixel = np.random.randint(0, self.dataset.num_pix)
+        
+        if voltage_step is None:
+            voltage_step = np.random.randint(0, self.dataset.voltage_steps)
+        
+        self.set_attributes(**state)
+        
+        if noise_level is None:
+            datasets = np.arange(0,len(self.dataset.raw_datasets))
+        else:
+            datasets = noise_level
+            
+        fig, ax_ = layout_fig(len(datasets), 4, 
+                                figsize=(4*(1.25 + .33), ((1+len(datasets))//4)*1.25))
+        
+        for i, (ax, noise) in enumerate(zip(ax_, datasets)):
+            
+            self.dataset.noise = noise
+            
+            data, x = self.dataset.raw_spectra(
+                            pixel, voltage_step, frequency=True)
+            
+            ax.plot(x, data[0].flatten(), color = 'k')
+            ax1 = ax.twinx()
+            ax1.plot(x, data[1].flatten(), color = 'b')
+
+            ax.set_xlabel("Frequency (Hz)")
+
+            if self.dataset.raw_format == "magnitude spectrum":
+                ax.set_ylabel("Amplitude (Arb. U.)")
+                ax1.set_ylabel("Phase (rad)")
+            elif self.dataset.raw_format == "complex":
+                ax.set_ylabel("Real (Arb. U.)")
+                ax1.set_ylabel("Imag (Arb. U.)")
+            
+            # makes the box square    
+            ax.set_box_aspect(1)
+            
+            
+            labelfigs(ax1, string_add = f"Noise {noise}", loc = "ct", size = 5, inset_fraction=.2, style='b')
+            
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename, label_figs=ax_, size = 6, loc = 'bl', inset_fraction=.2)    
+
+            
+            
+                
 
     @static_state_decorator
     def violin_plot_comparison(self, state, model, X_data, filename): 
@@ -1326,4 +1383,150 @@ class Viz:
         
         # prints the figure
         if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename)   
+            self.Printer.savefig(fig, filename)
+            
+    def SHO_fit_movie_images(self, noise = None):
+        
+        # instantiates the list of axes
+        ax = []
+
+        # number of rows
+        rows = 2
+
+        # calculates the size of the embedding image 
+        embedding_image_size = (fig_width - (inter_gap * (cols - 1)) - intra_gap * 3 * cols - cbar_space*colorbars) /(cols * 4)
+
+        # calculates the figure height based on the image details
+        fig_height = rows * (embedding_image_size + inter_gap) + voltage_plot_height + .33
+
+        # defines a scalar to convert inches to relative coordinates
+        fig_scalar = FigDimConverter((fig_width, fig_height))
+
+        # creates the figure
+        fig = plt.figure(figsize=(fig_width, fig_height))
+
+        #left bottom width height
+        pos_inch = [0.33 , fig_height - voltage_plot_height, 6.5 - .33, voltage_plot_height]
+
+        # adds the plot for the voltage
+        ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+
+        # resets the x0 position for the embedding plots
+        pos_inch[0] = 0
+        pos_inch[1] -= embedding_image_size + 0.33
+
+        # sets the embedding size of the image
+        pos_inch[2] = embedding_image_size
+        pos_inch[3] = embedding_image_size 
+
+        # adds the embedding plots
+        for i in range(number_of_steps):
+
+            # loops around the amp, phase, and freq
+            for j in range(4):
+            
+                # adds the plot to the figure
+                ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch))) 
+                
+                # adds the inter plot gap
+                pos_inch[0] += embedding_image_size + intra_gap
+
+            # if the last column in row, moves the position to the next row
+            if (i+1) % cols == 0 and i != 0:
+                
+                # resets the x0 position for the embedding plots
+                pos_inch[0] = 0
+                
+                # moves the y0 position to the next row
+                pos_inch[1] -= embedding_image_size + inter_gap
+            else:
+                # adds the small gap between the plots
+                pos_inch[0] += inter_gap
+                
+        # gets the DC voltage data - this is for only the on state or else it would all be 0
+        voltage = self.dataset.dc_voltage
+
+        # gets just part of the loop
+        if hasattr(self.dataset, 'cycle') and self.dataset.cycle is not None:
+            # gets the cycle of interest
+            voltage =  self.dataset.get_cycle(voltage)
+            
+        # gets the index of the voltage steps to plot
+        inds = np.linspace(0,len(voltage)-1, number_of_steps, dtype=int)    
+        
+        # converts the data to a numpy array
+        if isinstance(SHO_, torch.Tensor):
+            SHO_ = SHO_.detach().numpy()
+
+        SHO_ = SHO_.reshape(self.dataset.num_pix, self.dataset.voltage_steps, 4)
+
+        # get the selected measurement cycle
+        SHO_ = self.dataset.get_measurement_cycle(SHO_, axis = 1)  
+
+        # plots the voltage
+        ax[0].plot(voltage , "k")
+        ax[0].set_ylabel("Voltage (V)")
+        ax[0].set_xlabel("Step")
+
+        # Plot the data with different markers
+        for i, ind in enumerate(inds):
+            # this adds the labels to the graphs
+            ax[0].plot(ind, voltage[ind], 'o', color = 'k', markersize=10)
+            vshift = (ax[0].get_ylim()[1] - ax[0].get_ylim()[0]) * .25
+            
+            # positions the location of the labels
+            if voltage[ind] - vshift - .15 < ax[0].get_ylim()[0]:
+                vshift = -vshift/2
+            
+            # adds the text to the graphs
+            ax[0].text(ind, voltage[ind] - vshift, str(i+1), color="k", fontsize=12)
+
+        names = ["A", "\u03C9", "Q", "\u03C6"]
+
+        for i, ind in enumerate(inds):
+            
+            # loops around the amp, resonant frequency, and Q, Phase
+            for j in range(4):
+                imagemap(ax[i*4+j+1], SHO_[:, ind, j], colorbars=False, cmap="viridis",)
+                
+                if i // rows == 0:
+                    labelfigs(ax[i*4+j+1], string_add = names[j], loc = "cb", size = 5, inset_fraction=.2)
+                
+                ax[i*4+j+1].images[0].set_clim(clims[j])
+            labelfigs(ax[1::4][i], string_add = str(i+1), size = 5, loc = "bl", inset_fraction=.2)
+
+        # if add colorbars  
+        if colorbars:
+            
+            # builds a list to store the colorbar axis objects
+            bar_ax = []
+            
+            #gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
+            voltage_ax_pos = fig_scalar.to_inches(np.array(ax[0].get_position()).flatten())
+            
+            # loops around the 4 axis
+            for i in range(4):
+                
+                # calculates the height and width of the colorbars
+                cbar_h = (voltage_ax_pos[1] - inter_gap - 2 * intra_gap - .33)/2
+                cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
+                
+                # sets the position of the axis in inches
+                pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap, 
+                            voltage_ax_pos[1] - (i//2)*(inter_gap + cbar_h) -.33 - cbar_h, 
+                            cbar_w, 
+                            cbar_h]
+                
+                # adds the plot to the figure
+                bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch))) 
+                
+                # adds the colorbars to the plots
+                cbar = plt.colorbar(ax[i+1].images[0], cax=bar_ax[i], format = '%.1e')
+                cbar.set_label(names[i])  # Add a label to the colorbar
+            
+                    
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename, label_figs=ax[1::4], size = 6, loc = 'tl', inset_fraction=.2)          
+
+        fig.show()

@@ -329,10 +329,12 @@ def labelfigs(axes, number = None, style="wb",
     if number is not None:
         text += number_to_letters(number) 
 
-    axes.text(x, y, text, va='center', ha='center', 
+    text_ = axes.text(x, y, text, va='center', ha='center', 
             path_effects=[patheffects.withStroke(linewidth=formatting["linewidth"], foreground="k")],
             color=formatting["color"],
                 )
+    
+    text_.set_zorder(np.inf)
 
 
 def number_to_letters(num):
