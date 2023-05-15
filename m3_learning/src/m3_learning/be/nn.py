@@ -10,8 +10,21 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 from scipy.signal import resample
-from m3_learning.util.file_IO import make_folder
+from m3_learning.util.file_IO import make_folder, append_to_csv
+import itertools
 
+def static_state_decorator(func):
+    """Decorator that stops the function from changing the state
+
+    Args:
+        func (method): any method
+    """        
+    def wrapper(*args, **kwargs):
+        current_state = args[0].get_state
+        out = func(*args, **kwargs)
+        args[0].set_attributes(**current_state)
+        return out
+    return wrapper
 
 def SHO_fit_func_nn(params,
                     wvec_freq,
@@ -191,6 +204,7 @@ class SHO_Model(AE_Fitter_SHO):
             seed=42,
             datatype=torch.float32,
             save_all=False,
+            write_CSV = None,
             **kwargs):
 
         # sets the model to be a specific datatype and on cuda
@@ -215,6 +229,8 @@ class SHO_Model(AE_Fitter_SHO):
         # instantiate the dataloader
         train_dataloader = DataLoader(
             data_train, batch_size=batch_size, shuffle=True)
+
+        starter_time = time.time()
 
         # loops around each epoch
         for epoch in range(epochs):
@@ -256,13 +272,25 @@ class SHO_Model(AE_Fitter_SHO):
             print("epoch : {}/{}, recon loss = {:.8f}".format(epoch +
                                                               1, epochs, train_loss))
             print("--- %s seconds ---" % (time.time() - start_time))
+            
+            
 
             if save_all:
                 torch.save(self.model.state_dict(),
                            f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
 
+        total_time = time.time() - starter_time
+        
         torch.save(self.model.state_dict(),
                    f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
+        
+        if write_CSV is not None:
+            headers = ["Model Name", 
+                       "Optimizer", 
+                       "Epochs", 
+                       "Training_Time" "Train Loss", "Batch Size", "Loss Function", "Seed", "filename"]
+            data = [self.model_name, optimizer, epochs, total_time, train_loss, batch_size, loss_func, seed, f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth"]
+            append_to_csv(f"{self.path}/{write_CSV}", data, headers)
 
         self.model.eval()
 
@@ -420,6 +448,44 @@ class SHO_Model(AE_Fitter_SHO):
             
             # prints the MSE
             print(f"{label} Mean Squared Error: {out:0.4f}")
+    
+@static_state_decorator        
+def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_CSV = "Batch_Training_Noisy_Data.csv"):
+
+    # Generate all combinations
+    combinations = list(itertools.product(optimizers, noise, batch_size, epochs, seed))
+    
+    for training in combinations:
+    
+        optimizer = training[0]
+        noise = training[1]
+        batch_size = training[2]
+        epochs = training[3]
+        seed = training[4]
+        
+        dataset.noise = noise
+        
+        random_seed(seed=seed)
+
+        # constructs a test train split
+        X_train, X_test, y_train, y_test = dataset.test_train_split_(shuffle=True)
+        
+        model_name = f"SHO_{training[0]}_noise_{training[1]}_batch_size_{training[2]}"
+        
+        print(f'Working on combination: {model_name}')
+        
+        # instantiate the model
+        model = SHO_Model(dataset, training=True, model_basename=model_name)
+        
+        # fits the model
+        model.fit(
+            X_train,
+            batch_size=batch_size,
+            optimizer=optimizer,
+            epochs = epochs,
+            write_CSV=write_CSV,
+            seed = seed,
+        )
 
 
 # def SHO_fit_func_nn(paramss,

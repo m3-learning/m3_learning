@@ -22,7 +22,6 @@ from torch.utils.data import DataLoader
 from m3_learning.be.processing import convert_amp_phase
 from sklearn.model_selection import train_test_split
 from m3_learning.be.nn import SHO_fit_func_nn
-
 import m3_learning
 
 def static_state_decorator(func):

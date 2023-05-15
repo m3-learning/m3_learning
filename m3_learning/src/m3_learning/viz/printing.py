@@ -34,6 +34,8 @@ class printer:
         if label_figs is not None:
             for i, ax in enumerate(label_figs):
                 labelfigs(ax, i, **kwargs)
+        
+               
 
         for fileformat in self.fileformats:
             print(basepath + name + "." + fileformat)
