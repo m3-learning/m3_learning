@@ -1,5 +1,5 @@
 import numpy as np
-from m3_learning.viz.layout import layout_fig, inset_connector, add_box, subfigures, add_text_to_figure, get_axis_pos_inches, imagemap,  FigDimConverter, labelfigs, imagemap
+from m3_learning.viz.layout import layout_fig, inset_connector, add_box, subfigures, add_text_to_figure, get_axis_pos_inches, imagemap,  FigDimConverter, labelfigs, imagemap, scalebar
 from scipy.signal import resample
 from scipy import fftpack
 import matplotlib.pyplot as plt
@@ -9,7 +9,8 @@ from m3_learning.util.rand_util import get_tuple_names
 import torch
 import pandas as pd
 import seaborn as sns
-
+from m3_learning.util.file_IO import make_folder
+from m3_learning.viz.Movies import make_movie
 color_palette = {
     "LSQF_A": "#003f5c",
     "LSQF_P": "#444e86",
@@ -22,11 +23,14 @@ color_palette = {
 
 class Viz:
 
-    def __init__(self, dataset, Printer=None, verbose=False, labelfigs_=True):
+    def __init__(self, dataset, Printer=None, verbose=False, labelfigs_=True, 
+                 SHO_ranges = None, 
+                 image_scalebar = None,):
         self.Printer = Printer
         self.dataset = dataset
         self.verbose = verbose
         self.labelfigs = labelfigs_
+        self.image_scalebar = image_scalebar
 
         self.SHO_labels = [{'title': "Amplitude",
                             'y_label': "Amplitude \n (Arb. U.)"
@@ -41,6 +45,8 @@ class Viz:
                            ]
 
         self.color_palette = color_palette
+        
+        self.SHO_ranges = SHO_ranges
 
     def static_state_decorator(func):
         """Decorator that stops the function from changing the state
@@ -1398,23 +1404,16 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
-
-    def SHO_fit_movie_images(self, noise=None, comparison=None, fig_width=6.5,
-                             voltage_plot_height=1.25,  # height of the voltage plot
-                             intra_gap=0.02,  # gap between the graphs,
-                             inter_gap=0.2,  # gap between the graphs,
-                             cbar_gap=.5,  # gap between the graphs of colorbars
-                             # space on the right where the cbar is not):
-                             cbar_space=1.3,
-                             colorbars=True,
-                             ):
-
+            
+    def build_figure_for_movie(self, comparison, 
+                               fig_width, inter_gap, intra_gap, cbar_space, 
+                               colorbars, voltage_plot_height):
+       
         # instantiates the list of axes
         ax = []
 
         # number of rows
         rows = 2
-        cols = 4
 
         if comparison is not None:
             rows *= 2
@@ -1469,15 +1468,135 @@ class Viz:
                 pos_inch[1] -= embedding_image_size + inter_gap
             else:
                 pos_inch[1] -= embedding_image_size + intra_gap
+                
+        ax_ = [ax[0]]
+    
+        if comparison is not None:
+            z = 1
+        else:
+            z = 0
+        
+        for j in range(1 + z):
+            for i in range(2):
+                ax_.extend(ax[1+2*i+8*j:3+2*i+8*j])
+                ax_.extend(ax[5+ 2*i + 8*j:7+2*i + 8*j])
+                
+        return fig, ax_, fig_scalar
+ 
+
+    # @static_state_decorator
+    def SHO_fit_movie_images(self, 
+                             noise=0, 
+                             comparison=None, 
+                             fig_width=6.5,
+                             voltage_plot_height=1.25,  # height of the voltage plot
+                             intra_gap=0.02,  # gap between the graphs,
+                             inter_gap=0.2,  # gap between the graphs,
+                             cbar_gap=.6,  # gap between the graphs of colorbars
+                             # space on the right where the cbar is not):
+                             cbar_space=1.3,
+                             colorbars=True,
+                             scalebar_ = True,
+                             filename=None,
+                             basepath = None, 
+                             ):
+        
+        if basepath is not None:
+            basepath += f"Noise_{noise}"
+            basepath = make_folder(basepath)
+        
+        self.dataset.measurement_state = "on"
+        
+        on_data = self.dataset.SHO_fit_results()
+        
+        self.dataset.measurement_state = "off"
+        
+        off_data = self.dataset.SHO_fit_results()
+        
+        names = ["A", "\u03C9", "Q", "\u03C6"]
 
         # gets the DC voltage data - this is for only the on state or else it would all be 0
         voltage = self.dataset.dc_voltage
 
-        # gets just part of the loop
-        if hasattr(self.dataset, 'cycle') and self.dataset.cycle is not None:
-            # gets the cycle of interest
-            voltage = self.dataset.get_cycle(voltage)
+
+        # TODO could implement this functionality
+        # # gets just part of the loop
+        # if hasattr(self.dataset, 'cycle') and self.dataset.cycle is not None:
+        #     # gets the cycle of interest
+        #     voltage = self.dataset.get_cycle(voltage)
             
+     
+        for z, voltage in enumerate(voltage):
+            
+            fig, ax, fig_scalar = self.build_figure_for_movie(comparison, 
+                                            fig_width, 
+                                            inter_gap, 
+                                            intra_gap, 
+                                            cbar_space, 
+                                            colorbars, 
+                                            voltage_plot_height)
+        
+        
+            # plots the voltage
+            ax[0].plot(self.dataset.dc_voltage, "k")
+            ax[0].plot(z, voltage, 'o', color='k', markersize=10)
+            ax[0].set_ylabel("Voltage (V)")
+            ax[0].set_xlabel("Step")
+            
+            for j in range(4):
+                imagemap(ax[j+1], on_data[:, z, j], colorbars=False, clim=self.SHO_ranges[j])
+                imagemap(ax[j+5], off_data[:, z, j], colorbars=False, clim=self.SHO_ranges[j])
+                labelfigs(ax[j+1], string_add=f"On {names[j]}", loc='ct')
+                labelfigs(ax[j+5], string_add=f"Off {names[j]}", loc='ct')
+        
+            # if add colorbars
+            if colorbars:
+
+                # builds a list to store the colorbar axis objects
+                bar_ax = []
+
+                #gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
+                voltage_ax_pos = fig_scalar.to_inches(np.array(ax[0].get_position()).flatten())
+
+                # loops around the 4 axis
+                for i in range(4):
+
+                    # calculates the height and width of the colorbars
+                    cbar_h = (voltage_ax_pos[1] - inter_gap*2 -.33)/2
+                    cbar_w = (cbar_space - inter_gap - cbar_gap)/2
+
+                    # sets the position of the axis in inches
+                    pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap + cbar_w,
+                                voltage_ax_pos[1] - (i//2)*(inter_gap + cbar_h) -.33 - cbar_h,
+                                cbar_w,
+                                cbar_h]
+
+                    # adds the plot to the figure
+                    bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+
+                    # adds the colorbars to the plots
+                    cbar = plt.colorbar(ax[i+1].images[0], cax=bar_ax[i], format = '%.1e', 
+                                        ticks = np.linspace(self.SHO_ranges[i][0], self.SHO_ranges[i][1], 5))
+                    
+                    
+                    cbar.set_label(names[i])  # Add a label to the colorbar
+
+            if scalebar_:
+                scalebar(ax[-1], *self.image_scalebar)
+                    
+            # prints the figure
+            if self.Printer is not None and filename is not None:
+                self.Printer.savefig(fig, f"{basepath}/{filename}_noise_{noise}_{z:04d}", fileformats = ['png'])
+                
+            plt.close(fig)
+            
+        
+        try:    
+            make_movie("{filename}_noise_{noise}_{z:04d}", basepath, basepath, 'MP4', fps=5)
+        except:
+            print("Could not make movie")
+            
+        
         
 
         # # gets the index of the voltage steps to plot
@@ -1491,28 +1610,7 @@ class Viz:
 
         # # get the selected measurement cycle
         # SHO_ = self.dataset.get_measurement_cycle(SHO_, axis = 1)
-        
-        ax_ = [ax[0]]
-        
-        if comparison is not None:
-            z = 1
-        else:
-            z = 0
-        
-        for j in range(1 + z):
-            for i in range(2):
-                ax_.extend(ax[1+2*i+8*j:3+2*i+8*j])
-                ax_.extend(ax[5+ 2*i + 8*j:7+2*i + 8*j])
-                
-        ax = ax_
 
-        # plots the voltage
-        ax[0].plot(voltage, "k")
-        ax[0].set_ylabel("Voltage (V)")
-        ax[0].set_xlabel("Step")
-        
-        for i, ax in enumerate(ax):
-            labelfigs(ax, i)
   
 
         # names = ["A", "\u03C9", "Q", "\u03C6"]
