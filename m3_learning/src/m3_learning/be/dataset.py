@@ -531,7 +531,7 @@ class BE_Dataset:
             elif pixel is not None:
                 return dataset_[[pixel], :, :]
             else:
-                return dataset_[:]
+                return self.get_voltage_state(dataset_[:])
 
     @staticmethod
     def is_complex(data):
@@ -674,12 +674,9 @@ class BE_Dataset:
     def SHO_fit_results(self, 
                         pixel=None, 
                         voltage_step=None, 
-                        noise = 0,
                         state = None):
 
         with h5py.File(self.file, "r+") as h5_f:
-            
-            self.noise = noise
             
             if state is not None:
                 self.set_attributes(**state)

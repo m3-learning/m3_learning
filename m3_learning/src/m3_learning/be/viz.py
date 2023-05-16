@@ -6,17 +6,17 @@ import matplotlib.pyplot as plt
 from m3_learning.be.nn import SHO_Model
 import m3_learning
 from m3_learning.util.rand_util import get_tuple_names
-import torch 
+import torch
 import pandas as pd
 import seaborn as sns
 
 color_palette = {
-"LSQF_A" : "#003f5c",
-"LSQF_P" : "#444e86",
-"NN_A": "#955196",
-"NN_P": "#dd5182",
-"other" : "#ff6e54",
-"other_2" : "#ffa600"
+    "LSQF_A": "#003f5c",
+    "LSQF_P": "#444e86",
+    "NN_A": "#955196",
+    "NN_P": "#dd5182",
+    "other": "#ff6e54",
+    "other_2": "#ffa600"
 }
 
 
@@ -39,22 +39,22 @@ class Viz:
                            {'title': "Phase",
                             'y_label': "Phase \n (rad)"}
                            ]
-        
+
         self.color_palette = color_palette
-        
+
     def static_state_decorator(func):
         """Decorator that stops the function from changing the state
 
         Args:
             func (method): any method
-        """        
+        """
         def wrapper(*args, **kwargs):
             current_state = args[0].dataset.get_state
             out = func(*args, **kwargs)
             args[0].dataset.set_attributes(**current_state)
             return out
         return wrapper
-    
+
     @static_state_decorator
     def raw_be(self,
                dataset,
@@ -140,7 +140,8 @@ class Viz:
             dataset.frequency_bin,
             data_[0].flatten(),
         )
-        ax[3].set(xlabel="Frequency (Hz)", ylabel="Amplitude (Arb. U.)", facecolor='none')
+        ax[3].set(xlabel="Frequency (Hz)",
+                  ylabel="Amplitude (Arb. U.)", facecolor='none')
         ax2 = ax[3].twinx()
         ax2.plot(
             dataset.frequency_bin,
@@ -159,7 +160,8 @@ class Viz:
         ax3 = ax[4].twinx()
         ax3.plot(
             dataset.frequency_bin, data_[1].flatten(), 'r', label="Imaginary")
-        ax3.set(xlabel="Frequency (Hz)", ylabel="Imag (Arb. U.)", facecolor='none')
+        ax3.set(xlabel="Frequency (Hz)",
+                ylabel="Imag (Arb. U.)", facecolor='none')
         ax[4].set_zorder(ax3.get_zorder() + 1)
 
         # prints the figure
@@ -172,7 +174,7 @@ class Viz:
         Args:
             SHO_data (numpy): SHO fit results
             filename (str, optional): filename where to save the results. Defaults to "".
-        """        
+        """
         SHO_data = SHO_data.reshape(-1, 4)
 
         # check distributions of each parameter before and after scaling
@@ -218,7 +220,7 @@ class Viz:
     def set_attributes(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self.dataset, key, value)
-        
+
         # this makes sure the setter is called
         if kwargs.get("noise"):
             self.noise = kwargs.get("noise")
@@ -244,7 +246,7 @@ class Viz:
             else:
                 voltage_step = np.random.randint(0, self.dataset.voltage_steps)
         return voltage_step
-    
+
     @static_state_decorator
     def fit_tester(self, true, predict, pixel=None, voltage_step=None, **kwargs):
 
@@ -261,7 +263,7 @@ class Viz:
         params = self.dataset.SHO_LSQF(pixel=pixel, voltage_step=voltage_step)
 
         print(true)
-        
+
         self.raw_data_comparison(
             true, predict, pixel=pixel, voltage_step=voltage_step, fit_results=params, **kwargs)
 
@@ -345,7 +347,7 @@ class Viz:
         self.dataset.raw_format = "magnitude spectrum"
 
         data, x = self.dataset.raw_spectra(
-            pixel, voltage_step, frequency=True) # deleted **kwargs here might cause problems later
+            pixel, voltage_step, frequency=True)  # deleted **kwargs here might cause problems later
 
         axs[0].plot(x, data[0].flatten(), 'b',
                     label=self.dataset.label + " Amplitude")
@@ -371,7 +373,7 @@ class Viz:
 
         data, x = self.dataset.raw_spectra(
             pixel, voltage_step, frequency=True)
-        # had to delete kwargs here too 
+        # had to delete kwargs here too
 
         axs[1].plot(x, data[0].flatten(), 'k',
                     label=self.dataset.label + " Real")
@@ -639,9 +641,9 @@ class Viz:
                               true_state,
                               prediction=None,
                               out_state=None,
-                              n=1, 
-                              SHO_results = False,
-                              index = None,
+                              n=1,
+                              SHO_results=False,
+                              index=None,
                               **kwargs):
 
         if type(true_state) is dict:
@@ -664,7 +666,7 @@ class Viz:
                 true = [data.numpy() for data in true]
             except:
                 pass
-            
+
             # gets the frequency values
             if true[0].ndim == 2:
                 x1 = self.dataset.get_freq_values(true[0].shape[1])
@@ -673,7 +675,7 @@ class Viz:
         current_state = self.dataset.get_state
 
         if isinstance(prediction, m3_learning.be.nn.SHO_Model):
-            
+
             fitter = "NN"
 
             # sets the phase shift to zero for parameters
@@ -685,52 +687,52 @@ class Viz:
             pred_data, scaled_params, params = prediction.predict(data)
 
             self.dataset.scaled = True
-            
+
             prediction, x2 = self.dataset.raw_spectra(
                 fit_results=params, frequency=True)
-            
+
         elif isinstance(prediction, dict):
-            
+
             fitter = prediction["fitter"]
-            
+
             exec(f"self.dataset.{prediction['fitter']}_phase_shift =0")
-            
+
             self.dataset.scaled = False
-            
+
             params = self.dataset.SHO_fit_results()
-            
+
             self.dataset.scaled = True
-            
+
             prediction, x2 = self.dataset.raw_spectra(
-                    fit_results=params, frequency=True)
-            
+                fit_results=params, frequency=True)
+
         if "x2" not in locals():
-            
-            # if you do not use the model will run the 
+
+            # if you do not use the model will run the
             x2 = self.dataset.get_freq_values(prediction[0].shape[1])
-        
+
         # index the data if provided
         if index is not None:
-            true = [true[0][index],true[1][index]]
-            prediction = [prediction[0][index],prediction[1][index]]
+            true = [true[0][index], true[1][index]]
+            prediction = [prediction[0][index], prediction[1][index]]
             # params = params[index]
-                    
+
         # this must take the scaled data
         index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
-        
+
         d1, labels = self.out_state(d1, out_state)
         d2, labels = self.out_state(d2, out_state)
 
         # saves just the parameters that are needed
         params = params[index1]
-        
+
         # resets the current state to apply the phase shifts
         self.set_attributes(**current_state)
-        
+
         # gets the original index values
         if index is not None:
             index1 = index[index1]
-        
+
         # if statement that will return the values for the SHO Results
         if SHO_results:
             if eval(f"self.dataset.{fitter}_phase_shift") is not None:
@@ -739,207 +741,207 @@ class Viz:
             return (d1, d2, x1, x2, labels, index1, mse1, params)
         else:
             return (d1, d2, x1, x2, labels, index1, mse1)
-        
+
     def out_state(self, data, out_state):
         # holds the raw state
         current_state = self.dataset.get_state
-        
+
         def convert_to_mag(data):
-            data = self.dataset.to_complex(data, axis = 1)
+            data = self.dataset.to_complex(data, axis=1)
             data = self.dataset.raw_data_scaler.inverse_transform(data)
             data = self.dataset.to_magnitude(data)
-            data = np.array(data)   
-            data = np.rollaxis(data, 0,data.ndim-1) 
+            data = np.array(data)
+            data = np.rollaxis(data, 0, data.ndim-1)
             return data
-        
+
         labels = ["real", "imaginary"]
 
         if out_state is not None:
-            
+
             if "raw_format" in out_state.keys():
                 if out_state["raw_format"] == "magnitude spectrum":
                     data = convert_to_mag(data)
                     labels = ["Amplitude", "Phase"]
-            
+
             elif "scaled" in out_state.keys():
                 if out_state["scaled"] == False:
                     data = self.dataset.raw_data_scaler.inverse_transform(data)
                     labels = ["Scaled " + s for s in labels]
 
         self.set_attributes(**current_state)
-        
+
         return data, labels
-    
+
     @static_state_decorator
     def get_mse_index(self, index, model):
-        
+
         # gets the raw data
-        # returns the raw spectra in (samples, voltage steps, real/imaginary) 
+        # returns the raw spectra in (samples, voltage steps, real/imaginary)
         data, _ = self.dataset.NN_data()
-        
+
         # gets the index of the data selected
         # (samples, voltage steps, real/imaginary)
         data = data[[index]]
-        
+
         if isinstance(model, m3_learning.be.nn.SHO_Model):
-            
+
             # gets the predictions from the neural network
             predictions, params_scaled, params = model.predict(data)
-            
+
             # detaches the tensor and converts to numpy
             predictions = predictions.detach().numpy()
-            
+
         if isinstance(model, dict):
-            
+
             # holds the raw state
             current_state = self.dataset.get_state
-            
-            # sets the phase shift to zero for the specific fitter - this is a requirement for using the fitting function                
+
+            # sets the phase shift to zero for the specific fitter - this is a requirement for using the fitting function
             exec(f"self.dataset.{model['fitter']}_phase_shift =0")
-            
+
             # Ensures that we get the unscaled parameters
             # Only the unscaled parameters can be used to calculate the raw data
             self.dataset.scaled = False
-            
-            # Gets the parameters 
+
+            # Gets the parameters
             params = self.dataset.SHO_fit_results()
-            
+
             # sets the dataset to scaled
             # we compare the MSE using the scaled parameters
             self.dataset.scaled = True
-            
+
             # Ensures that the measurement state is complex
             self.dataset.raw_format = "complex"
-            
+
             # This returns the raw data based on the parameters
             # this returns a list of the real and imaginary data
             pred_data = self.dataset.raw_spectra(
-                    fit_results=params)
-            
+                fit_results=params)
+
             # makes the data an array
             # (real/imaginary, samples, voltage steps)
             pred_data = np.array(pred_data)
-            
+
             # rolls the axis to (samples, voltage steps, real/imaginary)
             pred_data = np.rollaxis(pred_data, 0, pred_data.ndim)
-            
+
             # gets the index of the data selected
             # (samples, voltage steps, real/imaginary)
             predictions = pred_data[[index]]
-            
+
             # restores the state to the original state
             self.set_attributes(**current_state)
-        
+
         return SHO_Model.MSE(data.detach().numpy(), predictions)
-    
+
     @static_state_decorator
-    def SHO_Fit_comparison(self, 
-                           data, 
-                           names, 
-                           gaps=(.8, .9), 
-                       size=(1.25, 1.25), model_comparison = None, 
-                       out_state = None, 
-                       filename = None,
-                       display_results = "all",
-                       **kwargs):
-            
+    def SHO_Fit_comparison(self,
+                           data,
+                           names,
+                           gaps=(.8, .9),
+                           size=(1.25, 1.25), model_comparison=None,
+                           out_state=None,
+                           filename=None,
+                           display_results="all",
+                           **kwargs):
+
         # gets the number of fits
         num_fits = len(data)
-        
+
         # changes the gaps if the results are displayed
         if display_results == "MSE":
             gaps = (.8, .45)
-        elif display_results is None: 
+        elif display_results is None:
             gaps = (.8, .33)
-        
+
         # builds the subfigures
         fig, ax = subfigures(3, num_fits, gaps=gaps, size=size)
-        
-        
+
         # loops around the number of fits, and the data
         for step, (data, name) in enumerate(zip(data, names)):
-            
-            #unpack the data
+
+            # unpack the data
             d1, d2, x1, x2, label, index1, mse1, params = data
-            
+
             # loops around the datasets to compare
             for bmw, (true, prediction, error, SHO, index1) in enumerate(zip(d1, d2, mse1, params, index1)):
-                
-                #builds an empty dictionary to hold the errors, SHOs
+
+                # builds an empty dictionary to hold the errors, SHOs
                 errors = {}
                 SHOs = {}
-                
+
                 # selects the graph where the data is plot (rows, columns)
                 i = bmw * num_fits + step
-                
-                ax_ = ax[i]
-                ax_.plot(x2, prediction[0].flatten(), color = color_palette[f"{name}_A"],
-                            label=f"{name} {label[0]}")
-                ax1 = ax_.twinx()
-                ax1.plot(x2, prediction[1].flatten(), color = color_palette[f"{name}_P"],
-                            label=f"{name} {label[1]}")
 
-                ax_.plot(x1, true[0].flatten(), 'o', color = color_palette["LSQF_A"],
-                            label=f"Raw {label[0]}")
-                ax1.plot(x1, true[1].flatten(), 'o', color = color_palette["LSQF_P"],
-                            label=f"Raw {label[1]}")
-                
+                ax_ = ax[i]
+                ax_.plot(x2, prediction[0].flatten(), color=color_palette[f"{name}_A"],
+                         label=f"{name} {label[0]}")
+                ax1 = ax_.twinx()
+                ax1.plot(x2, prediction[1].flatten(), color=color_palette[f"{name}_P"],
+                         label=f"{name} {label[1]}")
+
+                ax_.plot(x1, true[0].flatten(), 'o', color=color_palette["LSQF_A"],
+                         label=f"Raw {label[0]}")
+                ax1.plot(x1, true[1].flatten(), 'o', color=color_palette["LSQF_P"],
+                         label=f"Raw {label[1]}")
+
                 # saves error to the correct error name
                 errors[name] = error
                 SHOs[name] = SHO
-                            
+
                 if model_comparison is not None:
                     if model_comparison[step] is not None:
 
-                        pred_data, params, labels = self.get_SHO_params(index1, 
-                                                                model = model_comparison[step], 
-                                                                out_state = out_state)
-                        
-                        
+                        pred_data, params, labels = self.get_SHO_params(index1,
+                                                                        model=model_comparison[step],
+                                                                        out_state=out_state)
+
                         # checks if using a neural network and saves the error
                         if isinstance(model_comparison[step], m3_learning.be.nn.SHO_Model):
-                            
+
                             # saves the color prefix
                             color = "NN"
-                            
+
                         # if the model is a dictionary then it is an LSQF model
                         if isinstance(model_comparison[step], dict):
-                            
+
                             # saves the color prefix
                             color = "LSQF"
-                            
+
                         # saves error to the correct error name
-                        errors[color]=  self.get_mse_index(index1, model_comparison[step])
-                        SHOs[color] = np.array(params).squeeze() # might need to turn this into a numpy array and squeeze it
-                        
+                        errors[color] = self.get_mse_index(
+                            index1, model_comparison[step])
+                        # might need to turn this into a numpy array and squeeze it
+                        SHOs[color] = np.array(params).squeeze()
+
                         # plots the comparison graph
-                        ax_.plot(x2, pred_data.squeeze()[0].flatten(), color = color_palette[f"{color}_A"],
-                                label=f"{color} {labels[0]}")
-                        ax1.plot(x2, pred_data.squeeze()[1].flatten(), color = color_palette[f"{color}_P"],
-                                label=f"{color} {labels[1]}")
-                        if display_results == "all": 
+                        ax_.plot(x2, pred_data.squeeze()[0].flatten(), color=color_palette[f"{color}_A"],
+                                 label=f"{color} {labels[0]}")
+                        ax1.plot(x2, pred_data.squeeze()[1].flatten(), color=color_palette[f"{color}_P"],
+                                 label=f"{color} {labels[1]}")
+                        if display_results == "all":
                             error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}\n AMP - LSQF:{SHOs['LSQF'][0]:0.2e} NN:{SHOs['NN'][0]:0.2e}\n\u03C9 - LSQF: {SHOs['LSQF'][1]/1000:0.1f} NN: {SHOs['NN'][1]/1000:0.1f} Hz\nQ- LSQF: {SHOs['LSQF'][2]:0.1f} NN: {SHOs['NN'][2]:0.1f}\n\u03C6- LSQF: {SHOs['LSQF'][3]:0.2f} NN: {SHOs['NN'][3]:0.1f} rad"
                         elif display_results == "MSE":
                             error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}"
 
                 # sets the xlabel, this is always frequency (HZ)
                 ax_.set_xlabel("Frequency (Hz)")
-                
+
                 # if wants to display the results
                 if display_results is not None:
                     # gets the axis position in inches - gets the bottom center
                     center = get_axis_pos_inches(fig, ax[i])
-                    
+
                     # selects the text position as an offset from the bottom center
                     text_position_in_inches = (center[0], center[1] - 0.33)
-                    
+
                     if "error_string" not in locals():
                         error_string = f'MSE: {error:0.4f}'
-                        
+
                     add_text_to_figure(
-                        fig, error_string, 
-                        text_position_in_inches, 
-                        fontsize=6, ha='center', va = 'top',)
+                        fig, error_string,
+                        text_position_in_inches,
+                        fontsize=6, ha='center', va='top',)
 
                 if out_state is not None:
                     if "raw_format" in out_state.keys():
@@ -949,18 +951,19 @@ class Viz:
                     else:
                         ax_.set_ylabel("Real (Arb. U.)")
                         ax1.set_ylabel("Imag (Arb. U.)")
-                
-                if i < num_fits:        
+
+                if i < num_fits:
                     # add a legend just for the last one
                     lines, labels = ax_.get_legend_handles_labels()
                     lines2, labels2 = ax1.get_legend_handles_labels()
-                    ax_.legend(lines + lines2, labels + labels2, loc='upper right')
-                        
+                    ax_.legend(lines + lines2, labels +
+                               labels2, loc='upper right')
+
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style='b')
-    
-    @static_state_decorator    
+
+    @static_state_decorator
     def get_SHO_params(self, index, model, out_state):
         """Function that gets the SHO parameters for a given index based on a specific model
 
@@ -971,65 +974,65 @@ class Viz:
 
         Returns:
             array, array, list: returns the output data, the SHO parameters, and the labels for the data
-        """        
-        
+        """
+
         current_state = self.dataset.get_state
-    
-        pixel, voltage = np.unravel_index(index, (self.dataset.num_pix, self.dataset.voltage_steps))
-        
+
+        pixel, voltage = np.unravel_index(
+            index, (self.dataset.num_pix, self.dataset.voltage_steps))
+
         if isinstance(model, m3_learning.be.nn.SHO_Model):
-            
+
             X_data, Y_data = self.dataset.NN_data()
-            
+
             X_data = X_data[[index]]
-            
+
             pred_data, scaled_param, params = model.predict(X_data)
-            
+
             pred_data = np.array(pred_data)
-            
 
         if isinstance(model, dict):
-            
+
             # holds the raw state
             current_state = self.dataset.get_state
-            
+
             self.dataset.scaled = False
-            
+
             params_shifted = self.dataset.SHO_fit_results()
-                
+
             exec(f"self.dataset.{model['fitter']}_phase_shift =0")
-            
+
             params = self.dataset.SHO_fit_results()
-            
+
             self.dataset.scaled = True
-            
+
             pred_data = self.dataset.raw_spectra(
-                    fit_results=params)
-            
+                fit_results=params)
+
             # output (channels, samples, voltage steps)
             pred_data = np.array([pred_data[0], pred_data[1]])
-            
+
             # output (samples, channels, voltage steps)
             pred_data = np.swapaxes(pred_data, 0, 1)
-            
+
             # output (samples, voltage steps, channels)
             pred_data = np.swapaxes(pred_data, 1, 2)
-            
-            params_shifted = params_shifted.reshape(-1,4)
-            
+
+            params_shifted = params_shifted.reshape(-1, 4)
+
             pred_data = pred_data[[index]]
             params = params_shifted[[index]]
-            
+
             self.set_attributes(**current_state)
-        
+
         pred_data = np.swapaxes(pred_data, 1, 2)
-                    
-        pred_data, labels =  self.out_state(pred_data, out_state)
-        
+
+        pred_data, labels = self.out_state(pred_data, out_state)
+
         # returns the state to the original state
         self.set_attributes(**current_state)
-            
-        return pred_data, params, labels  
+
+        return pred_data, params, labels
 
     @static_state_decorator
     def bmw_nn(self, true_state,
@@ -1061,9 +1064,9 @@ class Viz:
             ax1.plot(x2, prediction[1].flatten(), color_palette["NN_P"],
                      label=f"NN {label[1]}]")
 
-            ax_.plot(x1, true[0].flatten(), 'o', color = color_palette["NN_A"],
+            ax_.plot(x1, true[0].flatten(), 'o', color=color_palette["NN_A"],
                      label=f"Raw {label[0]}")
-            ax1.plot(x1, true[1].flatten(), 'o', color = color_palette["NN_P"],
+            ax1.plot(x1, true[1].flatten(), 'o', color=color_palette["NN_P"],
                      label=f"Raw {label[1]}")
 
             ax_.set_xlabel("Frequency (Hz)")
@@ -1096,44 +1099,45 @@ class Viz:
         if "returns" in kwargs.keys():
             if kwargs["returns"] == True:
                 return d1, d2, index1, mse1
-    
-    @static_state_decorator
-    def SHO_switching_maps(self, 
-                           SHO_, 
-                       colorbars = True,
-                       clims = [(0, 1.4e-4), # amplitude
-                                (1.31e6, 1.33e6), # resonance frequency
-                                (-230, -160), # quality factor
-                                (-np.pi, np.pi)], # phase
-                       measurement_state = "off", # sets the measurement state to get the data
-                       cycle = 2, # sets the cycle to get the data
-                       cols = 3,
-                        fig_width = 6.5, # figure width in inches
-                        number_of_steps = 9, # number of steps on the graph
-                        voltage_plot_height = 1.25, # height of the voltage plot
-                        intra_gap = 0.02, # gap between the graphs,
-                        inter_gap = 0.05, # gap between the graphs,
-                        cbar_gap = .5, # gap between the graphs of colorbars
-                        cbar_space = 1.3, # space on the right where the cbar is not
-                        filename = None,
-                       ):
 
+    @static_state_decorator
+    def SHO_switching_maps(self,
+                           SHO_,
+                           colorbars=True,
+                           clims=[(0, 1.4e-4),  # amplitude
+                                  (1.31e6, 1.33e6),  # resonance frequency
+                                  (-230, -160),  # quality factor
+                                  (-np.pi, np.pi)],  # phase
+                           measurement_state="off",  # sets the measurement state to get the data
+                           cycle=2,  # sets the cycle to get the data
+                           cols=3,
+                           fig_width=6.5,  # figure width in inches
+                           number_of_steps=9,  # number of steps on the graph
+                           voltage_plot_height=1.25,  # height of the voltage plot
+                           intra_gap=0.02,  # gap between the graphs,
+                           inter_gap=0.05,  # gap between the graphs,
+                           cbar_gap=.5,  # gap between the graphs of colorbars
+                           cbar_space=1.3,  # space on the right where the cbar is not
+                           filename=None,
+                           ):
 
         # sets the voltage state to off, and the cycle to get
         self.dataset.measurement_state = measurement_state
         self.dataset.cycle = cycle
-        
+
         # instantiates the list of axes
         ax = []
 
         # number of rows
         rows = np.ceil(number_of_steps / 3)
 
-        # calculates the size of the embedding image 
-        embedding_image_size = (fig_width - (inter_gap * (cols - 1)) - intra_gap * 3 * cols - cbar_space*colorbars) /(cols * 4)
+        # calculates the size of the embedding image
+        embedding_image_size = (fig_width - (inter_gap * (cols - 1)) -
+                                intra_gap * 3 * cols - cbar_space*colorbars) / (cols * 4)
 
         # calculates the figure height based on the image details
-        fig_height = rows * (embedding_image_size + inter_gap) + voltage_plot_height + .33
+        fig_height = rows * (embedding_image_size +
+                             inter_gap) + voltage_plot_height + .33
 
         # defines a scalar to convert inches to relative coordinates
         fig_scalar = FigDimConverter((fig_width, fig_height))
@@ -1141,8 +1145,9 @@ class Viz:
         # creates the figure
         fig = plt.figure(figsize=(fig_width, fig_height))
 
-        #left bottom width height
-        pos_inch = [0.33 , fig_height - voltage_plot_height, 6.5 - .33, voltage_plot_height]
+        # left bottom width height
+        pos_inch = [0.33, fig_height - voltage_plot_height,
+                    6.5 - .33, voltage_plot_height]
 
         # adds the plot for the voltage
         ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
@@ -1153,151 +1158,160 @@ class Viz:
 
         # sets the embedding size of the image
         pos_inch[2] = embedding_image_size
-        pos_inch[3] = embedding_image_size 
+        pos_inch[3] = embedding_image_size
 
         # adds the embedding plots
         for i in range(number_of_steps):
 
             # loops around the amp, phase, and freq
             for j in range(4):
-            
+
                 # adds the plot to the figure
-                ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch))) 
-                
+                ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+
                 # adds the inter plot gap
                 pos_inch[0] += embedding_image_size + intra_gap
 
             # if the last column in row, moves the position to the next row
             if (i+1) % cols == 0 and i != 0:
-                
+
                 # resets the x0 position for the embedding plots
                 pos_inch[0] = 0
-                
+
                 # moves the y0 position to the next row
                 pos_inch[1] -= embedding_image_size + inter_gap
             else:
                 # adds the small gap between the plots
                 pos_inch[0] += inter_gap
-                
+
         # gets the DC voltage data - this is for only the on state or else it would all be 0
         voltage = self.dataset.dc_voltage
 
         # gets just part of the loop
         if hasattr(self.dataset, 'cycle') and self.dataset.cycle is not None:
             # gets the cycle of interest
-            voltage =  self.dataset.get_cycle(voltage)
-            
+            voltage = self.dataset.get_cycle(voltage)
+
         # gets the index of the voltage steps to plot
-        inds = np.linspace(0,len(voltage)-1, number_of_steps, dtype=int)    
-        
+        inds = np.linspace(0, len(voltage)-1, number_of_steps, dtype=int)
+
         # converts the data to a numpy array
         if isinstance(SHO_, torch.Tensor):
             SHO_ = SHO_.detach().numpy()
 
-        SHO_ = SHO_.reshape(self.dataset.num_pix, self.dataset.voltage_steps, 4)
+        SHO_ = SHO_.reshape(self.dataset.num_pix,
+                            self.dataset.voltage_steps, 4)
 
         # get the selected measurement cycle
-        SHO_ = self.dataset.get_measurement_cycle(SHO_, axis = 1)  
+        SHO_ = self.dataset.get_measurement_cycle(SHO_, axis=1)
 
         # plots the voltage
-        ax[0].plot(voltage , "k")
+        ax[0].plot(voltage, "k")
         ax[0].set_ylabel("Voltage (V)")
         ax[0].set_xlabel("Step")
 
         # Plot the data with different markers
         for i, ind in enumerate(inds):
             # this adds the labels to the graphs
-            ax[0].plot(ind, voltage[ind], 'o', color = 'k', markersize=10)
+            ax[0].plot(ind, voltage[ind], 'o', color='k', markersize=10)
             vshift = (ax[0].get_ylim()[1] - ax[0].get_ylim()[0]) * .25
-            
+
             # positions the location of the labels
             if voltage[ind] - vshift - .15 < ax[0].get_ylim()[0]:
                 vshift = -vshift/2
-            
+
             # adds the text to the graphs
-            ax[0].text(ind, voltage[ind] - vshift, str(i+1), color="k", fontsize=12)
+            ax[0].text(ind, voltage[ind] - vshift,
+                       str(i+1), color="k", fontsize=12)
 
         names = ["A", "\u03C9", "Q", "\u03C6"]
 
         for i, ind in enumerate(inds):
-            
+
             # loops around the amp, resonant frequency, and Q, Phase
             for j in range(4):
-                imagemap(ax[i*4+j+1], SHO_[:, ind, j], colorbars=False, cmap="viridis",)
-                
-                if i // rows == 0:
-                    labelfigs(ax[i*4+j+1], string_add = names[j], loc = "cb", size = 5, inset_fraction=.2)
-                
-                ax[i*4+j+1].images[0].set_clim(clims[j])
-            labelfigs(ax[1::4][i], string_add = str(i+1), size = 5, loc = "bl", inset_fraction=.2)
+                imagemap(ax[i*4+j+1], SHO_[:, ind, j],
+                         colorbars=False, cmap="viridis",)
 
-        # if add colorbars  
+                if i // rows == 0:
+                    labelfigs(ax[i*4+j+1], string_add=names[j],
+                              loc="cb", size=5, inset_fraction=.2)
+
+                ax[i*4+j+1].images[0].set_clim(clims[j])
+            labelfigs(ax[1::4][i], string_add=str(i+1),
+                      size=5, loc="bl", inset_fraction=.2)
+
+        # if add colorbars
         if colorbars:
-            
+
             # builds a list to store the colorbar axis objects
             bar_ax = []
-            
-            #gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
-            voltage_ax_pos = fig_scalar.to_inches(np.array(ax[0].get_position()).flatten())
-            
+
+            # gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
+            voltage_ax_pos = fig_scalar.to_inches(
+                np.array(ax[0].get_position()).flatten())
+
             # loops around the 4 axis
             for i in range(4):
-                
+
                 # calculates the height and width of the colorbars
-                cbar_h = (voltage_ax_pos[1] - inter_gap - 2 * intra_gap - .33)/2
+                cbar_h = (voltage_ax_pos[1] -
+                          inter_gap - 2 * intra_gap - .33)/2
                 cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
-                
+
                 # sets the position of the axis in inches
-                pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap, 
-                            voltage_ax_pos[1] - (i//2)*(inter_gap + cbar_h) -.33 - cbar_h, 
-                            cbar_w, 
+                pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap,
+                            voltage_ax_pos[1] - (i//2) *
+                            (inter_gap + cbar_h) - .33 - cbar_h,
+                            cbar_w,
                             cbar_h]
-                
+
                 # adds the plot to the figure
-                bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch))) 
-                
+                bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+
                 # adds the colorbars to the plots
-                cbar = plt.colorbar(ax[i+1].images[0], cax=bar_ax[i], format = '%.1e')
+                cbar = plt.colorbar(ax[i+1].images[0],
+                                    cax=bar_ax[i], format='%.1e')
                 cbar.set_label(names[i])  # Add a label to the colorbar
-            
-                    
+
         # prints the figure
         if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename, label_figs=ax[1::4], size = 6, loc = 'tl', inset_fraction=.2)          
+            self.Printer.savefig(
+                fig, filename, label_figs=ax[1::4], size=6, loc='tl', inset_fraction=.2)
 
         fig.show()
-        
-    @static_state_decorator       
-    def noisy_datasets(self, state, noise_level = None, pixel = None, 
-                       voltage_step = None, filename = None):
-        
+
+    @static_state_decorator
+    def noisy_datasets(self, state, noise_level=None, pixel=None,
+                       voltage_step=None, filename=None):
+
         if pixel is None:
             # Select a random point and time step to plot
             pixel = np.random.randint(0, self.dataset.num_pix)
-        
+
         if voltage_step is None:
             voltage_step = np.random.randint(0, self.dataset.voltage_steps)
-        
+
         self.set_attributes(**state)
-        
+
         if noise_level is None:
-            datasets = np.arange(0,len(self.dataset.raw_datasets))
+            datasets = np.arange(0, len(self.dataset.raw_datasets))
         else:
             datasets = noise_level
-            
-        fig, ax_ = layout_fig(len(datasets), 4, 
-                                figsize=(4*(1.25 + .33), ((1+len(datasets))//4)*1.25))
-        
+
+        fig, ax_ = layout_fig(len(datasets), 4,
+                              figsize=(4*(1.25 + .33), ((1+len(datasets))//4)*1.25))
+
         for i, (ax, noise) in enumerate(zip(ax_, datasets)):
-            
+
             self.dataset.noise = noise
-            
+
             data, x = self.dataset.raw_spectra(
-                            pixel, voltage_step, frequency=True)
-            
-            ax.plot(x, data[0].flatten(), color = 'k')
+                pixel, voltage_step, frequency=True)
+
+            ax.plot(x, data[0].flatten(), color='k')
             ax1 = ax.twinx()
-            ax1.plot(x, data[1].flatten(), color = 'b')
+            ax1.plot(x, data[1].flatten(), color='b')
 
             ax.set_xlabel("Frequency (Hz)")
 
@@ -1307,29 +1321,26 @@ class Viz:
             elif self.dataset.raw_format == "complex":
                 ax.set_ylabel("Real (Arb. U.)")
                 ax1.set_ylabel("Imag (Arb. U.)")
-            
-            # makes the box square    
+
+            # makes the box square
             ax.set_box_aspect(1)
-            
-            
-            labelfigs(ax1, string_add = f"Noise {noise}", loc = "ct", size = 5, inset_fraction=.2, style='b')
-            
+
+            labelfigs(
+                ax1, string_add=f"Noise {noise}", loc="ct", size=5, inset_fraction=.2, style='b')
+
         # prints the figure
         if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename, label_figs=ax_, size = 6, loc = 'bl', inset_fraction=.2)    
-
-            
-            
-                
+            self.Printer.savefig(fig, filename, label_figs=ax_,
+                                 size=6, loc='bl', inset_fraction=.2)
 
     @static_state_decorator
-    def violin_plot_comparison(self, state, model, X_data, filename): 
-        
+    def violin_plot_comparison(self, state, model, X_data, filename):
+
         self.set_attributes(**state)
 
         df = pd.DataFrame()
 
-        #uses the model to get the predictions
+        # uses the model to get the predictions
         pred_data, scaled_param, params = model.predict(X_data)
 
         # scales the parameters
@@ -1337,11 +1348,13 @@ class Viz:
 
         # gets the parameters from the SHO LSQF fit
         true = self.dataset.SHO_fit_results().reshape(-1, 4)
-        
+
         # Builds the dataframe for the violin plot
-        true_df = pd.DataFrame(true, columns=["Amplitude", "Resonance", "Q-Factor", "Phase"])
+        true_df = pd.DataFrame(
+            true, columns=["Amplitude", "Resonance", "Q-Factor", "Phase"])
         predicted_df = pd.DataFrame(
-            scaled_param, columns=["Amplitude", "Resonance", "Q-Factor", "Phase"]
+            scaled_param, columns=["Amplitude",
+                                   "Resonance", "Q-Factor", "Phase"]
         )
 
         # merges the two dataframes
@@ -1350,7 +1363,8 @@ class Viz:
         # adds the labels to the dataframe
         names = [true, scaled_param]
         names_str = ["LSQF", "NN"]
-        labels = ["A", "\u03C9", "Q", "\u03C6"] #["Amplitude", "Resonance", "Q-Factor", "Phase"]
+        # ["Amplitude", "Resonance", "Q-Factor", "Phase"]
+        labels = ["A", "\u03C9", "Q", "\u03C6"]
 
         # adds the labels to the dataframe
         for j, name in enumerate(names):
@@ -1362,42 +1376,56 @@ class Viz:
                 }
 
                 df = pd.concat((df, pd.DataFrame(dict_)))
-        
-        # builds the plot        
-        fig, ax = plt.subplots(figsize = (2,2))
-        
+
+        # builds the plot
+        fig, ax = plt.subplots(figsize=(2, 2))
+
         # plots the data
-        sns.violinplot(data=df, x="parameter", y="value", hue="dataset", split=True, ax = ax)
-        
+        sns.violinplot(data=df, x="parameter", y="value",
+                       hue="dataset", split=True, ax=ax)
+
         # labels the figure and does some styling
         labelfigs(ax, 0, style='b')
         ax.set_ylabel('Scaled SHO Results')
         ax.set_xlabel('')
-        
+
         # Get the legend associated with the plot
         legend = ax.get_legend()
         legend.set_title("")
-        
+
         # ax.set_aspect(1)
 
-        
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
-            
-    def SHO_fit_movie_images(self, noise = None):
-        
+
+    def SHO_fit_movie_images(self, noise=None, comparison=None, fig_width=6.5,
+                             voltage_plot_height=1.25,  # height of the voltage plot
+                             intra_gap=0.02,  # gap between the graphs,
+                             inter_gap=0.2,  # gap between the graphs,
+                             cbar_gap=.5,  # gap between the graphs of colorbars
+                             # space on the right where the cbar is not):
+                             cbar_space=1.3,
+                             colorbars=True,
+                             ):
+
         # instantiates the list of axes
         ax = []
 
         # number of rows
         rows = 2
+        cols = 4
 
-        # calculates the size of the embedding image 
-        embedding_image_size = (fig_width - (inter_gap * (cols - 1)) - intra_gap * 3 * cols - cbar_space*colorbars) /(cols * 4)
+        if comparison is not None:
+            rows *= 2
+
+        # calculates the size of the embedding image
+        embedding_image_size = (fig_width - inter_gap -
+                                intra_gap * 2 - cbar_space*colorbars) / (4)
 
         # calculates the figure height based on the image details
-        fig_height = rows * (embedding_image_size + inter_gap) + voltage_plot_height + .33
+        fig_height = rows * (embedding_image_size +
+                             inter_gap/2 + intra_gap/2) + voltage_plot_height + .33
 
         # defines a scalar to convert inches to relative coordinates
         fig_scalar = FigDimConverter((fig_width, fig_height))
@@ -1405,8 +1433,9 @@ class Viz:
         # creates the figure
         fig = plt.figure(figsize=(fig_width, fig_height))
 
-        #left bottom width height
-        pos_inch = [0.33 , fig_height - voltage_plot_height, 6.5 - .33, voltage_plot_height]
+        # left bottom width height
+        pos_inch = [0.33, fig_height - voltage_plot_height,
+                    6.5 - .33, voltage_plot_height]
 
         # adds the plot for the voltage
         ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
@@ -1417,116 +1446,120 @@ class Viz:
 
         # sets the embedding size of the image
         pos_inch[2] = embedding_image_size
-        pos_inch[3] = embedding_image_size 
+        pos_inch[3] = embedding_image_size
 
-        # adds the embedding plots
-        for i in range(number_of_steps):
+        for j in range(rows):
 
-            # loops around the amp, phase, and freq
-            for j in range(4):
-            
+            for i in range(4):
+
                 # adds the plot to the figure
-                ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch))) 
-                
-                # adds the inter plot gap
-                pos_inch[0] += embedding_image_size + intra_gap
+                ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
 
-            # if the last column in row, moves the position to the next row
-            if (i+1) % cols == 0 and i != 0:
+                if i == 1:
+                    gap = inter_gap
+                else:
+                    gap = intra_gap
+
+                # adds the inter plot gap
+                pos_inch[0] += embedding_image_size + gap
                 
-                # resets the x0 position for the embedding plots
-                pos_inch[0] = 0
-                
-                # moves the y0 position to the next row
+            pos_inch[0] = 0
+
+            if (j+1) % 2 == 0:
                 pos_inch[1] -= embedding_image_size + inter_gap
             else:
-                # adds the small gap between the plots
-                pos_inch[0] += inter_gap
-                
+                pos_inch[1] -= embedding_image_size + intra_gap
+
         # gets the DC voltage data - this is for only the on state or else it would all be 0
         voltage = self.dataset.dc_voltage
 
         # gets just part of the loop
         if hasattr(self.dataset, 'cycle') and self.dataset.cycle is not None:
             # gets the cycle of interest
-            voltage =  self.dataset.get_cycle(voltage)
+            voltage = self.dataset.get_cycle(voltage)
             
-        # gets the index of the voltage steps to plot
-        inds = np.linspace(0,len(voltage)-1, number_of_steps, dtype=int)    
         
-        # converts the data to a numpy array
-        if isinstance(SHO_, torch.Tensor):
-            SHO_ = SHO_.detach().numpy()
 
-        SHO_ = SHO_.reshape(self.dataset.num_pix, self.dataset.voltage_steps, 4)
+        # # gets the index of the voltage steps to plot
+        # inds = np.linspace(0,len(voltage)-1, number_of_steps, dtype=int)
 
-        # get the selected measurement cycle
-        SHO_ = self.dataset.get_measurement_cycle(SHO_, axis = 1)  
+        # # converts the data to a numpy array
+        # if isinstance(SHO_, torch.Tensor):
+        #     SHO_ = SHO_.detach().numpy()
+
+        # SHO_ = SHO_.reshape(self.dataset.num_pix, self.dataset.voltage_steps, 4)
+
+        # # get the selected measurement cycle
+        # SHO_ = self.dataset.get_measurement_cycle(SHO_, axis = 1)
+        
+        ax_ = [ax[0]]
+        
+        if comparison is not None:
+            z = 1
+        else:
+            z = 0
+        
+        for j in range(1 + z):
+            for i in range(2):
+                ax_.extend(ax[1+2*i+8*j:3+2*i+8*j])
+                ax_.extend(ax[5+ 2*i + 8*j:7+2*i + 8*j])
+                
+        ax = ax_
 
         # plots the voltage
-        ax[0].plot(voltage , "k")
+        ax[0].plot(voltage, "k")
         ax[0].set_ylabel("Voltage (V)")
         ax[0].set_xlabel("Step")
+        
+        for i, ax in enumerate(ax):
+            labelfigs(ax, i)
+  
 
-        # Plot the data with different markers
-        for i, ind in enumerate(inds):
-            # this adds the labels to the graphs
-            ax[0].plot(ind, voltage[ind], 'o', color = 'k', markersize=10)
-            vshift = (ax[0].get_ylim()[1] - ax[0].get_ylim()[0]) * .25
-            
-            # positions the location of the labels
-            if voltage[ind] - vshift - .15 < ax[0].get_ylim()[0]:
-                vshift = -vshift/2
-            
-            # adds the text to the graphs
-            ax[0].text(ind, voltage[ind] - vshift, str(i+1), color="k", fontsize=12)
+        # names = ["A", "\u03C9", "Q", "\u03C6"]
 
-        names = ["A", "\u03C9", "Q", "\u03C6"]
+        # for i, ind in enumerate(inds):
 
-        for i, ind in enumerate(inds):
-            
-            # loops around the amp, resonant frequency, and Q, Phase
-            for j in range(4):
-                imagemap(ax[i*4+j+1], SHO_[:, ind, j], colorbars=False, cmap="viridis",)
-                
-                if i // rows == 0:
-                    labelfigs(ax[i*4+j+1], string_add = names[j], loc = "cb", size = 5, inset_fraction=.2)
-                
-                ax[i*4+j+1].images[0].set_clim(clims[j])
-            labelfigs(ax[1::4][i], string_add = str(i+1), size = 5, loc = "bl", inset_fraction=.2)
+        #     # loops around the amp, resonant frequency, and Q, Phase
+        #     for j in range(4):
+        #         imagemap(ax[i*4+j+1], SHO_[:, ind, j], colorbars=False, cmap="viridis",)
 
-        # if add colorbars  
-        if colorbars:
-            
-            # builds a list to store the colorbar axis objects
-            bar_ax = []
-            
-            #gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
-            voltage_ax_pos = fig_scalar.to_inches(np.array(ax[0].get_position()).flatten())
-            
-            # loops around the 4 axis
-            for i in range(4):
-                
-                # calculates the height and width of the colorbars
-                cbar_h = (voltage_ax_pos[1] - inter_gap - 2 * intra_gap - .33)/2
-                cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
-                
-                # sets the position of the axis in inches
-                pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap, 
-                            voltage_ax_pos[1] - (i//2)*(inter_gap + cbar_h) -.33 - cbar_h, 
-                            cbar_w, 
-                            cbar_h]
-                
-                # adds the plot to the figure
-                bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch))) 
-                
-                # adds the colorbars to the plots
-                cbar = plt.colorbar(ax[i+1].images[0], cax=bar_ax[i], format = '%.1e')
-                cbar.set_label(names[i])  # Add a label to the colorbar
-            
-                    
-        # prints the figure
-        if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename, label_figs=ax[1::4], size = 6, loc = 'tl', inset_fraction=.2)          
+        #         if i // rows == 0:
+        #             labelfigs(ax[i*4+j+1], string_add = names[j], loc = "cb", size = 5, inset_fraction=.2)
 
-        fig.show()
+        #         ax[i*4+j+1].images[0].set_clim(clims[j])
+        #     labelfigs(ax[1::4][i], string_add = str(i+1), size = 5, loc = "bl", inset_fraction=.2)
+
+        # # if add colorbars
+        # if colorbars:
+
+        #     # builds a list to store the colorbar axis objects
+        #     bar_ax = []
+
+        #     #gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
+        #     voltage_ax_pos = fig_scalar.to_inches(np.array(ax[0].get_position()).flatten())
+
+        #     # loops around the 4 axis
+        #     for i in range(4):
+
+        #         # calculates the height and width of the colorbars
+        #         cbar_h = (voltage_ax_pos[1] - inter_gap - 2 * intra_gap - .33)/2
+        #         cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
+
+        #         # sets the position of the axis in inches
+        #         pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap,
+        #                     voltage_ax_pos[1] - (i//2)*(inter_gap + cbar_h) -.33 - cbar_h,
+        #                     cbar_w,
+        #                     cbar_h]
+
+        #         # adds the plot to the figure
+        #         bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+
+        #         # adds the colorbars to the plots
+        #         cbar = plt.colorbar(ax[i+1].images[0], cax=bar_ax[i], format = '%.1e')
+        #         cbar.set_label(names[i])  # Add a label to the colorbar
+
+        # # prints the figure
+        # if self.Printer is not None and filename is not None:
+        #     self.Printer.savefig(fig, filename, label_figs=ax[1::4], size = 6, loc = 'tl', inset_fraction=.2)
+
+        # fig.show()
