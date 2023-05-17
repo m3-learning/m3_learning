@@ -19,12 +19,19 @@ class printer:
         make_folder(self.basepath)
 
     def savefig(self, fig, name, tight_layout=False, basepath=None, label_figs=None, fileformats = None, **kwargs):
-        """Function to save a figure
+        """
+        Function to save a figure in one or multiple formats.
 
         Args:
-            fig (figure): figure to save
-            name (str): file name to save the figure
+            fig (matplotlib.figure.Figure): The figure to save.
+            name (str): The file name to save the figure under.
+            tight_layout (bool, optional): If True, the layout is adjusted to fit tightly within the figure. Defaults to False.
+            basepath (str, optional): The base path for saving the figure. If None, uses self.basepath. Defaults to None.
+            label_figs (list of axes, optional): List of axes to label. If None, no axes are labeled. Defaults to None.
+            fileformats (list of str, optional): List of file formats to save the figure in. If None, uses self.fileformats. Defaults to None.
+            **kwargs: Additional keyword arguments for the labelfigs function.
         """
+
         if tight_layout:
             fig.tight_layout()
 

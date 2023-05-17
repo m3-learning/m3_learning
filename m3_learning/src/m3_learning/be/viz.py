@@ -11,6 +11,7 @@ import pandas as pd
 import seaborn as sns
 from m3_learning.util.file_IO import make_folder
 from m3_learning.viz.Movies import make_movie
+import os
 color_palette = {
     "LSQF_A": "#003f5c",
     "LSQF_P": "#444e86",
@@ -1486,7 +1487,8 @@ class Viz:
 
     # @static_state_decorator
     def SHO_fit_movie_images(self, 
-                             noise=0, 
+                             noise=0,
+                             model_path = None,
                              comparison=None, 
                              fig_width=6.5,
                              voltage_plot_height=1.25,  # height of the voltage plot
@@ -1501,17 +1503,28 @@ class Viz:
                              basepath = None, 
                              ):
         
+        if model is not None:
+            
+            filename = model_path + '/' + self.get_lowest_loss_for_noise_level(model_path, noise)
+            
+             # instantiate the model
+            model = SHO_Model(self.dataset, training=False, model_basename="SHO_Fitter_original_data")
+
+            model.load(filename)
+        
         if basepath is not None:
             basepath += f"Noise_{noise}"
             basepath = make_folder(basepath)
+            
+        self.dataset.noise = noise
         
         self.dataset.measurement_state = "on"
         
-        on_data = self.dataset.SHO_fit_results()
+        on_data = self.dataset.SHO_fit_results(model = model)
         
         self.dataset.measurement_state = "off"
         
-        off_data = self.dataset.SHO_fit_results()
+        off_data = self.dataset.SHO_fit_results(model = model)
         
         names = ["A", "\u03C9", "Q", "\u03C6"]
 
@@ -1586,17 +1599,41 @@ class Viz:
                     
             # prints the figure
             if self.Printer is not None and filename is not None:
-                self.Printer.savefig(fig, f"{basepath}/{filename}_noise_{noise}_{z:04d}", fileformats = ['png'])
+                self.Printer.savefig(fig, f"{filename}_noise_{noise}_{z:04d}", basepath = basepath + '/', fileformats = ['png'])
                 
             plt.close(fig)
+ 
+        make_movie(f"{filename}_noise_{noise}", basepath, basepath, file_format="png", fps=5)
+
             
-        
-        try:    
-            make_movie("{filename}_noise_{noise}_{z:04d}", basepath, basepath, 'MP4', fps=5)
-        except:
-            print("Could not make movie")
+    def get_lowest_loss_for_noise_level(path, desired_noise_level):
+
+        if isinstance(desired_noise_level, int):
+            desired_noise_level = str(desired_noise_level)
             
-        
+        # Create a dictionary to store the lowest loss for each noise value
+        lowest_losses = {}
+
+        # Iterate over the files in the directory
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if file.endswith(".pth"):
+                    noise_value = file.split("_noise_")[1].split("_")[0]
+                    loss = file.split("train_loss_")[1].split("_")[0]
+                    loss = float(loss.split(".pth")[0])
+
+                    # Update the lowest loss for each noise value in the dictionary
+                    if noise_value == desired_noise_level:
+                        if noise_value not in lowest_losses or loss < lowest_losses[noise_value][0]:
+                            lowest_losses[noise_value] = (loss, file)
+
+        # Return the file name with the lowest loss for the desired noise level
+        if desired_noise_level in lowest_losses:
+            loss, file_name = lowest_losses[desired_noise_level]
+            return file_name
+        else:
+            return None
+
         
 
         # # gets the index of the voltage steps to plot

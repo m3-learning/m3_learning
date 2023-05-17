@@ -390,7 +390,7 @@ class BE_Dataset:
     @property
     def dc_voltage(self):
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f[f"{self.dataset}_SHO_Fit/Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
+            return h5_f[f"Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
 
     @property
     def num_pix(self):
@@ -668,40 +668,59 @@ class BE_Dataset:
     def SHO_fit_results(self,
                         pixel=None,
                         voltage_step=None,
-                        state=None):
+                        state=None,
+                        model = None):
 
-        with h5py.File(self.file, "r+") as h5_f:
+        if model is None:
+            with h5py.File(self.file, "r+") as h5_f:
 
-            if state is not None:
-                self.set_attributes(**state)
+                if state is not None:
+                    self.set_attributes(**state)
 
-            voltage_step = self.measurement_state_voltage(voltage_step)
+                voltage_step = self.measurement_state_voltage(voltage_step)
 
-            data = eval(f"self.SHO_{self.fitter}(pixel, voltage_step)")
+                data = eval(f"self.SHO_{self.fitter}(pixel, voltage_step)")
 
-            data_shape = data.shape
+                data_shape = data.shape
 
-            data = data.reshape(-1, 4)
+                data = data.reshape(-1, 4)
 
-            if eval(f"self.{self.fitter}_phase_shift") is not None:
-                data[:, 3] = eval(
-                    f"self.shift_phase(data[:, 3], self.{self.fitter}_phase_shift)")
+                if eval(f"self.{self.fitter}_phase_shift") is not None:
+                    data[:, 3] = eval(
+                        f"self.shift_phase(data[:, 3], self.{self.fitter}_phase_shift)")
 
-            data = data.reshape(data_shape)
+                data = data.reshape(data_shape)
 
-            # does not sample if just a pixel is returned
-            if pixel is None or voltage_step is None:
-                data = self.get_voltage_state(data)
+                # does not sample if just a pixel is returned
+                if pixel is None or voltage_step is None:
+                    data = self.get_voltage_state(data)
+
+                if self.scaled:
+                    data = self.SHO_scaler.transform(
+                        data.reshape(-1, 4)).reshape(data_shape)
+
+                # reshapes the data to be (index, SHO_params)
+                if self.output_shape == "index":
+                    return data.reshape(-1, 4)
+                
+        if model is not None:
+
+            X_data, Y_data = self.NN_data()
+
+            # you can view the test and training dataset by replacing X_data with X_test or X_train
+            pred_data, scaled_param, data = model.predict(X_data)
+            
+            data = data.reshape(self.num_pix, self.voltage_steps, 4)
 
             if self.scaled:
                 data = self.SHO_scaler.transform(
-                    data.reshape(-1, 4)).reshape(data_shape)
-
+                        data.reshape(-1, 4)).reshape(self.num_pix, self.voltage_steps, 4)
+                
             # reshapes the data to be (index, SHO_params)
             if self.output_shape == "index":
-                return data.reshape(-1, 4)
+                return data.reshape(-1, 4)          
 
-            return data
+        return data
 
     def get_voltage_state(self, data):
         """function to get the voltage state of the data
