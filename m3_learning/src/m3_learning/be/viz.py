@@ -22,6 +22,34 @@ color_palette = {
 }
 
 
+def get_lowest_loss_for_noise_level(path, desired_noise_level):
+
+        if isinstance(desired_noise_level, int):
+            desired_noise_level = str(desired_noise_level)
+            
+        # Create a dictionary to store the lowest loss for each noise value
+        lowest_losses = {}
+
+        # Iterate over the files in the directory
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if file.endswith(".pth"):
+                    noise_value = file.split("_noise_")[1].split("_")[0]
+                    loss = file.split("train_loss_")[1].split("_")[0]
+                    loss = float(loss.split(".pth")[0])
+
+                    # Update the lowest loss for each noise value in the dictionary
+                    if noise_value == desired_noise_level:
+                        if noise_value not in lowest_losses or loss < lowest_losses[noise_value][0]:
+                            lowest_losses[noise_value] = (loss, file)
+
+        # Return the file name with the lowest loss for the desired noise level
+        if desired_noise_level in lowest_losses:
+            loss, file_name = lowest_losses[desired_noise_level]
+            return file_name
+        else:
+            return None
+
 class Viz:
 
     def __init__(self, dataset, Printer=None, verbose=False, labelfigs_=True, 
@@ -47,8 +75,10 @@ class Viz:
 
         self.color_palette = color_palette
         
-        self.SHO_ranges = SHO_ranges
+        self.SHO_ranges = SHO_ranges    
+    
 
+    
     def static_state_decorator(func):
         """Decorator that stops the function from changing the state
 
@@ -1409,6 +1439,20 @@ class Viz:
     def build_figure_for_movie(self, comparison, 
                                fig_width, inter_gap, intra_gap, cbar_space, 
                                colorbars, voltage_plot_height):
+        """function that builds the figure for the movie
+
+        Args:
+            comparison (any): dataset to compare to
+            fig_width (float): figure width in inches
+            inter_gap (float): gap between different datasets in inches
+            intra_gap (float): gap between similar datasets in inches
+            cbar_space (float): gap between the colorbar and the image in inches
+            colorbars (bool): if a colorbar is included
+            voltage_plot_height (float): height of the voltage plot in inches
+
+        Returns:
+            matplotlib.fig, matplotlib.ax, figbar.scalar: The figure object, a list of ax objects, and the scalar to convert inches to relative coordinates
+        """        
        
         # instantiates the list of axes
         ax = []
@@ -1448,8 +1492,10 @@ class Viz:
         pos_inch[2] = embedding_image_size
         pos_inch[3] = embedding_image_size
 
+        # adds the rows to the figure
         for j in range(rows):
 
+            # adds 4 graphs per row
             for i in range(4):
 
                 # adds the plot to the figure
@@ -1477,6 +1523,7 @@ class Viz:
         else:
             z = 0
         
+        # reshapes the axis so it is easier to work with goes from left to right, top to bottom.
         for j in range(1 + z):
             for i in range(2):
                 ax_.extend(ax[1+2*i+8*j:3+2*i+8*j])
@@ -1503,29 +1550,58 @@ class Viz:
                              basepath = None, 
                              ):
         
-        if model is not None:
+        # if a model path is not provided then data is from LSQF 
+        if model_path is not None:
             
-            filename = model_path + '/' + self.get_lowest_loss_for_noise_level(model_path, noise)
+            # finds the model with the lowest loss for the given noise level
+            model_filename = model_path + '/' + get_lowest_loss_for_noise_level(model_path, noise)
             
-             # instantiate the model
+            # instantiate the model
             model = SHO_Model(self.dataset, training=False, model_basename="SHO_Fitter_original_data")
 
-            model.load(filename)
-        
-        if basepath is not None:
-            basepath += f"Noise_{noise}"
-            basepath = make_folder(basepath)
+            # loads the weights
+            model.load(model_filename)
             
+            if self.verbose:
+                
+                # prints which model is being used
+                print("Using model: ", model_filename)
+        
+        else: 
+            
+            # sets the model equal to None if no model is provided
+            model = None
+        
+        # builds the basepath for the images of the movie
+        if basepath is not None:
+            
+            # if a model is provided name based on the model
+            if model_path is not None:
+                basepath += f"/{model_filename.split('/')[-1].split('.')[0]}"
+            
+            # if no model is provided name based on the noise level
+            else:
+                basepath += f"Noise_{noise}"
+                
+            # makes the folder
+            basepath = make_folder(basepath)
+        
+        # sets the noise state    
         self.dataset.noise = noise
         
+        # gets the on state of the data
         self.dataset.measurement_state = "on"
         
+        # gets the fit results
         on_data = self.dataset.SHO_fit_results(model = model)
         
+        # sets the state to the off state to get the data
         self.dataset.measurement_state = "off"
         
+        # gets the off state of the data
         off_data = self.dataset.SHO_fit_results(model = model)
         
+        # labels for the different figures
         names = ["A", "\u03C9", "Q", "\u03C6"]
 
         # gets the DC voltage data - this is for only the on state or else it would all be 0
@@ -1538,16 +1614,17 @@ class Viz:
         #     # gets the cycle of interest
         #     voltage = self.dataset.get_cycle(voltage)
             
-     
+        # loops around each voltage step in the measurement
         for z, voltage in enumerate(voltage):
             
-            fig, ax, fig_scalar = self.build_figure_for_movie(comparison, 
-                                            fig_width, 
-                                            inter_gap, 
-                                            intra_gap, 
-                                            cbar_space, 
-                                            colorbars, 
-                                            voltage_plot_height)
+            # calls the function to build the figure
+            fig, ax, fig_scalar = self.build_figure_for_movie(comparison, # dataset to compare to
+                                            fig_width, # width of the figure
+                                            inter_gap, # gap between the graphs of different datasets,
+                                            intra_gap, # gap between the graphs of same datasets,
+                                            cbar_space, # gap between the graphs and the colorbar
+                                            colorbars, # colorbars
+                                            voltage_plot_height) # height of the voltage plot
         
         
             # plots the voltage
@@ -1556,6 +1633,7 @@ class Viz:
             ax[0].set_ylabel("Voltage (V)")
             ax[0].set_xlabel("Step")
             
+            # plots each of the SHO parameters for the off and on state
             for j in range(4):
                 imagemap(ax[j+1], on_data[:, z, j], colorbars=False, clim=self.SHO_ranges[j])
                 imagemap(ax[j+5], off_data[:, z, j], colorbars=False, clim=self.SHO_ranges[j])
@@ -1603,98 +1681,5 @@ class Viz:
                 
             plt.close(fig)
  
+        # makes the movie
         make_movie(f"{filename}_noise_{noise}", basepath, basepath, file_format="png", fps=5)
-
-            
-    def get_lowest_loss_for_noise_level(path, desired_noise_level):
-
-        if isinstance(desired_noise_level, int):
-            desired_noise_level = str(desired_noise_level)
-            
-        # Create a dictionary to store the lowest loss for each noise value
-        lowest_losses = {}
-
-        # Iterate over the files in the directory
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                if file.endswith(".pth"):
-                    noise_value = file.split("_noise_")[1].split("_")[0]
-                    loss = file.split("train_loss_")[1].split("_")[0]
-                    loss = float(loss.split(".pth")[0])
-
-                    # Update the lowest loss for each noise value in the dictionary
-                    if noise_value == desired_noise_level:
-                        if noise_value not in lowest_losses or loss < lowest_losses[noise_value][0]:
-                            lowest_losses[noise_value] = (loss, file)
-
-        # Return the file name with the lowest loss for the desired noise level
-        if desired_noise_level in lowest_losses:
-            loss, file_name = lowest_losses[desired_noise_level]
-            return file_name
-        else:
-            return None
-
-        
-
-        # # gets the index of the voltage steps to plot
-        # inds = np.linspace(0,len(voltage)-1, number_of_steps, dtype=int)
-
-        # # converts the data to a numpy array
-        # if isinstance(SHO_, torch.Tensor):
-        #     SHO_ = SHO_.detach().numpy()
-
-        # SHO_ = SHO_.reshape(self.dataset.num_pix, self.dataset.voltage_steps, 4)
-
-        # # get the selected measurement cycle
-        # SHO_ = self.dataset.get_measurement_cycle(SHO_, axis = 1)
-
-  
-
-        # names = ["A", "\u03C9", "Q", "\u03C6"]
-
-        # for i, ind in enumerate(inds):
-
-        #     # loops around the amp, resonant frequency, and Q, Phase
-        #     for j in range(4):
-        #         imagemap(ax[i*4+j+1], SHO_[:, ind, j], colorbars=False, cmap="viridis",)
-
-        #         if i // rows == 0:
-        #             labelfigs(ax[i*4+j+1], string_add = names[j], loc = "cb", size = 5, inset_fraction=.2)
-
-        #         ax[i*4+j+1].images[0].set_clim(clims[j])
-        #     labelfigs(ax[1::4][i], string_add = str(i+1), size = 5, loc = "bl", inset_fraction=.2)
-
-        # # if add colorbars
-        # if colorbars:
-
-        #     # builds a list to store the colorbar axis objects
-        #     bar_ax = []
-
-        #     #gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
-        #     voltage_ax_pos = fig_scalar.to_inches(np.array(ax[0].get_position()).flatten())
-
-        #     # loops around the 4 axis
-        #     for i in range(4):
-
-        #         # calculates the height and width of the colorbars
-        #         cbar_h = (voltage_ax_pos[1] - inter_gap - 2 * intra_gap - .33)/2
-        #         cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
-
-        #         # sets the position of the axis in inches
-        #         pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap,
-        #                     voltage_ax_pos[1] - (i//2)*(inter_gap + cbar_h) -.33 - cbar_h,
-        #                     cbar_w,
-        #                     cbar_h]
-
-        #         # adds the plot to the figure
-        #         bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
-
-        #         # adds the colorbars to the plots
-        #         cbar = plt.colorbar(ax[i+1].images[0], cax=bar_ax[i], format = '%.1e')
-        #         cbar.set_label(names[i])  # Add a label to the colorbar
-
-        # # prints the figure
-        # if self.Printer is not None and filename is not None:
-        #     self.Printer.savefig(fig, filename, label_figs=ax[1::4], size = 6, loc = 'tl', inset_fraction=.2)
-
-        # fig.show()

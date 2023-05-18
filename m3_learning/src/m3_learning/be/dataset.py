@@ -526,11 +526,11 @@ class BE_Dataset:
             dataset_ = self.SHO_LSQF_data[f"{self.dataset}-SHO_Fit_000"].copy()
 
             if pixel is not None and voltage_step is not None:
-                return dataset_[[pixel], :, :][:, [voltage_step], :]
+                return self.get_voltage_state(dataset_[[pixel], :, :])[:, [voltage_step], :]
             elif pixel is not None:
-                return dataset_[[pixel], :, :]
+                return self.get_voltage_state(dataset_[[pixel], :, :])
             else:
-                return dataset_[:]
+                return self.get_voltage_state(dataset_[:])
 
     @staticmethod
     def is_complex(data):
@@ -671,12 +671,17 @@ class BE_Dataset:
                         state=None,
                         model = None):
 
+        # if a neural network model is not provided use the LSQF
         if model is None:
+            
+            # reads the H5 file
             with h5py.File(self.file, "r+") as h5_f:
 
+                # sets a state if it is provided as a dictionary
                 if state is not None:
                     self.set_attributes(**state)
 
+                # determines the pixel value based on the measurement state
                 voltage_step = self.measurement_state_voltage(voltage_step)
 
                 data = eval(f"self.SHO_{self.fitter}(pixel, voltage_step)")
@@ -691,9 +696,9 @@ class BE_Dataset:
 
                 data = data.reshape(data_shape)
 
-                # does not sample if just a pixel is returned
-                if pixel is None or voltage_step is None:
-                    data = self.get_voltage_state(data)
+                # # does not sample if just a pixel is returned
+                # if pixel is None or voltage_step is None:
+                #     data = self.get_voltage_state(data)
 
                 if self.scaled:
                     data = self.SHO_scaler.transform(
@@ -710,11 +715,17 @@ class BE_Dataset:
             # you can view the test and training dataset by replacing X_data with X_test or X_train
             pred_data, scaled_param, data = model.predict(X_data)
             
-            data = data.reshape(self.num_pix, self.voltage_steps, 4)
+            if self.measurement_state == 'all':
+                voltage_step = self.voltage_steps
+            else:
+                voltage_step = int(self.voltage_steps/2)
+                
+            
+            data = data.reshape(self.num_pix, voltage_step, 4)
 
             if self.scaled:
                 data = self.SHO_scaler.transform(
-                        data.reshape(-1, 4)).reshape(self.num_pix, self.voltage_steps, 4)
+                        data.reshape(-1, 4)).reshape(self.num_pix, voltage_step, 4)
                 
             # reshapes the data to be (index, SHO_params)
             if self.output_shape == "index":
@@ -812,7 +823,7 @@ class BE_Dataset:
             self.set_attributes(**state)
 
         with h5py.File(self.file, "r+") as h5_f:
-
+            
             # sets the shaper_ equal to true to correct the shape
             shaper_ = True
 
@@ -942,7 +953,7 @@ class BE_Dataset:
             except:
                 num_pix = 1
         else:
-            num_pix = self.num_pix.copy()
+            num_pix = int(self.num_pix.copy())
 
         if voltage_steps is not None:
             try:
@@ -950,10 +961,11 @@ class BE_Dataset:
             except:
                 voltage_steps = 1
         else:
-            voltage_steps = self.voltage_steps.copy()
+            voltage_steps = int(self.voltage_steps.copy())
 
-        if self.measurement_state in ["on", "off"]:
-            voltage_steps /= 2
+            if self.measurement_state in ["on", "off"]:
+                voltage_steps /= 2
+                voltage_steps = int(voltage_steps)
 
         """Reshapes the data to the correct output shape"""
         if self.output_shape == "pixels":
