@@ -9,9 +9,10 @@ from scipy import signal
 from scipy.signal import savgol_filter
 
 class afm_substrate():
-    '''
-    This class is used to calculate the substrate step width and miscut from an AFM image.
-    '''
+    """
+    This class is designed to facilitate the analysis of an atomic force microscopy (AFM) substrate image. 
+    The class includes methods for image rotation, coordinate transformation, peak detection, and step parameter calculation.
+    """ 
     def __init__(self, img, pixels, size):
         '''
         img: the image to be analyzed
@@ -22,7 +23,7 @@ class afm_substrate():
         self.pixels = pixels
         self.size = size
     
-    def rotate_image(self, angle, colorbar_range=None):
+    def rotate_image(self, angle, colorbar_range=None, demo=True):
         '''
         angle: the angle to rotate the image in degrees
         '''
@@ -33,15 +34,16 @@ class afm_substrate():
         img_rot = imutils.rotate(self.img, angle=angle, scale=scale)
         h, w = img_rot.shape[:2]
 
-        plt.figure(figsize=(10, 8))
-        im = plt.imshow(img_rot)
-        plt.plot([0, w], [h//4, h//4], color='w')
-        plt.plot([0, w], [h//2, h//2], color='w')
-        plt.plot([0, w], [h*3//4, h*3//4], color='w')
-        if colorbar_range:
-            im.set_clim(colorbar_range) 
-        plt.colorbar()
-        plt.show()
+        if demo:
+            plt.figure(figsize=(10, 8))
+            im = plt.imshow(img_rot)
+            plt.plot([0, w], [h//4, h//4], color='w')
+            plt.plot([0, w], [h//2, h//2], color='w')
+            plt.plot([0, w], [h*3//4, h*3//4], color='w')
+            if colorbar_range:
+                im.set_clim(colorbar_range) 
+            plt.colorbar()
+            plt.show()
         return img_rot, size_rot
 
 
@@ -240,7 +242,7 @@ class afm_substrate():
         print(f"Miscut = {np.mean(miscut):.3f}° +- {np.std(miscut):.3f}°")
         return substrate_properties
 
-def visualize_afm_image(img, colorbar_range, scalebar_dict=None, filename=None, printing=None, **kwargs):
+def visualize_afm_image(img, colorbar_range, figsize=(6,4), scalebar_dict=None, filename=None, printing=None, **kwargs):
     '''
     Visualize AFM image with scalebar and colorbar.
     -----------
@@ -253,7 +255,7 @@ def visualize_afm_image(img, colorbar_range, scalebar_dict=None, filename=None, 
     Returns: None;
     '''
 
-    fig, ax = plt.subplots(1, 1, figsize=(10,8))
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
     im = ax.imshow(img)
     
     if scalebar_dict:
