@@ -205,6 +205,7 @@ class SHO_Model(AE_Fitter_SHO):
             datatype=torch.float32,
             save_all=False,
             write_CSV = None,
+            closure = None,
             **kwargs):
 
         # sets the model to be a specific datatype and on cuda
@@ -217,14 +218,17 @@ class SHO_Model(AE_Fitter_SHO):
 
         # selects the optimizer
         if optimizer == 'Adam':
-            optimizer = torch.optim.Adam(self.model.parameters())
+            optimizer_ = torch.optim.Adam(self.model.parameters())
         elif optimizer == "AdaHessian":
-            optimizer = AdaHessian(self.model.parameters(), lr=.5)
+            optimizer_ = AdaHessian(self.model.parameters(), lr=.5)
+        elif isinstance(optimizer, dict):
+            if optimizer['name'] == "TRCG":
+                optimizer_ = optimizer['optimizer'](self.model, optimizer['radius'], optimizer['device'])
         else:
             try:
-                optimizer = optimizer(self.model.parameters())
+                optimizer_ = optimizer(self.model.parameters())
             except:
-                raise ValueError("Optimizer not recognised")
+                raise ValueError("Optimizer not recognized")
 
         # instantiate the dataloader
         train_dataloader = DataLoader(
@@ -245,23 +249,30 @@ class SHO_Model(AE_Fitter_SHO):
             self.model.train()
 
             for train_batch in train_dataloader:
-
+                
                 train_batch = train_batch.to(datatype).to(self.device)
-
+                
                 pred, embedding = self.model(train_batch)
 
                 pred = pred.to(torch.float32)
                 embedding = embedding.to(torch.float32)
 
-                optimizer.zero_grad()
 
-                # , embedding[:, 0]).to(torch.float32)
-                loss = loss_func(train_batch, pred)
-                loss.backward(create_graph=True)
-                train_loss += loss.item() * pred.shape[0]
-                total_num += pred.shape[0]
+                if optimizer_.__class__.__name__ == "AdaHessian":
+                    loss, radius, cnt_compute, cg_iter   = optimizer_.step(closure)
+                    train_loss += loss * train_batch.shape[0]
+                    total_num += train_batch.shape[0]
+                else:
+                    optimizer_.zero_grad()
 
-                optimizer.step()
+                    # , embedding[:, 0]).to(torch.float32)
+                    loss = loss_func(train_batch, pred)
+                    loss.backward(create_graph=True)
+                    train_loss += loss.item() * pred.shape[0]
+                    total_num += pred.shape[0]
+
+                    optimizer_.step()
+
 
                 if "verbose" in kwargs:
                     if kwargs["verbose"] == True:
@@ -293,6 +304,7 @@ class SHO_Model(AE_Fitter_SHO):
             append_to_csv(f"{self.path}/{write_CSV}", data, headers)
 
         self.model.eval()
+
 
     def load(self, model_path):
         self.model.load_state_dict(torch.load(model_path))
