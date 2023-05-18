@@ -218,15 +218,15 @@ class SHO_Model(AE_Fitter_SHO):
 
         # selects the optimizer
         if optimizer == 'Adam':
-            optimizer_ = torch.optim.Adam(self.model.parameters())
+            optimizer = torch.optim.Adam(self.model.parameters())
         elif optimizer == "AdaHessian":
-            optimizer_ = AdaHessian(self.model.parameters(), lr=.5)
+            optimizer = AdaHessian(self.model.parameters(), lr=.5)
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
-                optimizer_ = optimizer['optimizer'](self.model, optimizer['radius'], optimizer['device'])
+                optimizer = optimizer['optimizer'](self.model, optimizer['radius'], optimizer['device'])
         else:
             try:
-                optimizer_ = optimizer(self.model.parameters())
+                optimizer = optimizer(self.model.parameters())
             except:
                 raise ValueError("Optimizer not recognized")
 
@@ -252,27 +252,29 @@ class SHO_Model(AE_Fitter_SHO):
                 
                 train_batch = train_batch.to(datatype).to(self.device)
                 
-                pred, embedding = self.model(train_batch)
+                def closure(part, total, device):
 
-                pred = pred.to(torch.float32)
-                embedding = embedding.to(torch.float32)
+                    pred, embedding = self.model(train_batch)
 
+                    pred = pred.to(torch.float32)
+                    embedding = embedding.to(torch.float32)
 
-                if optimizer_.__class__.__name__ == "AdaHessian":
-                    loss, radius, cnt_compute, cg_iter   = optimizer_.step(closure)
-                    train_loss += loss * train_batch.shape[0]
-                    total_num += train_batch.shape[0]
-                else:
-                    optimizer_.zero_grad()
+                    # optimizer.zero_grad()
 
                     # , embedding[:, 0]).to(torch.float32)
                     loss = loss_func(train_batch, pred)
-                    loss.backward(create_graph=True)
-                    train_loss += loss.item() * pred.shape[0]
-                    total_num += pred.shape[0]
+                    # loss.backward(create_graph=True)
+                    # train_loss += loss.item() * pred.shape[0]
+                    # total_num += pred.shape[0]
+                    
+                    return loss
 
-                    optimizer_.step()
-
+                # if closure is not None:
+                loss, radius, cnt_compute, cg_iter   = optimizer.step(closure)
+                train_loss += loss * train_batch.shape[0]
+                total_num += train_batch.shape[0]
+                # else:
+                #     optimizer.step()
 
                 if "verbose" in kwargs:
                     if kwargs["verbose"] == True:
