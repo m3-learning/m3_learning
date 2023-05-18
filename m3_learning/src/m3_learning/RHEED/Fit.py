@@ -8,7 +8,7 @@ from scipy.signal import butter, lfilter, sosfilt, freqz
 from scipy import optimize
 from joblib import Parallel, delayed
 import sys
-from m3_learning.viz.layout import layout_fig, labelfigs
+from m3_learning.viz.layout import layout_fig, labelfigs, imagemap
 from m3_learning.RHEED.Viz import Viz
 
 
@@ -285,7 +285,7 @@ class RHEED_image_processer:
                       img_rec_sum, img_rec_max, img_rec_mean, *para]
         return img, img_rec, parameters
 
-    def visualize(self, growth, spot, frame):
+    def visualize(self, growth, spot, frame, **kwargs):
 
         img = self.spot_ds.growth_dataset(growth, frame)
         img = self.normalize_inputs(img, spot)
@@ -300,10 +300,18 @@ class RHEED_image_processer:
         
         sample_list = [img, img_rec, img_rec-img]
         print('a: raw_image', 'b: reconstructed_image', 'c: difference')
+        clim = (img.min(), img.max())
+
         fig, axes = layout_fig(3, 3, figsize=(1.25*3, 1.25*1))
         for i, ax in enumerate(axes):
-            ax.imshow(sample_list[i])
+            if ax == axes[-1]:
+                imagemap(ax, sample_list[i], divider_=False, clim=clim, colorbars=True, **kwargs)
+            else:
+                imagemap(ax, sample_list[i], divider_=False, clim=clim, colorbars=False, **kwargs)
+
+            # ax.imshow(sample_list[i])
             labelfigs(ax, i)
+
 
         plt.show()
         print('a: original, b: reconstructed image, c: difference')
