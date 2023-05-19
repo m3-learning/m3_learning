@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import resample
 from m3_learning.util.file_IO import make_folder, append_to_csv
 import itertools
-from m3_learning.optimizers.TrustRegion import TrustRegion
+from m3_learning.optimizers.TrustRegion import TRCG
 
 
 def static_state_decorator(func):
@@ -210,7 +210,27 @@ class SHO_Model(AE_Fitter_SHO):
             save_all=False,
             write_CSV=None,
             closure=None,
+            basepath=None,
+            early_stopping_loss=None,
+            early_stopping_count=None,
             **kwargs):
+
+        if basepath is not None:
+            path = f"{self.path}/{basepath}/"
+            make_folder(path)
+            print(f"Saving to {path}")
+        else:
+            path = self.path
+
+        def write_csv(stoppage_early=False):
+            if write_CSV is not None:
+                headers = ["Model Name",
+                           "Optimizer",
+                           "Epochs",
+                           "Training_Time" "Train Loss", "Batch Size", "Loss Function", "Seed", "filename", "early_stoppage"]
+                data = [self.model_name, optimizer_name, epochs, total_time, train_loss, batch_size, loss_func,
+                        seed, f"{path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth", f"{stoppage_early}"]
+                append_to_csv(f"{path}/{write_CSV}", data, headers)
 
         # sets the model to be a specific datatype and on cuda
         self.to(datatype).to(self.device)
@@ -222,12 +242,12 @@ class SHO_Model(AE_Fitter_SHO):
 
         # selects the optimizer
         if optimizer == 'Adam':
-            optimizer = torch.optim.Adam(self.model.parameters())
+            optimizer_ = torch.optim.Adam(self.model.parameters())
         elif optimizer == "AdaHessian":
-            optimizer = AdaHessian(self.model.parameters(), lr=.5)
+            optimizer_ = AdaHessian(self.model.parameters(), lr=.5)
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
-                optimizer = optimizer['optimizer'](
+                optimizer_ = optimizer['optimizer'](
                     self.model, optimizer['radius'], optimizer['device'])
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
@@ -243,62 +263,78 @@ class SHO_Model(AE_Fitter_SHO):
         train_dataloader = DataLoader(
             data_train, batch_size=batch_size, shuffle=True)
 
-        starter_time = time.time()
-
         # if trust region optimizers stores the TR optimizer as an object and instantiates the ADAM optimizer
         if isinstance(optimizer_, TRCG):
             TRCG_OP = optimizer_
             optimizer_ = torch.optim.Adam(self.model.parameters(), **kwargs)
 
+        total_time = 0
+        low_loss_count = 0
+
+        # says if the model have already stopped early
+        already_stopped = False
+
         # loops around each epoch
         for epoch in range(epochs):
 
-            # starts the timer
-            start_time = time.time()
-
             train_loss = 0.0
             total_num = 0
+            epoch_time = 0
 
             # sets the model to training mode
             self.model.train()
 
             for train_batch in train_dataloader:
 
+                # starts the timer
+                start_time = time.time()
+
                 train_batch = train_batch.to(datatype).to(self.device)
+
                 if "TRCG_OP" in locals() and epoch > optimizer.get("ADAM_epochs", -1):
 
                     def closure(part, total, device):
-
                         pred, embedding = self.model(train_batch)
-
                         pred = pred.to(torch.float32)
                         embedding = embedding.to(torch.float32)
-                        # optimizer.zero_grad()
-
-                        # , embedding[:, 0]).to(torch.float32)
                         loss = loss_func(train_batch, pred)
-                        # loss.backward(create_graph=True)
-                        # train_loss += loss.item() * pred.shape[0]
-                        # total_num += pred.shape[0]
-
                         return loss
 
                     # if closure is not None:
-                    loss, radius, cnt_compute, cg_iter = optimizer.step(
+                    loss, radius, cnt_compute, cg_iter = TRCG_OP.step(
                         closure)
                     train_loss += loss * train_batch.shape[0]
                     total_num += train_batch.shape[0]
                     optimizer_name = "Trust Region CG"
-                    # else:
-                    #     optimizer.step()
                 else:
+                    pred, embedding = self.model(train_batch)
+                    pred = pred.to(torch.float32)
+                    embedding = embedding.to(torch.float32)
                     optimizer_.zero_grad()
                     loss = loss_func(train_batch, pred)
                     loss.backward(create_graph=True)
                     train_loss += loss.item() * pred.shape[0]
                     total_num += pred.shape[0]
                     optimizer_.step()
-                    optimizer_name = "Adam"
+                    if isinstance(optimizer_, torch.optim.Adam):
+                        optimizer_name = "Adam"
+                    elif isinstance(optimizer_, AdaHessian):
+                        optimizer_name = "AdaHessian"
+                        
+                epoch_time += (time.time() - start_time)
+
+                total_time += (time.time() - start_time)
+
+                if early_stopping_loss is not None and already_stopped == False:
+                    if loss < early_stopping_loss:
+                        low_loss_count += train_batch.shape[0]
+                        if low_loss_count >= early_stopping_count:
+                            torch.save(self.model.state_dict(),
+                                       f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth")
+                            write_csv(stoppage_early=True)
+                            already_stopped = True
+                    else:
+                        low_loss_count -= (train_batch.shape[0]*5)
 
                 if "verbose" in kwargs:
                     if kwargs["verbose"] == True:
@@ -309,25 +345,15 @@ class SHO_Model(AE_Fitter_SHO):
             print(optimizer_name)
             print("epoch : {}/{}, recon loss = {:.8f}".format(epoch +
                                                               1, epochs, train_loss))
-            print("--- %s seconds ---" % (time.time() - start_time))
+            print("--- %s seconds ---" % (epoch_time))
 
             if save_all:
                 torch.save(self.model.state_dict(),
-                           f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
-
-        total_time = time.time() - starter_time
+                           f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth")
 
         torch.save(self.model.state_dict(),
-                   f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
-
-        if write_CSV is not None:
-            headers = ["Model Name",
-                       "Optimizer",
-                       "Epochs",
-                       "Training_Time" "Train Loss", "Batch Size", "Loss Function", "Seed", "filename"]
-            data = [self.model_name, optimizer, epochs, total_time, train_loss, batch_size, loss_func,
-                    seed, f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth"]
-            append_to_csv(f"{self.path}/{write_CSV}", data, headers)
+                   f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth")
+        write_csv()
 
         self.model.eval()
 
@@ -488,7 +514,9 @@ class SHO_Model(AE_Fitter_SHO):
 
 
 @static_state_decorator
-def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_CSV="Batch_Training_Noisy_Data.csv"):
+def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_CSV="Batch_Training_Noisy_Data.csv",
+                   basepath=None, early_stopping_loss=None, early_stopping_count=None, **kwargs,
+                   ):
 
     # Generate all combinations
     combinations = list(itertools.product(
@@ -502,6 +530,13 @@ def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_C
         epochs = training[3]
         seed = training[4]
 
+        print(f"The type is {type(training[0])}")
+
+        if isinstance(optimizer, dict):
+            optimizer_name = optimizer['name']
+        else:
+            optimizer_name = optimizer
+
         dataset.noise = noise
 
         random_seed(seed=seed)
@@ -510,7 +545,7 @@ def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_C
         X_train, X_test, y_train, y_test = dataset.test_train_split_(
             shuffle=True)
 
-        model_name = f"SHO_{training[0]}_noise_{training[1]}_batch_size_{training[2]}"
+        model_name = f"SHO_{optimizer_name}_noise_{training[1]}_batch_size_{training[2]}_seed_{training[4]}"
 
         print(f'Working on combination: {model_name}')
 
@@ -525,6 +560,10 @@ def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_C
             epochs=epochs,
             write_CSV=write_CSV,
             seed=seed,
+            basepath=basepath,
+            early_stopping_loss=early_stopping_loss,
+            early_stopping_count=early_stopping_count,
+            **kwargs,
         )
 
 

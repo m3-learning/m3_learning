@@ -24,20 +24,20 @@ def random_seed(seed = 42, pytorch_ = True, numpy_ = True, tensorflow_ = True):
             torch.manual_seed(seed)
             torch.backends.cudnn.benchmark = False
             torch.backends.cudnn.deterministic = True
-            print(f'Pytorch seed was set to {42}')
+            print(f'Pytorch seed was set to {seed}')
     except: 
         pass
     
     try:
         np.random.seed(42)
-        print(f'Numpy seed was set to {42}')
+        print(f'Numpy seed was set to {seed}')
     except: 
         pass
     
     try: 
         import tensorflow as tf
         tf.random.set_seed(seed)
-        print(f'tensorflow seed was set to {42}')
+        print(f'tensorflow seed was set to {seed}')
     except: 
         pass
 
