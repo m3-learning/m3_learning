@@ -12,19 +12,22 @@ import matplotlib.pyplot as plt
 from scipy.signal import resample
 from m3_learning.util.file_IO import make_folder, append_to_csv
 import itertools
+from m3_learning.optimizers.TrustRegion import TrustRegion
+
 
 def static_state_decorator(func):
     """Decorator that stops the function from changing the state
 
     Args:
         func (method): any method
-    """        
+    """
     def wrapper(*args, **kwargs):
         current_state = args[0].get_state
         out = func(*args, **kwargs)
         args[0].set_attributes(**current_state)
         return out
     return wrapper
+
 
 def SHO_fit_func_nn(params,
                     wvec_freq,
@@ -164,8 +167,9 @@ class AE_Fitter_SHO(nn.Module):
         if self.training == True:
             return out, unscaled_param
         if self.training == False:
-            # this is a scaling that includes the corrections for shifts in the data 
-            embeddings = (unscaled_param.cuda() - torch.tensor(self.dataset.SHO_scaler.mean_).cuda())/torch.tensor(self.dataset.SHO_scaler.var_ ** 0.5).cuda()
+            # this is a scaling that includes the corrections for shifts in the data
+            embeddings = (unscaled_param.cuda() - torch.tensor(self.dataset.SHO_scaler.mean_).cuda()
+                          )/torch.tensor(self.dataset.SHO_scaler.var_ ** 0.5).cuda()
             return out, embeddings, unscaled_param
 
 
@@ -204,8 +208,8 @@ class SHO_Model(AE_Fitter_SHO):
             seed=42,
             datatype=torch.float32,
             save_all=False,
-            write_CSV = None,
-            closure = None,
+            write_CSV=None,
+            closure=None,
             **kwargs):
 
         # sets the model to be a specific datatype and on cuda
@@ -223,7 +227,12 @@ class SHO_Model(AE_Fitter_SHO):
             optimizer = AdaHessian(self.model.parameters(), lr=.5)
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
-                optimizer = optimizer['optimizer'](self.model, optimizer['radius'], optimizer['device'])
+                optimizer = optimizer['optimizer'](
+                    self.model, optimizer['radius'], optimizer['device'])
+        elif isinstance(optimizer, dict):
+            if optimizer['name'] == "TRCG":
+                optimizer_ = optimizer['optimizer'](
+                    self.model, optimizer['radius'], optimizer['device'])
         else:
             try:
                 optimizer = optimizer(self.model.parameters())
@@ -235,6 +244,11 @@ class SHO_Model(AE_Fitter_SHO):
             data_train, batch_size=batch_size, shuffle=True)
 
         starter_time = time.time()
+
+        # if trust region optimizers stores the TR optimizer as an object and instantiates the ADAM optimizer
+        if isinstance(optimizer_, TRCG):
+            TRCG_OP = optimizer_
+            optimizer_ = torch.optim.Adam(self.model.parameters(), **kwargs)
 
         # loops around each epoch
         for epoch in range(epochs):
@@ -249,32 +263,42 @@ class SHO_Model(AE_Fitter_SHO):
             self.model.train()
 
             for train_batch in train_dataloader:
-                
+
                 train_batch = train_batch.to(datatype).to(self.device)
-                
-                def closure(part, total, device):
+                if "TRCG_OP" in locals() and epoch > optimizer.get("ADAM_epochs", -1):
 
-                    pred, embedding = self.model(train_batch)
+                    def closure(part, total, device):
 
-                    pred = pred.to(torch.float32)
-                    embedding = embedding.to(torch.float32)
+                        pred, embedding = self.model(train_batch)
 
-                    # optimizer.zero_grad()
+                        pred = pred.to(torch.float32)
+                        embedding = embedding.to(torch.float32)
+                        # optimizer.zero_grad()
 
-                    # , embedding[:, 0]).to(torch.float32)
+                        # , embedding[:, 0]).to(torch.float32)
+                        loss = loss_func(train_batch, pred)
+                        # loss.backward(create_graph=True)
+                        # train_loss += loss.item() * pred.shape[0]
+                        # total_num += pred.shape[0]
+
+                        return loss
+
+                    # if closure is not None:
+                    loss, radius, cnt_compute, cg_iter = optimizer.step(
+                        closure)
+                    train_loss += loss * train_batch.shape[0]
+                    total_num += train_batch.shape[0]
+                    optimizer_name = "Trust Region CG"
+                    # else:
+                    #     optimizer.step()
+                else:
+                    optimizer_.zero_grad()
                     loss = loss_func(train_batch, pred)
-                    # loss.backward(create_graph=True)
-                    # train_loss += loss.item() * pred.shape[0]
-                    # total_num += pred.shape[0]
-                    
-                    return loss
-
-                # if closure is not None:
-                loss, radius, cnt_compute, cg_iter   = optimizer.step(closure)
-                train_loss += loss * train_batch.shape[0]
-                total_num += train_batch.shape[0]
-                # else:
-                #     optimizer.step()
+                    loss.backward(create_graph=True)
+                    train_loss += loss.item() * pred.shape[0]
+                    total_num += pred.shape[0]
+                    optimizer_.step()
+                    optimizer_name = "Adam"
 
                 if "verbose" in kwargs:
                     if kwargs["verbose"] == True:
@@ -282,31 +306,30 @@ class SHO_Model(AE_Fitter_SHO):
 
             train_loss /= total_num
 
+            print(optimizer_name)
             print("epoch : {}/{}, recon loss = {:.8f}".format(epoch +
                                                               1, epochs, train_loss))
             print("--- %s seconds ---" % (time.time() - start_time))
-            
-            
 
             if save_all:
                 torch.save(self.model.state_dict(),
                            f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
 
         total_time = time.time() - starter_time
-        
+
         torch.save(self.model.state_dict(),
                    f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth")
-        
+
         if write_CSV is not None:
-            headers = ["Model Name", 
-                       "Optimizer", 
-                       "Epochs", 
+            headers = ["Model Name",
+                       "Optimizer",
+                       "Epochs",
                        "Training_Time" "Train Loss", "Batch Size", "Loss Function", "Seed", "filename"]
-            data = [self.model_name, optimizer, epochs, total_time, train_loss, batch_size, loss_func, seed, f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth"]
+            data = [self.model_name, optimizer, epochs, total_time, train_loss, batch_size, loss_func,
+                    seed, f"{self.path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth"]
             append_to_csv(f"{self.path}/{write_CSV}", data, headers)
 
         self.model.eval()
-
 
     def load(self, model_path):
         self.model.load_state_dict(torch.load(model_path))
@@ -354,11 +377,11 @@ class SHO_Model(AE_Fitter_SHO):
             params[start:end] = params_.cpu().detach()
 
             torch.cuda.empty_cache()
-        
-        # converts negative ampltiudes to positive and shifts the phase to compensate    
+
+        # converts negative ampltiudes to positive and shifts the phase to compensate
         if translate_params:
-            params[params[:,0]<0, 3] = params[params[:,0]<0,3] - np.pi
-            params[params[:,0]<0,0] = np.abs(params[params[:,0]<0,0])
+            params[params[:, 0] < 0, 3] = params[params[:, 0] < 0, 3] - np.pi
+            params[params[:, 0] < 0, 0] = np.abs(params[params[:, 0] < 0, 0])
 
         if self.model.dataset.NN_phase_shift is not None:
             params_scaled[:, 3] = torch.Tensor(self.model.dataset.shift_phase(
@@ -370,19 +393,19 @@ class SHO_Model(AE_Fitter_SHO):
 
     @staticmethod
     def mse_rankings(true, prediction, curves=False):
-        
-        def type_conversion(data):  
-            
-            data = np.array(data)   
-            data = np.rollaxis(data, 0,data.ndim-1)       
-                
+
+        def type_conversion(data):
+
+            data = np.array(data)
+            data = np.rollaxis(data, 0, data.ndim-1)
+
             return data
 
         true = type_conversion(true)
         prediction = type_conversion(prediction)
-        
+
         errors = SHO_Model.MSE(prediction, true)
-                
+
         index = np.argsort(errors)
 
         if curves:
@@ -390,20 +413,19 @@ class SHO_Model(AE_Fitter_SHO):
             return index, errors[index], true[index], prediction[index]
 
         return index, errors[index]
-    
+
     @staticmethod
     def MSE(true, prediction):
-        
+
         # calculates the mse
-        mse = np.mean((true.reshape(true.shape[0],-1) - prediction.reshape(true.shape[0],-1))**2, axis=1)
-        
+        mse = np.mean((true.reshape(
+            true.shape[0], -1) - prediction.reshape(true.shape[0], -1))**2, axis=1)
+
         # converts to a scalar if there is only one value
         if mse.shape[0] == 1:
             return mse.item()
-        
-        
-        return mse
 
+        return mse
 
     @staticmethod
     def get_rankings(raw_data, pred, n=1, curves=True):
@@ -429,76 +451,80 @@ class SHO_Model(AE_Fitter_SHO):
             (index[:n], index[start_index:end_index], index[-n:])).flatten().astype(int)
         mse = np.hstack(
             (mse[:n], mse[start_index:end_index], mse[-n:]))
-        
+
         d1 = np.stack(
             (d1[:n], d1[start_index:end_index], d1[-n:])).squeeze()
         d2 = np.stack(
             (d2[:n], d2[start_index:end_index], d2[-n:])).squeeze()
 
-        #return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
+        # return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
         return ind, mse, d1, d2
-    
+
     def print_mse(self, data, labels):
         """prints the MSE of the model
 
         Args:
             data (tuple): tuple of datasets to calculate the MSE
             labels (list): List of strings with the names of the datasets
-        """        
-        
+        """
+
         # loops around the dataset and labels and prints the MSE for each
         for data, label in zip(data, labels):
-            
+
             if isinstance(data, torch.Tensor):
                 # computes the predictions
                 pred_data, scaled_param, parm = self.predict(data)
             elif isinstance(data, dict):
-                pred_data, _ = self.model.dataset.get_raw_data_from_LSQF_SHO(data)
+                pred_data, _ = self.model.dataset.get_raw_data_from_LSQF_SHO(
+                    data)
                 data, _ = self.model.dataset.NN_data()
                 pred_data = torch.from_numpy(pred_data)
-                
+
             # Computes the MSE
             out = nn.MSELoss()(data, pred_data)
-            
+
             # prints the MSE
             print(f"{label} Mean Squared Error: {out:0.4f}")
-    
-@static_state_decorator        
-def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_CSV = "Batch_Training_Noisy_Data.csv"):
+
+
+@static_state_decorator
+def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_CSV="Batch_Training_Noisy_Data.csv"):
 
     # Generate all combinations
-    combinations = list(itertools.product(optimizers, noise, batch_size, epochs, seed))
-    
+    combinations = list(itertools.product(
+        optimizers, noise, batch_size, epochs, seed))
+
     for training in combinations:
-    
+
         optimizer = training[0]
         noise = training[1]
         batch_size = training[2]
         epochs = training[3]
         seed = training[4]
-        
+
         dataset.noise = noise
-        
+
         random_seed(seed=seed)
 
         # constructs a test train split
-        X_train, X_test, y_train, y_test = dataset.test_train_split_(shuffle=True)
-        
+        X_train, X_test, y_train, y_test = dataset.test_train_split_(
+            shuffle=True)
+
         model_name = f"SHO_{training[0]}_noise_{training[1]}_batch_size_{training[2]}"
-        
+
         print(f'Working on combination: {model_name}')
-        
+
         # instantiate the model
         model = SHO_Model(dataset, training=True, model_basename=model_name)
-        
+
         # fits the model
         model.fit(
             X_train,
             batch_size=batch_size,
             optimizer=optimizer,
-            epochs = epochs,
+            epochs=epochs,
             write_CSV=write_CSV,
-            seed = seed,
+            seed=seed,
         )
 
 
