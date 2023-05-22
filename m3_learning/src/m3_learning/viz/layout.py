@@ -287,13 +287,13 @@ def combine_lines(*args):
     return lines, labels
 
 
-def labelfigs(axes, number = None, style="wb", 
-            loc="tl", string_add="", size=8, 
-            text_pos="center", inset_fraction=0.15):
-    
+def labelfigs(axes, number=None, style="wb",
+              loc="tl", string_add="", size=8,
+              text_pos="center", inset_fraction=0.15):
+
     # initializes an empty string
     text = ""
-    
+
     # Sets up various color options
     formatting_key = {
         "wb": dict(color="w", linewidth=.75),
@@ -303,7 +303,6 @@ def labelfigs(axes, number = None, style="wb",
     
     # Stores the selected option
     formatting = formatting_key[style]
-    
     xlim = axes.get_xlim()
     ylim = axes.get_ylim()
 
@@ -323,44 +322,20 @@ def labelfigs(axes, number = None, style="wb",
     elif loc == 'cb':
         x, y = (xlim[0] + xlim[1]) / 2, ylim[0] + y_inset
     else:
-        raise ValueError("Invalid position. Choose from 'tl', 'tr', 'bl', 'br', 'ct', or 'cb'.")
-    
-    text += string_add
-    
-    if number is not None:
-        text += number_to_letters(number) 
+        raise ValueError(
+            "Invalid position. Choose from 'tl', 'tr', 'bl', 'br', 'ct', or 'cb'.")
 
-        # allows for double letter index
-        else:
-            axes.text(
-                x_value,
-                y_value,
-                string.ascii_lowercase[0] +
-                string.ascii_lowercase[number - 26],
-                size=size,
-                weight="bold",
-                ha=text_pos,
-                va="center",
-                color=formatting["color"],
-                path_effects=[
-                    patheffects.withStroke(
-                        linewidth=formatting["linewidth"], foreground="k"
-                    )
-                ],
-            )
-    else:
-        # writes the text to the figure
-        axes.text(
-            x_value,
-            y_value,
-            string_add,
-            size=size,
-            weight="bold",
-            ha=text_pos,
-            va="center",
-            color=formatting["color"],
-                )
-    
+    text += string_add
+
+    if number is not None:
+        text += number_to_letters(number)
+
+    text_ = axes.text(x, y, text, va='center', ha='center',
+                      path_effects=[patheffects.withStroke(
+                          linewidth=formatting["linewidth"], foreground="k")],
+                      color=formatting["color"],
+                      )
+
     text_.set_zorder(np.inf)
 
 
@@ -503,7 +478,7 @@ def get_axis_pos_inches(fig, ax):
 
     Returns:
         array: the position of the center bottom of the axis in inches
-    """    
+    """
 
     # Get the bounding box of the axis in normalized coordinates (relative to the figure)
     axis_bbox = ax.get_position()
@@ -511,28 +486,28 @@ def get_axis_pos_inches(fig, ax):
     # Calculate the center bottom point of the axis in normalized coordinates
     center_bottom_x = axis_bbox.x0 + axis_bbox.width / 2
     center_bottom_y = axis_bbox.y0
-    
+
     # Convert the center bottom point from normalized coordinates to display units
-    center_bottom_display = fig.transFigure.transform((center_bottom_x, center_bottom_y))
+    center_bottom_display = fig.transFigure.transform(
+        (center_bottom_x, center_bottom_y))
 
     return center_bottom_display/fig.dpi
 
 
 class FigDimConverter:
     """class to convert between relative and inches dimensions of a figure
-    """    
-    
-    
+    """
+
     def __init__(self, figsize):
         """initializes the class
 
         Args:
             figsize (tuple): figure size in inches
-        """    
-            
+        """
+
         self.fig_width = figsize[0]
         self.fig_height = figsize[1]
-    
+
     def to_inches(self, x):
         """Converts position from relative to inches
 
@@ -541,10 +516,10 @@ class FigDimConverter:
 
         Returns:
             tuple: position in inches (left, bottom, width, height)
-        """        
-        
+        """
+
         return (x[0] * self.fig_width, x[1] * self.fig_height, x[2] * self.fig_width, x[3] * self.fig_height)
-    
+
     def to_relative(self, x):
         """Converts position from inches to relative
 
@@ -553,6 +528,6 @@ class FigDimConverter:
 
         Returns:
             tuple: position in relative coordinates (left, bottom, width, height)
-        """        
-        
+        """
+
         return (x[0] / self.fig_width, x[1] / self.fig_height, x[2] / self.fig_width, x[3] / self.fig_height)
