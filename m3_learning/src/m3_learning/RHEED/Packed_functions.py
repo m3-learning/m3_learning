@@ -10,6 +10,18 @@ from m3_learning.RHEED.Viz import Viz
 from m3_learning.RHEED.Analysis import analyze_curves, remove_outlier, smooth
 
 def decay_curve_examples(df_para, spot, metric, fit_settings):
+    """
+    Plot decay curve examples.
+
+    Args:
+        df_para (DataFrame): Dataframe containing parameters.
+        spot (str): Spot identifier.
+        metric (str): Metric to analyze.
+        fit_settings (dict): Settings for curve fitting.
+
+    Returns:
+        None
+    """
     color_blue = (44/255,123/255,182/255)
     seq_colors = ['#00429d','#2e59a8','#4771b2','#5d8abd','#73a2c6','#8abccf','#a5d5d8','#c5eddf','#ffffe0']
     bgc1, bgc2 = (*colors.hex2color(seq_colors[0]), 0.3), (*colors.hex2color(seq_colors[5]), 0.3) 
@@ -28,6 +40,12 @@ def decay_curve_examples(df_para, spot, metric, fit_settings):
 
 
 def compare_loss_difference():
+    """
+    Compare the difference in losses between two samples.
+
+    Returns:
+        None
+    """
 
     # load data if needed
     x_all_sample1, y_all_sample1 = np.load('Saved_data/treated_213nm-x_all.npy'), np.load('Saved_data/treated_213nm-y_all.npy')
@@ -58,6 +76,12 @@ def compare_loss_difference():
 
 
 def compare_growth_mechanism():
+    """
+    Compare the growth mechanism of different samples.
+
+    Returns:
+        None
+    """
 
     # load data if needed
     x_all_sample1, y_all_sample1 = np.load('Saved_data/treated_213nm-x_all.npy'), np.load('Saved_data/treated_213nm-y_all.npy')
@@ -94,6 +118,12 @@ def compare_growth_mechanism():
 
 
 def visualize_characteristic_time():
+    """
+    Visualize the characteristic time for different samples.
+
+    Returns:
+        None
+    """
     seq_colors = ['#00429d','#2e59a8','#4771b2','#5d8abd','#73a2c6','#8abccf','#a5d5d8','#c5eddf','#ffffe0']
     fig, axes = layout_fig(3, 1, figsize=(8, 8))
     ax1, ax3, ax5 = axes[0], axes[1], axes[2]
@@ -155,6 +185,12 @@ def visualize_characteristic_time():
     plt.show()
 
 def violinplot_characteristic_time():
+    """
+    Generate a violin plot of the characteristic time for different samples.
+
+    Returns:
+        None
+    """
     color_blue = (44/255,123/255,182/255)
     color_orange = (217/255,95/255,2/255)
     color_purple = (117/255,112/255,179/255)
