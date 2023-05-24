@@ -67,3 +67,8 @@ def extract_number(s):
             return int(number_str)
     else:
         return None
+    
+def save_list_to_txt(lst, filename):
+    with open(filename, 'w') as file:
+        for item in lst:
+            file.write(str(item) + '\n')
