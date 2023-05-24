@@ -13,6 +13,46 @@ from scipy.signal import resample
 from m3_learning.util.file_IO import make_folder, append_to_csv
 import itertools
 from m3_learning.optimizers.TrustRegion import TRCG
+from m3_learning.util.rand_util import save_list_to_txt
+
+
+def write_csv(write_CSV,
+              path,
+              model_name,
+              optimizer_name,
+              epochs,
+              total_time,
+              train_loss,
+              batch_size,
+              loss_func,
+              seed,
+              stoppage_early,
+              model_updates):
+
+    if write_CSV is not None:
+        headers = ["Model Name",
+                   "Optimizer",
+                   "Epochs",
+                   "Training_Time",
+                   "Train Loss",
+                   "Batch Size",
+                   "Loss Function",
+                   "Seed",
+                   "filename",
+                   "early_stoppage",
+                   "model updates"]
+        data = [model_name,
+                optimizer_name,
+                epochs,
+                total_time,
+                train_loss,
+                batch_size,
+                loss_func,
+                seed,
+                f"{path}/{model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth",
+                f"{stoppage_early}",
+                f"{model_updates}"]
+        append_to_csv(f"{path}/{write_CSV}", data, headers)
 
 
 def static_state_decorator(func):
@@ -213,7 +253,11 @@ class SHO_Model(AE_Fitter_SHO):
             basepath=None,
             early_stopping_loss=None,
             early_stopping_count=None,
+            early_stopping_time=None,
+            save_training_loss=True,
             **kwargs):
+
+        loss_ = []
 
         if basepath is not None:
             path = f"{self.path}/{basepath}/"
@@ -221,16 +265,6 @@ class SHO_Model(AE_Fitter_SHO):
             print(f"Saving to {path}")
         else:
             path = self.path
-
-        def write_csv(stoppage_early=False):
-            if write_CSV is not None:
-                headers = ["Model Name",
-                           "Optimizer",
-                           "Epochs",
-                           "Training_Time" "Train Loss", "Batch Size", "Loss Function", "Seed", "filename", "early_stoppage"]
-                data = [self.model_name, optimizer_name, epochs, total_time, train_loss, batch_size, loss_func,
-                        seed, f"{path}/{self.model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth", f"{stoppage_early}"]
-                append_to_csv(f"{path}/{write_CSV}", data, headers)
 
         # sets the model to be a specific datatype and on cuda
         self.to(datatype).to(self.device)
@@ -274,6 +308,8 @@ class SHO_Model(AE_Fitter_SHO):
         # says if the model have already stopped early
         already_stopped = False
 
+        model_updates = 0
+
         # loops around each epoch
         for epoch in range(epochs):
 
@@ -285,6 +321,8 @@ class SHO_Model(AE_Fitter_SHO):
             self.model.train()
 
             for train_batch in train_dataloader:
+
+                model_updates += 1
 
                 # starts the timer
                 start_time = time.time()
@@ -320,25 +358,43 @@ class SHO_Model(AE_Fitter_SHO):
                         optimizer_name = "Adam"
                     elif isinstance(optimizer_, AdaHessian):
                         optimizer_name = "AdaHessian"
-                        
+
                 epoch_time += (time.time() - start_time)
 
                 total_time += (time.time() - start_time)
+
+                try:
+                    loss_.append(loss.item())
+                except:
+                    loss_.append(loss)
 
                 if early_stopping_loss is not None and already_stopped == False:
                     if loss < early_stopping_loss:
                         low_loss_count += train_batch.shape[0]
                         if low_loss_count >= early_stopping_count:
                             torch.save(self.model.state_dict(),
-                                       f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth")
-                            write_csv(stoppage_early=True)
+                                       f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss/total_num}.pth")
+
+                            write_csv(write_CSV,
+                                      path,
+                                      self.model_name,
+                                      optimizer_name,
+                                      epoch,
+                                      total_time,
+                                      train_loss/total_num,
+                                      batch_size,
+                                      loss_func,
+                                      seed,
+                                      True,
+                                      model_updates)
+
                             already_stopped = True
                     else:
                         low_loss_count -= (train_batch.shape[0]*5)
 
-                if "verbose" in kwargs:
-                    if kwargs["verbose"] == True:
-                        print(f"Loss = {loss.item()}")
+            if "verbose" in kwargs:
+                if kwargs["verbose"] == True:
+                    print(f"Loss = {loss.item()}")
 
             train_loss /= total_num
 
@@ -349,11 +405,45 @@ class SHO_Model(AE_Fitter_SHO):
 
             if save_all:
                 torch.save(self.model.state_dict(),
-                           f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth")
+                           f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
+
+            if early_stopping_time is not None:
+                if total_time > early_stopping_time:
+                    torch.save(self.model.state_dict(),
+                               f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
+
+                    write_csv(write_CSV,
+                              path,
+                              self.model_name,
+                              optimizer_name,
+                              epoch,
+                              total_time,
+                              train_loss,  # already divided by total_num
+                              batch_size,
+                              loss_func,
+                              seed,
+                              True,
+                              model_updates)
+                    break
 
         torch.save(self.model.state_dict(),
-                   f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth")
-        write_csv()
+                   f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
+        write_csv(write_CSV,
+                  path,
+                  self.model_name,
+                  optimizer_name,
+                  epoch,
+                  total_time,
+                  train_loss,  # already divided by total_num
+                  batch_size,
+                  loss_func,
+                  seed,
+                  False,
+                  model_updates)
+
+        if save_training_loss:
+            save_list_to_txt(
+                loss_, f"{path}/Training_loss_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.txt")
 
         self.model.eval()
 
@@ -515,7 +605,7 @@ class SHO_Model(AE_Fitter_SHO):
 
 @static_state_decorator
 def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_CSV="Batch_Training_Noisy_Data.csv",
-                   basepath=None, early_stopping_loss=None, early_stopping_count=None, **kwargs,
+                   basepath=None, early_stopping_loss=None, early_stopping_count=None, early_stopping_time=None, **kwargs,
                    ):
 
     # Generate all combinations
@@ -563,6 +653,7 @@ def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_C
             basepath=basepath,
             early_stopping_loss=early_stopping_loss,
             early_stopping_count=early_stopping_count,
+            early_stopping_time=early_stopping_time,
             **kwargs,
         )
 
