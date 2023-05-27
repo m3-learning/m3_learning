@@ -346,7 +346,6 @@ class Viz:
         ax2.tick_params(axis="y", color=color_2, labelcolor=color_2)
         ax2.set_ylabel('Loss difference (a.u.)', color=color_2)
         ax2.tick_params(axis="x",direction="in")
-
         plt.title(title)
 
 
@@ -378,7 +377,7 @@ class Viz:
                 else:
                     n_plot = 10*mod
 
-                fig, axes = layout_fig(n_plot, mod=mod, figsize=(8, 1*(n_plot//mod+1)))
+                fig, axes = layout_fig(n_plot, mod=mod, figsize=(6, 1*(n_plot//mod+1)))
                 axes = axes.flatten()[:n_plot]
                 for i in range(start_plot, start_plot+n_plot):
                     if np == n_page-1 and i == start_plot+n_plot-1:                    
@@ -400,7 +399,8 @@ class Viz:
 
                         Viz.set_labels(axes[i%(10*mod)], xlabel=xlabel, ylabel=ylabel)
 
-                        labelfigs(axes[i%(10*mod)], 1, string_add=index_list[i], loc='bm', size=10)
+                        labelfigs(axes[i%(10*mod)], None, string_add=str(index_list[i]), loc='ct', size=8, style='b')
+                        # labelfigs(axes[i%(10*mod)], None, string_add=str(index_list[i]), loc='ct', style='b')
                         axes[i%(10*mod)].set_xticks([])
                         axes[i%(10*mod)].set_yticks([])
                         axes[i%(10*mod)].xaxis.set_tick_params(labelbottom=False)
@@ -411,7 +411,7 @@ class Viz:
                     printing.savefig(fig, save_name+'-'+str(np+1))
                 plt.show()
         else:
-            fig, axes = layout_fig(len(y1)+1, mod=mod, figsize=(8, 1.1*len(y1)//mod))
+            fig, axes = layout_fig(len(y1)+1, mod=mod, figsize=(6, 1*len(y1)//mod))
             axes = axes.flatten()[:len(y1)+1]
             for i in range(len(x)):
                 xlabel='Time (s)'
@@ -424,7 +424,7 @@ class Viz:
                 if i+1 < len(axes)-mod: xlabel = None
                 if not (i+1) % mod == 1: ylabel = None
                 Viz.set_labels(axes[i], xlabel=xlabel, ylabel=ylabel)
-                labelfigs(axes[i], 1, string_add=index_list[i], loc='bm', size=10)
+                labelfigs(axes[i], None, string_add=str(index_list[i]), loc='ct', size=8, style='b')
                 axes[i].set_xticks([])
                 axes[i].set_yticks([])
                 axes[i].xaxis.set_tick_params(labelbottom=False)

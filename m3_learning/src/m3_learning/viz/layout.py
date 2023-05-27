@@ -289,7 +289,7 @@ def combine_lines(*args):
 
 def labelfigs(axes, number=None, style="wb",
               loc="tl", string_add="", size=8,
-              text_pos="center", inset_fraction=0.15):
+              text_pos="center", inset_fraction=(0.15, 0.15), **kwargs):
 
     # initializes an empty string
     text = ""
@@ -307,8 +307,8 @@ def labelfigs(axes, number=None, style="wb",
     xlim = axes.get_xlim()
     ylim = axes.get_ylim()
 
-    x_inset = (xlim[1] - xlim[0]) * inset_fraction
-    y_inset = (ylim[1] - ylim[0]) * inset_fraction
+    x_inset = (xlim[1] - xlim[0]) * inset_fraction[1]
+    y_inset = (ylim[1] - ylim[0]) * inset_fraction[0]
 
     if loc == 'tl':
         x, y = xlim[0] + x_inset, ylim[1] - y_inset
@@ -333,8 +333,8 @@ def labelfigs(axes, number=None, style="wb",
 
     text_ = axes.text(x, y, text, va='center', ha='center',
                       path_effects=[patheffects.withStroke(
-                          linewidth=formatting["linewidth"], foreground="k")],
-                      color=formatting["color"],
+                      linewidth=formatting["linewidth"], foreground="k")],
+                      color=formatting["color"], size=size, **kwargs
                       )
 
     text_.set_zorder(np.inf)

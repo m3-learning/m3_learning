@@ -29,14 +29,16 @@ def decay_curve_examples(df_para, spot, metric, fit_settings):
     parameters_all, x_coor_all, info = analyze_curves(df_para, {'growth_1': 1}, spot, metric, interval=0, fit_settings=fit_settings)
     [xs_all, ys_all, ys_fit_all, ys_nor_all, ys_nor_fit_all, ys_nor_fit_failed_all, labels_all, losses_all] = info
     sample_list = [6, 21]
-    loc_list = ['bm', 'tm']
-    fig, axes = layout_fig(2, figsize=(8, 3.2))
+    loc_list = ['ct', 'cb']
+    fig, axes = layout_fig(2, 2, figsize=(5, 3))
     for i, ax in enumerate(axes):
         Viz.draw_background_colors(ax, ([bgc1, bgc2][i]))
         ax.scatter(xs_all[sample_list[i]], ys_nor_all[sample_list[i]], color=np.array(color_blue).reshape(1,-1), s=2)
         ax.scatter(xs_all[sample_list[i]], ys_nor_fit_all[sample_list[i]], color='k', s=2)
+        ax.set_box_aspect(1)
         Viz.set_labels(ax, xlabel='Time (s)', ylabel='Intensity (a.u.)', yaxis_style='linear')
-        labelfigs(ax, 1, string_add=labels_all[sample_list[i]], loc=loc_list[i], size=10)
+        labelfigs(ax, None, string_add=labels_all[sample_list[i]], loc=loc_list[i], style='b', size=6)
+        
 
 
 def compare_loss_difference():
@@ -65,7 +67,7 @@ def compare_loss_difference():
 
 
     seq_colors = ['#00429d','#2e59a8','#4771b2','#5d8abd','#73a2c6','#8abccf','#a5d5d8','#c5eddf','#ffffe0']
-    fig, axes = layout_fig(3, 1, figsize=(8, 8))
+    fig, axes = layout_fig(3, 1, figsize=(5, 1.5*3))
     Viz.plot_loss_difference(axes[0], x_all_sample1, y_all_sample1, color_array_sample1[:,0], loss_diff_sample1, 
                             color_array_sample1, color_2=seq_colors[0], title='treated_213nm')
     Viz.plot_loss_difference(axes[1], x_all_sample2, y_all_sample2, color_array_sample2[:,0], loss_diff_sample2, 
@@ -98,7 +100,7 @@ def compare_growth_mechanism():
     
     color_gray = (128/255, 128/255, 128/255, 0.5)
     
-    fig, axes = layout_fig(3, 1, figsize=(8, 8))
+    fig, axes = layout_fig(3, 1, figsize=(6, 2*3))
     Viz.draw_background_colors(axes[0], color_array_sample1)
     Viz.draw_boxes(axes[0], boxes_sample1, color_gray)
     axes[0].scatter(x_all_sample1, y_all_sample1, color='k', s=1)
@@ -125,7 +127,7 @@ def visualize_characteristic_time():
         None
     """
     seq_colors = ['#00429d','#2e59a8','#4771b2','#5d8abd','#73a2c6','#8abccf','#a5d5d8','#c5eddf','#ffffe0']
-    fig, axes = layout_fig(3, 1, figsize=(8, 8))
+    fig, axes = layout_fig(3, 1, figsize=(6, 6))
     ax1, ax3, ax5 = axes[0], axes[1], axes[2]
 
     x_all_sample1, y_all_sample1 = np.load('Saved_data/treated_213nm-x_all.npy'), np.load('Saved_data/treated_213nm-y_all.npy')
@@ -207,7 +209,7 @@ def violinplot_characteristic_time():
     x_sklearn_sample3, tau_sklearn_sample3 = np.swapaxes(np.load('Saved_data/untreated_162nm-fitting_results(sklearn).npy'), 0, 1)[[0, -1]]
     x_sklearn_sample3, tau_clean_sample3 = remove_outlier(x_sklearn_sample3, tau_sklearn_sample3, 0.95)
 
-    fig, ax = plt.subplots(figsize=(8, 2.5), layout='compressed')
+    fig, ax = plt.subplots(figsize=(6, 2), layout='compressed')
     titles = ['Treated substrate\n(step width=213±88nm)',
             'Treated substrate\n(step width=81±44nm)',
             'Untreated substrate\n(step width=162±83μm)']
