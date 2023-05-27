@@ -454,16 +454,8 @@ class RHEED_image_processer:
         img = self.spot_ds.growth_dataset(growth, frame)
         img = self.normalize_inputs(img, spot)
         img, img_rec, parameters = self.fit(img)
-        print(
-            #print first 2 digits of each parameter
-            f'img_sum:{parameters[0]:.2f}, img_max:{parameters[1]:.2f}, img_mean:{parameters[2]:.2f}')
-        print(
-            f'img_rec_sum:{parameters[3]:.2f}, img_rec_max:{parameters[4]:.2f}, img_rec_mean:{parameters[5]:.2f}')
-        print(
-            f'height:{parameters[6]:.2f}, x:{parameters[7]:.2f}, y:{parameters[8]:.2f}, width_x:{parameters[9]:.2f}, width_y_max:{parameters[10]:.2f}')
-        
+
         sample_list = [img, img_rec, img_rec-img]
-        print('a: raw_image', 'b: reconstructed_image', 'c: difference')
         clim = (img.min(), img.max())
 
         fig, axes = layout_fig(3, 3, figsize=(1.25*3, 1.25*1))
@@ -478,5 +470,10 @@ class RHEED_image_processer:
 
 
         plt.show()
-        print('a: original, b: reconstructed image, c: difference')
+        print(f'\033[1mFig.\033[0m a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for {growth} at index {frame}.')
+        #print first 2 digits of each parameter
+        print(f'The Gaussian fitted parameters are: img_sum={parameters[0]:.2f}, img_max={parameters[1]:.2f}, img_mean={parameters[2]:.2f},')
+        print(f'img_rec_sum={parameters[3]:.2f}, img_rec_max={parameters[4]:.2f}, img_rec_mean={parameters[5]:.2f},')
+        print(f'height={parameters[6]:.2f}, x={parameters[7]:.2f}, y={parameters[8]:.2f}, width_x={parameters[9]:.2f}, width_y_max={parameters[10]:.2f}.')
+        
         return img, img_rec, parameters

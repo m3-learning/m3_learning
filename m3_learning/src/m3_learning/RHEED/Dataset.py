@@ -4,6 +4,62 @@ import matplotlib.pyplot as plt
 from m3_learning.viz.layout import imagemap, layout_fig, labelfigs
 from m3_learning.RHEED.Viz import Viz
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.ticker as ticker
+
+
+def compress_gaussian_params_H5(file_in, str=None, compression='gzip', compression_opts=9):
+    """
+    Compresses Gaussian parameters in an HDF5 file.
+
+    Args:
+        file_in (str): Path to the input HDF5 file.
+        str (str, optional): String to append to the output file name. Defaults to None.
+        compression (str, optional): Compression algorithm to use. Defaults to 'gzip'.
+        compression_opts (int, optional): Compression level. Defaults to 9.
+    """
+
+    if str is None:
+        out_name = file_in[:-3] + '_compressed.h5'
+    else:
+        out_name = file_in[:-3] + str
+
+    with h5py.File(f"{file_in}", 'r') as f_old:
+        print(f_old.keys())
+        with h5py.File(out_name, 'w') as f_new:
+            for ds in f_old.keys():
+                f_new.create_group(ds)
+                for spot in f_old[ds].keys():
+                    f_new[ds].create_group(spot)
+                    for metric in f_old[ds][spot].keys():
+                        data = f_old[ds][spot][metric][:]
+                        dset = f_new[ds][spot].create_dataset(
+                            metric, data=data, compression=compression, compression_opts=compression_opts)
+                        
+def compress_RHEED_spot_H5(file_in, str=None, compression='gzip', compression_opts=9):
+    """
+    Compresses RHEED spots in an HDF5 file.
+
+    Args:
+        file_in (str): Path to the input HDF5 file.
+        str (str, optional): String to append to the output file name. Defaults to None.
+        compression (str, optional): Compression algorithm to use. Defaults to 'gzip'.
+        compression_opts (int, optional): Compression level. Defaults to 9.
+    """
+    
+    if str is None:
+        out_name = file_in[:-3] + '_compressed.h5'
+    else:
+        out_name = file_in[:-3] + str
+    
+    with h5py.File(file_in, 'r') as f_old:
+        print(f_old.keys())
+        with h5py.File(out_name, 'w') as f_new:
+            for growth in f_old.keys():
+                print(growth)
+                data = f_old[growth][:]
+                dset = f_new.create_dataset(
+                    growth, data=data, compression=compression, compression_opts=compression_opts)
+
 
 class RHEED_spot_Dataset:
     """A class representing a dataset of RHEED spots.
@@ -101,13 +157,15 @@ class RHEED_spot_Dataset:
         ax.set_xticklabels("")
         ax.set_yticks([])
         ax.set_xticks([])
-
+        labelfigs(ax, 0)
         if filename is True: 
             filename = f"RHEED_{self.sample_name}_{growth}_{index}"
 
         # prints the figure
         if printing is not None and filename is not None:
             printing.savefig(fig, filename, **kwargs)
+
+        print(f'\033[1mFig.\033[0m a: RHEED spot image for {growth} at index {index}.')
         plt.show()
 
     @property
@@ -302,12 +360,7 @@ class RHEED_parameter_dataset():
         width_x = self.growth_dataset(growth, spot, 'width_x', index)
         width_y = self.growth_dataset(growth, spot, 'width_y', index)
 
-        print(f'img_sum:{img_sum:.2f}, img_max:{img_max:.2f}, img_mean:{img_mean:.2f}')
-        print(f'img_rec_sum:{img_rec_sum:.2f}, img_rec_max:{img_rec_max:.2f}, img_rec_mean:{img_rec_mean:.2f}')
-        print(f'height:{height:.2f}, x:{x:.2f}, y:{y:.2f}, width_x:{width_x:.2f}, width_y_max:{width_y:.2f}')
-
         sample_list = [img, img_rec, img_rec-img]
-        print('a: raw_image', 'b: reconstructed_image', 'c: difference')
 
         clim = (img.min(), img.max())
         fig, axes = layout_fig(3, 3, figsize=(1.25*3, 1.25*1))
@@ -325,8 +378,14 @@ class RHEED_parameter_dataset():
         if printing is not None and filename is not None:
             printing.savefig(fig, filename, **kwargs)
         plt.show()
+        print(f'\033[1mFig.\033[0m a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for {growth} at index {index}.')
+        #print first 2 digits of each parameter
+        print(f'img_sum={img_sum:.2f}, img_max={img_max:.2f}, img_mean={img_mean:.2f}')
+        print(f'img_rec_sum={img_rec_sum:.2f}, img_rec_max={img_rec_max:.2f}, img_rec_mean={img_rec_mean:.2f}')
+        print(f'height={height:.2f}, x={x:.2f}, y={y:.2f}, width_x={width_x:.2f}, width_y_max={width_y:.2f}')
+        
 
-    def viz_RHEED_parameter_trend(self, growth_list, spot, metric_list=None, filename = None, printing=None, **kwargs):
+    def viz_RHEED_parameter_trend(self, growth_list, spot, metric_list=None, head_tail=(100, 100), interval=0, filename = None, printing=None, **kwargs):
         """
         Visualizes the parameter trends for multiple growths, spot, and metrics.
 
@@ -348,14 +407,18 @@ class RHEED_parameter_dataset():
         else:
             fig, axes = plt.subplots(len(metric_list), 1, figsize = (6, 1.5*len(metric_list)))
         for i, (ax, metric) in enumerate(zip(axes, metric_list)):
-            x_curve, y_curve = self.load_multiple_curves(growth_list, spot=spot, metric=metric, **kwargs)
+            x_curve, y_curve = self.load_multiple_curves(growth_list, spot=spot, metric=metric, head_tail=head_tail, interval=interval) #**kwargs)
             ax.scatter(x_curve, y_curve, color='k', s=1)
             if i < len(metric_list)-1:
-                Viz.set_labels(ax, ylabel=f'{metric} (a.u.)', yaxis_style='linear')
-                # ax.set_xticks([])
+                Viz.set_labels(ax, ylabel=f'{metric} (a.u.)', yaxis_style='sci')
                 ax.set_xticklabels(['' for tick in ax.get_xticks()])
             else:
-                Viz.set_labels(ax, xlabel='Time (s)', ylabel=f'{metric} (a.u.)', yaxis_style='linear')
+                Viz.set_labels(ax, xlabel='Time (s)', ylabel=f'{metric} (a.u.)', yaxis_style='sci')
+            formatter = ticker.ScalarFormatter(useMathText=True)
+            formatter.set_powerlimits((-2, 3))  # Adjust the power limits as needed
+            ax.yaxis.set_major_formatter(formatter)
+            ax.yaxis.get_offset_text().set_x(-0.05)
+            labelfigs(ax, i, label=metric, loc='tl', style='b', size=8, inset_fraction=(0.08, 0.03))
 
         fig.subplots_adjust(hspace=0)
 
@@ -366,6 +429,8 @@ class RHEED_parameter_dataset():
         if printing is not None and filename is not None:
             printing.savefig(fig, filename, **kwargs)
         plt.show()
+        print(f'Gaussian fitted parameters in time: \033[1mFig.\033[0m a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.')
+
 
     @property
     def camera_freq(self):
