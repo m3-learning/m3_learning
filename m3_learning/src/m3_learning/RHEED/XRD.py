@@ -8,6 +8,22 @@ from matplotlib import ticker, cm, colors
 
 
 def plot_xrd(ax, files, labels, title=None, xrange=(0,90), diff=1e3, pad_sequence=[]):
+    """
+    Plot X-ray diffraction patterns.
+
+    Parameters:
+    - ax (matplotlib.axes.Axes): The axes object to plot the patterns.
+    - files (list of str): The paths to the files containing the X-ray diffraction data.
+    - labels (list of str): The labels for each X-ray diffraction pattern.
+    - title (str, optional): The title for the plot (default: None).
+    - xrange (tuple, optional): The x-axis range of the plot (default: (0, 90)).
+    - diff (float, optional): Scaling factor for intensity differences between patterns (default: 1e3).
+    - pad_sequence (list, optional): Padding sequence for X-ray diffraction patterns with different scan ranges (default: []).
+
+    Returns:
+    None
+    """
+    
     Xs, Ys = [], []
     length_list = []
     for file in files:
@@ -43,8 +59,20 @@ def plot_xrd(ax, files, labels, title=None, xrange=(0,90), diff=1e3, pad_sequenc
     # ax.set_xticks(np.arange(*xrange, 1))
 
 
-
 def plot_rsm(ax, file, reciprocal_space=True, title=None):
+    """
+    Plot a reciprocal space map or a real space map.
+
+    Parameters:
+    - ax (matplotlib.axes.Axes): The axes object to plot the map.
+    - file (str): The path to the file containing the data.
+    - reciprocal_space (bool, optional): Whether to plot a reciprocal space map (default: True).
+    - title (str, optional): The title for the plot (default: None).
+
+    Returns:
+    None
+    """
+    
     curve_shape = xu.io.getxrdml_scan(file)[0].shape
     omega, two_theta, intensity = xu.io.panalytical_xml.getxrdml_map(file)
 
@@ -60,6 +88,7 @@ def plot_rsm(ax, file, reciprocal_space=True, title=None):
         cs = ax.contourf(Qx, Qz, intensity, locator=ticker.LogLocator(), cmap=cm.viridis, norm=colors.LogNorm())
     else:
         cs = ax.contourf(omega, two_theta, intensity, locator=ticker.LogLocator(), cmap=cm.viridis, norm=colors.LogNorm())
-    # cbar = fig.colorbar(cs)
-    plt.colorbar(cs, ax=ax)
+
+    formatter = ticker.LogFormatterMathtext(base=10, labelOnlyBase=False)
+    plt.colorbar(cs, ax=ax, format=formatter)
     if title: ax.set_title(title)
