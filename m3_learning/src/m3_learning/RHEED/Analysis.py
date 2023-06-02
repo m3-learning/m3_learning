@@ -1,4 +1,3 @@
-# import h5py
 import numpy as np
 from scipy import signal
 from scipy.optimize import curve_fit
@@ -6,33 +5,22 @@ from scipy.stats import zscore
 from scipy.signal import savgol_filter
 from sklearn.decomposition import PCA
 from m3_learning.RHEED.Viz import Viz
-# import matplotlib.pyplot as plt
-
-# import sys
-# sys.path.append('./')
-# from Viz import plot_curve, show_grid_plots
-# from Viz import draw_background_colors, plot_scatter, plot_lineplot, set_labels, label_curves
-
-def load_curve(h5_para_file, growth, spot, metric, camera_freq, x_start):
-    h5_para = h5py.File(h5_para_file, mode='r')
-    curve_y = np.array(h5_para[growth][spot][metric])
-    curve_x = np.linspace(x_start, x_start+len(curve_y)-1, len(curve_y))/camera_freq
-    return curve_x, curve_y
-
-# def load_multiple_curves(h5_para_file, growth_dict, spot, metric, camera_freq=500, x_start=0, interval=200):
-#     x_all, y_all = [], []
-#     for growth_name in list(growth_dict.keys()):
-#         curve_x, curve_y = load_curve(h5_para_file, growth_name, spot, metric, camera_freq, x_start)
-#         x_start = x_start+len(curve_y)+interval
-#         x_all.append(curve_x)
-#         y_all.append(curve_y)
-        
-#     x_all = np.concatenate(x_all)
-#     y_all = np.concatenate(y_all)
-#     return x_all, y_all
-
 
 def detect_peaks(curve_x, curve_y, camera_freq, laser_freq, step_size, prominence):
+    """
+    Detects peaks in a curve based on the provided parameters.
+
+    Args:
+        curve_x (numpy.array): The x-values of the curve.
+        curve_y (numpy.array): The y-values of the curve.
+        camera_freq (float): The frequency of the camera.
+        laser_freq (float): The frequency of the laser.
+        step_size (int): The step size for convolution.
+        prominence (float): The prominence threshold for peak detection.
+
+    Returns:
+        tuple: A tuple containing the peak positions, partial curve x-values, and partial curve y-values.
+    """
     dist = int(camera_freq/laser_freq*0.6)
     step = np.hstack((np.ones(step_size), -1*np.ones(step_size)))
     dary_step = np.convolve(curve_y, step, mode='valid')
@@ -51,17 +39,53 @@ def detect_peaks(curve_x, curve_y, camera_freq, laser_freq, step_size, prominenc
     return x_peaks/500, xs, ys
 
 def remove_outlier(x, y, ub):
+
+    """
+    Removes outliers from the given data based on the provided upper bound.
+
+    Args:
+        x (numpy.array): The x-values of the data.
+        y (numpy.array): The y-values of the data.
+        ub (float): The upper bound for z-score filtering.
+
+    Returns:
+        tuple: A tuple containing the filtered x-values and y-values.
+    """
+    
     z = zscore(y, axis=0, ddof=0)
     x = np.delete(x, np.where(z>ub))
     y = np.delete(y, np.where(z>ub))
     return x, y
 
 def smooth(y, box_pts):
+    """
+    Applies a smoothing filter to the given data using a moving average window.
+
+    Args:
+        y (numpy.array): The input data.
+        box_pts (int): The size of the moving average window.
+
+    Returns:
+        numpy.array: The smoothed data.
+    """
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
 
 def normalize_0_1(y, I_start, I_end, I_diff=None, unify=True):
+    """
+        Normalizes the given data to the range [0, 1] based on the provided intensity values.
+
+    Args:
+        y (numpy.array): The input data.
+        I_start (float): The start intensity value.
+        I_end (float): The end intensity value.
+        I_diff (float, optional): The intensity difference used for normalization. Defaults to None.
+        unify (bool, optional): Whether to unify the normalization range regardless of the intensity order. Defaults to True.
+
+    Returns:
+        numpy.array: The normalized data.
+    """
     if not I_diff:
         I_diff = I_end-I_start
     
@@ -81,7 +105,19 @@ def normalize_0_1(y, I_start, I_end, I_diff=None, unify=True):
     return y_nor
 
 def de_normalize_0_1(y_nor_fit, I_start, I_end, I_diff=None, unify=True):
-    
+    """
+    De-normalizes the given normalized data back to the original range based on the provided intensity values.
+
+    Args:
+        y_nor_fit (numpy.array): The normalized data to be de-normalized.
+        I_start (float): The start intensity value.
+        I_end (float): The end intensity value.
+        I_diff (float, optional): The intensity difference used for normalization. Defaults to None.
+        unify (bool, optional): Whether to unify the normalization range regardless of the intensity order. Defaults to True.
+
+    Returns:
+        numpy.array: The de-normalized data.
+    """
     if not I_diff:
         I_diff = I_end-I_start
     if not unify:
@@ -105,6 +141,19 @@ def de_normalize_0_1(y_nor_fit, I_start, I_end, I_diff=None, unify=True):
     
 
 def process_rheed_data(xs, ys, length=500, savgol_window_order=(15, 3), pca_component=10):    
+
+    """Processes RHEED data by interpolating, denoising, and applying dimensionality reduction.
+
+    Args:
+        xs (list): List of x-values for each partial curve.
+        ys (list): List of y-values for each partial curve.
+        length (int, optional): The desired length for interpolation. Defaults to 500.
+        savgol_window_order (tuple, optional): The order of the Savitzky-Golay filter window. Defaults to (15, 3).
+        pca_component (int, optional): The number of components for PCA. Defaults to 10.
+
+    Returns:
+        tuple: A."""
+
     # interpolate the data to same size 
     if length:
         xs_processed = []
@@ -126,10 +175,17 @@ def process_rheed_data(xs, ys, length=500, savgol_window_order=(15, 3), pca_comp
 
 
 def fit_exp_function(xs, ys, growth_name, fit_settings = {'I_diff': 5000, 'unify': True, 'bounds':[0.01, 1], 'p_init':[0.1, 0.4, 0.1]}):
-    '''
-    I_diff: Intensity difference used to normalize the curve to 0-1;
-    
-    '''
+    """Fits a""n exponential function to the given data.
+
+    Args:
+        xs (list): List of x-values for each partial curve.
+        ys (list): List of y-values for each partial curve.
+        growth_name (str): Name of the growth.
+        fit_settings (dict, optional): Setting parameters for fitting function. Defaults to {'I_diff': 5000, 'unify': True, 'bounds':[0.01, 1], 'p_init':[0.1, 0.4, 0.1]}.
+
+    Returns:
+        tuple: A tup""le containing the fitted parameters, and a list of processed RHEED data.
+    """
     # use simplified version to avoid overfitting to wrong fitting function
     def exp_func_inc_simp(x, b1, relax1):
         return b1*(1 - np.exp(-x/relax1))
@@ -215,23 +271,21 @@ def fit_exp_function(xs, ys, growth_name, fit_settings = {'I_diff': 5000, 'unify
 
 def analyze_curves(dataset, growth_dict, spot, metric, interval=1000, fit_settings={'savgol_window_order': (15,3), 'pca_component': 10, 'I_diff': 8000, 'unify':True, 'bounds':[0.01, 1], 'p_init':(1, 0.1)}):
 
-    '''
+    """
     Analyzes RHEED curves for a given spot and metric.
 
     Args:
-    - dataset (str): Name of the dataset.
-    - growth_dict (dict): Names of the growth index and corresponding frequency.
-    - spot (str): Name of the RHEED spot to collect, choice of "spot_1", "spot_2" or "spot_3".
-    - metric (str): Name of the metric to analyze the RHEED spot.
-    - visualize (bool): If True, plots the analyzed data. Default is False.
-    - interval (int): Number of RHEED curves to analyze at a time. Default is 1000.
-    - fit_settings (dict): Setting parameters for fitting function.
+        dataset (str): Name of the dataset.
+        growth_dict (dict): Names of the growth index and corresponding frequency.
+        spot (str): Name of the RHEED spot to collect, choice of "spot_1", "spot_2" or "spot_3".
+        metric (str): Name of the metric to analyze the RHEED spot.
+        interval (int, optional): Number of RHEED curves to analyze at a time. Defaults to 1000.
+        fit_settings (dict, optional): Setting parameters for fitting function. Defaults to {'savgol_window_order': (15,3), 'pca_component': 10, 'I_diff': 8000, 'unify':True, 'bounds':[0.01, 1], 'p_init':(1, 0.1)}.
 
     Returns:
-    - parameters_all (ndarray): Fitted parameters for all RHEED curves.
-    - x_list_all (ndarray): Laser ablation counts for all RHEED curves.
-    - info_all (list): List containing all processed RHEED data.
-    '''
+        tuple: A tuple containing the fitted parameters for all RHEED curves, the laser ablation counts for all RHEED curves, and a list of processed RHEED data.
+
+    """
 
     parameters_all, x_list_all = [], []
     xs_all, ys_all, ys_fit_all, ys_nor_all, ys_nor_fit_all, ys_nor_fit_failed_all = [], [], [], [], [], []
