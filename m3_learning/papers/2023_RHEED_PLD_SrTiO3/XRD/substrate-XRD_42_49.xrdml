@@ -1,0 +1,110 @@
+﻿<?xml version="1.0"?>
+<xrdMeasurements xmlns="http://www.xrdml.com/XRDMeasurement/2.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.xrdml.com/XRDMeasurement/2.2 http://www.xrdml.com/XRDMeasurement/2.2/XRDMeasurement.xsd" status="Completed" recordIdentifier="{A0FBA489-0A98-423D-9A91-EFD67B8B847A}">
+	<comment>
+		<entry>Configuration=3-axes Cradle_Reflection, Owner=User, Creation date=9/2/2021 3:55:24 PM</entry>
+		<entry>Goniometer=Theta/Theta; Minimum step size 2Theta:0.0001; Minimum step size Omega:0.0001</entry>
+		<entry>Sample stage=Chi-Phi-z stage 240 mm (reflection); Minimum step size Phi:0.01; Minimum step size Chi:0.01; Minimum step size Z:0.001</entry>
+		<entry>Diffractometer system=EMPYREAN</entry>
+		<entry>Measurement program=C:\PANalytical\Data Collector\Programs\Liyan Wu\Film programs\2theta-Omega_Path1_42-49 degree_slow.xrdmp, Identifier={CEF82B03-04E3-486B-A5F1-2D9E488410A5}</entry>
+	</comment>
+	<sample type="To be analyzed">
+		<id></id>
+		<name></name>
+		<preparedBy></preparedBy>
+	</sample>
+	<xrdMeasurement measurementType="Scan" status="Completed" sampleMode="Reflection">
+		<comment>
+			<entry>PHD Lower Level = 4.02 (keV), PHD Upper Level = 11.26 (keV)</entry>
+		</comment>
+		<usedWavelength intended="K-Alpha">
+			<kAlpha1 unit="Angstrom">1.5405980</kAlpha1>
+			<kAlpha2 unit="Angstrom">1.5444260</kAlpha2>
+			<kBeta unit="Angstrom">1.3922500</kBeta>
+			<ratioKAlpha2KAlpha1>0.0000</ratioKAlpha2KAlpha1>
+		</usedWavelength>
+		<incidentBeamPath>
+			<radius unit="mm">240.00</radius>
+			<xRayTube id="1010048" name="Empyrean Cu LFF HR (9430 033 7310x) DK432574">
+				<tension unit="kV">45.0</tension>
+				<current unit="mA">40.0</current>
+				<anodeMaterial>Cu</anodeMaterial>
+				<focus type="Line">
+					<length unit="mm">12.0</length>
+					<width unit="mm">0.4</width>
+					<takeOffAngle unit="deg">4.4</takeOffAngle>
+				</focus>
+			</xRayTube>
+			<xRayMirror id="27080001" name="Inc. Beam Cu W/Si (hybrid MPD)" hybrid="true">
+				<crystal type="Graded" shape="Parabolic">W/Si</crystal>
+				<acceptanceAngle unit="deg">0.800</acceptanceAngle>
+				<length unit="mm">55.3</length>
+			</xRayMirror>
+			<monochromator id="23090002" name="Hybrid monochr. 2xGe220 Cu asym." hybrid="true">
+				<crystal type="Asymmetric" shape="Flat">Ge</crystal>
+				<numberOfReflections>2</numberOfReflections>
+				<hkl>
+					<h>2</h>
+					<k>2</k>
+					<l>0</l>
+				</hkl>
+			</monochromator>
+			<divergenceSlit id="22010005" name="Fixed slit 1/4°" xsi:type="fixedDivergenceSlitType">
+				<distanceToSample unit="mm">179.30</distanceToSample>
+				<height unit="mm">0.38</height>
+			</divergenceSlit>
+		</incidentBeamPath>
+		<diffractedBeamPath>
+			<radius unit="mm">240.00</radius>
+			<antiScatterSlit id="22060009" name="Programmable anti-scatter slit" xsi:type="fixedAntiScatterSlitType">
+				<angle unit="deg">0.0625</angle>
+			</antiScatterSlit>
+			<detector id="7010020" name="PIXcel3D-Medipix3 1x1 detector" xsi:type="areaDetectorType">
+				<phd unit="%">
+					<lowerLevel>25.0</lowerLevel>
+					<upperLevel>70.0</upperLevel>
+				</phd>
+				<mode>Receiving slit</mode>
+				<activeChannelsEquatorial>21</activeChannelsEquatorial>
+				<activeChannelsAxial>255</activeChannelsAxial>
+				<pitchEquatorial unit="mm">0.05500</pitchEquatorial>
+				<pitchAxial unit="mm">0.05500</pitchAxial>
+				<readOutPeriod unit="seconds">0.050</readOutPeriod>
+			</detector>
+		</diffractedBeamPath>
+		<scan appendNumber="0" mode="Continuous" scanAxis="2Theta-Omega" status="Completed">
+			<header>
+				<startTimeStamp>2023-05-21T14:58:14-04:00</startTimeStamp>
+				<endTimeStamp>2023-05-21T15:09:57-04:00</endTimeStamp>
+				<author>
+					<name>User</name>
+				</author>
+				<source>
+					<applicationSoftware version="7.1">Data Collector</applicationSoftware>
+					<instrumentControlSoftware version="8.2  20201204">EMPYREAN</instrumentControlSoftware>
+					<instrumentID>0000000011260721</instrumentID>
+				</source>
+			</header>
+			<dataPoints>
+				<positions axis="2Theta" unit="deg">
+					<startPosition>42.0100</startPosition>
+					<endPosition>48.9900</endPosition>
+				</positions>
+				<positions axis="Omega" unit="deg">
+					<startPosition>20.8447</startPosition>
+					<endPosition>24.3347</endPosition>
+				</positions>
+				<positions axis="Phi" unit="deg">
+					<commonPosition>0.00</commonPosition>
+				</positions>
+				<positions axis="Chi" unit="deg">
+					<commonPosition>-0.15</commonPosition>
+				</positions>
+				<positions axis="Z" unit="mm">
+					<commonPosition>8.470</commonPosition>
+				</positions>
+				<commonCountingTime unit="seconds">1.760</commonCountingTime>
+				<counts unit="counts">51 50 63 41 61 49 40 51 52 67 42 42 65 61 53 63 52 67 50 47 51 59 56 53 52 56 64 55 65 60 61 54 54 65 54 60 72 59 62 70 66 58 54 48 43 64 57 61 44 60 79 72 59 68 72 65 66 70 62 55 62 64 62 96 72 61 81 73 71 66 85 66 73 78 76 86 54 61 76 75 64 82 92 95 87 72 68 83 74 85 90 54 76 90 101 111 97 107 80 97 89 84 84 100 105 107 123 97 103 103 115 89 101 98 87 113 117 136 98 104 127 126 125 138 138 117 128 139 132 147 140 157 127 159 157 143 175 163 146 141 161 172 175 183 179 194 188 223 216 202 195 196 241 204 220 206 235 217 236 242 242 268 256 296 279 314 292 321 311 363 326 346 361 408 377 362 438 434 454 473 489 488 514 534 534 586 653 630 697 747 829 811 891 916 919 1029 1111 1119 1249 1346 1421 1554 1656 1777 2009 2199 2448 2823 3151 3585 4235 5431 7222 9619 13635 21593 31715 40563 52680 70629 99178 150074 239851 587305 11172868 23790352 10524321 431428 158917 93223 61035 40809 27822 19364 13078 9138 7052 5633 4747 3989 3519 3067 2767 2335 2277 1870 1804 1652 1508 1297 1231 1182 1085 1078 975 926 827 785 724 667 628 611 570 569 579 495 478 485 447 433 364 399 341 348 340 319 323 293 342 287 287 284 290 257 266 255 233 222 248 207 209 197 193 231 191 178 185 155 150 152 177 156 157 155 168 163 140 152 118 139 144 135 122 113 130 125 98 100 88 109 113 80 80 103 89 105 95 98 95 83 99 87 81 94 88 92 74 91 81 86 93 75 79 75 65 76 86 77 70 85</counts>
+			</dataPoints>
+		</scan>
+	</xrdMeasurement>
+</xrdMeasurements>
