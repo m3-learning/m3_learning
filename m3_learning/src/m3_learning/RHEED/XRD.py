@@ -90,8 +90,8 @@ def plot_rsm(ax, file, reciprocal_space=True, title=None):
         cs = ax.contourf(omega, two_theta, intensity, locator=ticker.LogLocator(), cmap=cm.viridis, norm=colors.LogNorm())
 
     formatter = ticker.LogFormatterMathtext(base=10, labelOnlyBase=False)
-    ax.set_xlabel(r"Qx ")
-    ax.set_ylabel(r"Qz")
+    ax.set_xlabel(r"Qx r'$\AA$'")
+    ax.set_ylabel(r"Qz r'$\AA$'")
 
     plt.colorbar(cs, ax=ax, format=formatter)
     if title: ax.set_title(title)
