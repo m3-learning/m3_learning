@@ -152,5 +152,9 @@ m3_learning/papers/2023_Rapid_Fitting/figures/*
 
 Data/*
 Figures/*
-/m3_learning/papers/2023_RHEED_PLD_SrTiO3/Assets/
+/m3_learning/papers/2023_RHEED_PLD_SrTiO3/Figures/
+/m3_learning/papers/2023_RHEED_PLD_SrTiO3/Saved_data/
+/m3_learning/papers/2023_RHEED_PLD_SrTiO3/AFM/
+/m3_learning/papers/2023_RHEED_PLD_SrTiO3/XRD/
+/m3_learning/papers/2023_RHEED_PLD_SrTiO3/Datasets/
 output.png
