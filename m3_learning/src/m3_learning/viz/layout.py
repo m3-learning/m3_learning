@@ -1,6 +1,10 @@
 from matplotlib.patches import ConnectionPatch
+from matplotlib.patches import ConnectionPatch
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.transforms as transforms
+from itertools import product
+from matplotlib.text import Annotation
 import matplotlib.transforms as transforms
 from itertools import product
 from matplotlib.text import Annotation
@@ -20,6 +24,77 @@ import string
 
 Path = path.Path
 PathPatch = patches.PathPatch
+
+
+def subfigures(nrows, ncols, size=(1.25, 1.25), gaps=(.8, .33), figsize=None, **kwargs):
+
+    if figsize is None:
+        figsize = (size[0]*ncols + gaps[0]*ncols, size[1]*nrows+gaps[1]*nrows)
+
+    # create a new figure with a size of 6x6 inches
+    fig = plt.figure(figsize=figsize)
+
+    ax = []
+
+    for i, j in product(range(nrows), range(ncols)):
+        rvalue = (nrows-1) - j
+        # create the first axis with absolute position (1 inch, 1 inch) and size (2 inches, 2 inches)
+        pos1 = [(size[0]*rvalue + gaps[0]*rvalue)/figsize[0], (size[1]*i + gaps[1]*i)/figsize[1],
+                size[0]/figsize[0], size[1]/figsize[1]]  # transforms.Bbox.from_bounds()
+        ax.append(fig.add_axes(pos1))
+
+    ax.reverse()
+
+    return fig, ax
+
+
+def add_text_to_figure(fig, text, text_position_in_inches, **kwargs):
+
+    # Get the figure size in inches and dpi
+    fig_size_inches = fig.get_size_inches()
+    fig_dpi = fig.get_dpi()
+
+    # Convert the desired text position in inches to a relative position (0 to 1)
+    text_position_relative = (
+        text_position_in_inches[0] / fig_size_inches[0], text_position_in_inches[1] / fig_size_inches[1])
+
+    # Add the text to the figure with the calculated relative position
+    fig.text(text_position_relative[0],
+             text_position_relative[1], text, **kwargs)
+
+
+def add_box(axs, pos, **kwargs):
+
+    xmin, ymin, xmax, ymax = pos
+    rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, **kwargs)
+    axs.add_patch(rect)
+
+
+def inset_connector(fig, ax1, ax2, coord1=None, coord2=None, **kwargs):
+    if coord1 is None:
+        coord1_xlim = ax1.get_xlim()
+        coord1_ylim = ax1.get_ylim()
+
+        coord1_l1 = (coord1_xlim[0], coord1_ylim[0])
+        coord1_l2 = (coord1_xlim[0], coord1_ylim[1])
+        coord1 = [coord1_l1, coord1_l2]
+
+    if coord2 is None:
+        coord2_xlim = ax2.get_xlim()
+        coord2_ylim = ax2.get_ylim()
+
+        coord2_l1 = (coord2_xlim[0], coord2_ylim[0])
+        coord2_l2 = (coord2_xlim[0], coord2_ylim[1])
+        coord2 = [coord2_l1, coord2_l2]
+
+    for p1, p2 in zip(coord1, coord2):
+
+        # Create a connection between the two points
+        con = ConnectionPatch(xyA=p1, xyB=p2,
+                              coordsA=ax1.transData, coordsB=ax2.transData, **kwargs)
+
+        # Add the connection to the plot
+        fig.add_artist(con)
 
 
 def subfigures(nrows, ncols, size=(1.25, 1.25), gaps=(.8, .33), figsize=None, **kwargs):
@@ -287,13 +362,13 @@ def combine_lines(*args):
     return lines, labels
 
 
-def labelfigs(axes, number = None, style="wb", 
-            loc="tl", string_add="", size=8, 
-            text_pos="center", inset_fraction=0.15):
-    
+def labelfigs(axes, number=None, style="wb",
+              loc="tl", string_add="", size=8,
+              text_pos="center", inset_fraction=(0.15, 0.15), **kwargs):
+
     # initializes an empty string
     text = ""
-    
+
     # Sets up various color options
     formatting_key = {
         "wb": dict(color="w", linewidth=.75),
@@ -303,12 +378,12 @@ def labelfigs(axes, number = None, style="wb",
     
     # Stores the selected option
     formatting = formatting_key[style]
-    
+
     xlim = axes.get_xlim()
     ylim = axes.get_ylim()
 
-    x_inset = (xlim[1] - xlim[0]) * inset_fraction
-    y_inset = (ylim[1] - ylim[0]) * inset_fraction
+    x_inset = (xlim[1] - xlim[0]) * inset_fraction[1]
+    y_inset = (ylim[1] - ylim[0]) * inset_fraction[0]
 
     if loc == 'tl':
         x, y = xlim[0] + x_inset, ylim[1] - y_inset
@@ -323,18 +398,20 @@ def labelfigs(axes, number = None, style="wb",
     elif loc == 'cb':
         x, y = (xlim[0] + xlim[1]) / 2, ylim[0] + y_inset
     else:
-        raise ValueError("Invalid position. Choose from 'tl', 'tr', 'bl', 'br', 'ct', or 'cb'.")
-    
-    text += string_add
-    
-    if number is not None:
-        text += number_to_letters(number) 
+        raise ValueError(
+            "Invalid position. Choose from 'tl', 'tr', 'bl', 'br', 'ct', or 'cb'.")
 
-    text_ = axes.text(x, y, text, va='center', ha='center', 
-            path_effects=[patheffects.withStroke(linewidth=formatting["linewidth"], foreground="k")],
-            color=formatting["color"],
-                )
-    
+    text += string_add
+
+    if number is not None:
+        text += number_to_letters(number)
+
+    text_ = axes.text(x, y, text, va='center', ha='center',
+                      path_effects=[patheffects.withStroke(
+                      linewidth=formatting["linewidth"], foreground="k")],
+                      color=formatting["color"], size=size, **kwargs
+                      )
+
     text_.set_zorder(np.inf)
 
 
@@ -477,7 +554,7 @@ def get_axis_pos_inches(fig, ax):
 
     Returns:
         array: the position of the center bottom of the axis in inches
-    """    
+    """
 
     # Get the bounding box of the axis in normalized coordinates (relative to the figure)
     axis_bbox = ax.get_position()
@@ -485,28 +562,28 @@ def get_axis_pos_inches(fig, ax):
     # Calculate the center bottom point of the axis in normalized coordinates
     center_bottom_x = axis_bbox.x0 + axis_bbox.width / 2
     center_bottom_y = axis_bbox.y0
-    
+
     # Convert the center bottom point from normalized coordinates to display units
-    center_bottom_display = fig.transFigure.transform((center_bottom_x, center_bottom_y))
+    center_bottom_display = fig.transFigure.transform(
+        (center_bottom_x, center_bottom_y))
 
     return center_bottom_display/fig.dpi
 
 
 class FigDimConverter:
     """class to convert between relative and inches dimensions of a figure
-    """    
-    
-    
+    """
+
     def __init__(self, figsize):
         """initializes the class
 
         Args:
             figsize (tuple): figure size in inches
-        """    
-            
+        """
+
         self.fig_width = figsize[0]
         self.fig_height = figsize[1]
-    
+
     def to_inches(self, x):
         """Converts position from relative to inches
 
@@ -515,10 +592,10 @@ class FigDimConverter:
 
         Returns:
             tuple: position in inches (left, bottom, width, height)
-        """        
-        
+        """
+
         return (x[0] * self.fig_width, x[1] * self.fig_height, x[2] * self.fig_width, x[3] * self.fig_height)
-    
+
     def to_relative(self, x):
         """Converts position from inches to relative
 
@@ -527,6 +604,6 @@ class FigDimConverter:
 
         Returns:
             tuple: position in relative coordinates (left, bottom, width, height)
-        """        
-        
+        """
+
         return (x[0] / self.fig_width, x[1] / self.fig_height, x[2] / self.fig_width, x[3] / self.fig_height)
