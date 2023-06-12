@@ -3,11 +3,12 @@
 <!DOCTYPE html>
 
 
-<html >
+<html lang="en" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
     <title>Unsupervised Spectral Unmixing with Autoencoders &#8212; M3 Learning: Multifunctional Materials and Machine Learning</title>
   
   
@@ -43,6 +44,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
@@ -63,15 +65,15 @@ const thebe_selector_output = ".output, .cell_output"
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script type="application/vnd.jupyter.widget-state+json">{"state": {"15535b190b864417b1c99287bd117e2b": {"model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": "500px"}}}, "version_major": 2, "version_minor": 0}</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script crossorigin="anonymous" data-jupyter-widgets-cdn="https://cdn.jsdelivr.net/npm/" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" data-jupyter-widgets-cdn="https://cdn.jsdelivr.net/npm/" src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@1.0.6/dist/embed-amd.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'Tutorials/Unsupervised_Learning_with_AEs/Unsupervised_Learning_with_Autoencoders';</script>
     <link rel="shortcut icon" href="../../_static/m3_logo.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Physics Constrained Autoencoders" href="../Physics_Informed_Autoencoders/Physics_Constrained_Autoencoder.html" />
-    <link rel="prev" title="Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction" href="../../papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html" />
+    <link rel="prev" title="Characteristic Time with Details" href="../../papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="None"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
   
   
@@ -168,6 +170,18 @@ const thebe_selector_output = ".output, .cell_output"
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Papers</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/RHEED_toc.html">Predicting Pulsed-Laser Deposition $SrTiO_3$ Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/1_Abstract.html">Abstract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/2_RHEED_metrics.html">RHEED Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details.html">RHEED Metrics with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/4_AFM_and_XRD.html">AFM_and_XRD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/5_AFM_and_XRD-details.html">AFM and XRD with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/6_Growth_mechanism.html">Growth Mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/7_Growth_mechanism-details.html">Growth Mechanism with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/8_Characteristic_time.html">Characteristic Time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details.html">Characteristic Time with Details</a></li>
+</ul>
+</li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current nav bd-sidenav">
@@ -498,8 +512,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <div class="tex2jax_ignore mathjax_ignore section" id="unsupervised-spectral-unmixing-with-autoencoders">
-<h1>Unsupervised Spectral Unmixing with Autoencoders<a class="headerlink" href="#unsupervised-spectral-unmixing-with-autoencoders" title="Permalink to this headline">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="unsupervised-spectral-unmixing-with-autoencoders">
+<h1>Unsupervised Spectral Unmixing with Autoencoders<a class="headerlink" href="#unsupervised-spectral-unmixing-with-autoencoders" title="Permalink to this heading">#</a></h1>
 <p>By Joshua C. Agar, Shuyu Qin</p>
 <ul class="simple">
 <li><p>There are many times where you want to extract imporant features from high-dimensional data</p></li>
@@ -508,8 +522,8 @@ document.write(`
 <li><p>In essence, the goal is to compress data to some lower latent space where you can extract information</p></li>
 </ul>
 <p><img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/3-swissroll-unfolded.png?raw=true" /></p>
-<div class="section" id="autoencoder">
-<h2>Autoencoder<a class="headerlink" href="#autoencoder" title="Permalink to this headline">#</a></h2>
+<section id="autoencoder">
+<h2>Autoencoder<a class="headerlink" href="#autoencoder" title="Permalink to this heading">#</a></h2>
 <p><img alt="imag" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/Autoencoder.png?raw=true" /></p>
 <ul class="simple">
 <li><p><strong>Encoder</strong> - Neural network that deconstructs the data into the most important statistical components</p></li>
@@ -520,8 +534,8 @@ document.write(`
 <ul class="simple">
 <li><p><strong>Decoder</strong> - Neural network that translates the latent space to original dimensionality.</p></li>
 </ul>
-<div class="section" id="mathematical-objective">
-<h3>Mathematical Objective<a class="headerlink" href="#mathematical-objective" title="Permalink to this headline">#</a></h3>
+<section id="mathematical-objective">
+<h3>Mathematical Objective<a class="headerlink" href="#mathematical-objective" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Minimize the reconstruction loss based on some metric.</p>
 <ul>
@@ -539,18 +553,18 @@ document.write(`
 <ul class="simple">
 <li><p>Good at capturing details within spectra</p></li>
 </ul>
-</div>
-<div class="section" id="optimizers">
-<h3>Optimizers<a class="headerlink" href="#optimizers" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="optimizers">
+<h3>Optimizers<a class="headerlink" href="#optimizers" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Standard optimizers like ADAM tend to be sufficient</p></li>
 </ul>
 <ul class="simple">
 <li><p>Can use more complex optimizers 2nd order, adhessian to optimize small models.</p></li>
 </ul>
-</div>
-<div class="section" id="practical-objective">
-<h3>Practical Objective<a class="headerlink" href="#practical-objective" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="practical-objective">
+<h3>Practical Objective<a class="headerlink" href="#practical-objective" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Create an autoencoder that has performant reconstruction</p></li>
 </ul>
@@ -569,15 +583,15 @@ document.write(`
 <ul class="simple">
 <li><p>Create a latent trajectory that is suitable for generation</p></li>
 </ul>
-</div>
-</div>
-</div>
-<div class="tex2jax_ignore mathjax_ignore section" id="imports-packages">
-<h1>Imports Packages<a class="headerlink" href="#imports-packages" title="Permalink to this headline">#</a></h1>
+</section>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="imports-packages">
+<h1>Imports Packages<a class="headerlink" href="#imports-packages" title="Permalink to this heading">#</a></h1>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input above-output-prompt docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># installs the tutorial package</span>
-<span class="o">!</span>pip install m3_learning
+<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>m3_learning
 </pre></div>
 </div>
 </div>
@@ -868,17 +882,17 @@ Numpy seed was set to 42
 </div>
 </div>
 </div>
-</div>
-<div class="tex2jax_ignore mathjax_ignore section" id="generating-data">
-<h1>Generating Data<a class="headerlink" href="#generating-data" title="Permalink to this headline">#</a></h1>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="generating-data">
+<h1>Generating Data<a class="headerlink" href="#generating-data" title="Permalink to this heading">#</a></h1>
 <ul class="simple">
 <li><p>We want to generate a hyperspectral image</p></li>
 </ul>
 <ul class="simple">
 <li><p>This can be done by taking the RGB values of an image and using them as parameters for a function</p></li>
 </ul>
-<div class="section" id="loads-and-image-of-my-dog-nala">
-<h2>Loads and image of my dog Nala<a class="headerlink" href="#loads-and-image-of-my-dog-nala" title="Permalink to this headline">#</a></h2>
+<section id="loads-and-image-of-my-dog-nala">
+<h2>Loads and image of my dog Nala<a class="headerlink" href="#loads-and-image-of-my-dog-nala" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Painting by <em>Irene Dogmatic</em></p></li>
 </ul>
@@ -895,9 +909,9 @@ Numpy seed was set to 42
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="displays-the-image">
-<h2>Displays the image<a class="headerlink" href="#displays-the-image" title="Permalink to this headline">#</a></h2>
+</section>
+<section id="displays-the-image">
+<h2>Displays the image<a class="headerlink" href="#displays-the-image" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
@@ -911,11 +925,11 @@ Numpy seed was set to 42
 <img alt="../../_images/d09e8fe624592ab6dde9e60f00612c925ba1afbf3543ac9bfc92a97383cd5e92.png" src="../../_images/d09e8fe624592ab6dde9e60f00612c925ba1afbf3543ac9bfc92a97383cd5e92.png" />
 </div>
 </div>
-</div>
-<div class="section" id="generating-some-data-based-on-the-image">
-<h2>Generating some data based on the image<a class="headerlink" href="#generating-some-data-based-on-the-image" title="Permalink to this headline">#</a></h2>
-<div class="section" id="define-a-non-linear-function">
-<h3>Define a non-linear function<a class="headerlink" href="#define-a-non-linear-function" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="generating-some-data-based-on-the-image">
+<h2>Generating some data based on the image<a class="headerlink" href="#generating-some-data-based-on-the-image" title="Permalink to this heading">#</a></h2>
+<section id="define-a-non-linear-function">
+<h3>Define a non-linear function<a class="headerlink" href="#define-a-non-linear-function" title="Permalink to this heading">#</a></h3>
 <p><img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/generated.png?raw=true" /></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -954,10 +968,10 @@ Numpy seed was set to 42
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="section" id="plots-the-generated-data">
-<h2>Plots the generated data<a class="headerlink" href="#plots-the-generated-data" title="Permalink to this headline">#</a></h2>
+</section>
+</section>
+<section id="plots-the-generated-data">
+<h2>Plots the generated data<a class="headerlink" href="#plots-the-generated-data" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">layout_fig</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span>
@@ -986,11 +1000,11 @@ Numpy seed was set to 42
 <img alt="../../_images/7a2a825950d384155a208c8d4988b34684a7a76c9b451c4107e18a479fadef9d.png" src="../../_images/7a2a825950d384155a208c8d4988b34684a7a76c9b451c4107e18a479fadef9d.png" />
 </div>
 </div>
-</div>
-<div class="section" id="building-a-simple-autoencoder">
-<h2>Building a Simple Autoencoder<a class="headerlink" href="#building-a-simple-autoencoder" title="Permalink to this headline">#</a></h2>
-<div class="section" id="defines-the-encoder-and-the-decoder">
-<h3>Defines the encoder and the decoder<a class="headerlink" href="#defines-the-encoder-and-the-decoder" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="building-a-simple-autoencoder">
+<h2>Building a Simple Autoencoder<a class="headerlink" href="#building-a-simple-autoencoder" title="Permalink to this heading">#</a></h2>
+<section id="defines-the-encoder-and-the-decoder">
+<h3>Defines the encoder and the decoder<a class="headerlink" href="#defines-the-encoder-and-the-decoder" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latent_dim</span> <span class="o">=</span> <span class="mi">12</span>
@@ -1022,9 +1036,9 @@ Numpy seed was set to 42
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="builds-the-autoencoder">
-<h3>Builds the autoencoder<a class="headerlink" href="#builds-the-autoencoder" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="builds-the-autoencoder">
+<h3>Builds the autoencoder<a class="headerlink" href="#builds-the-autoencoder" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Autoencoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -1044,9 +1058,9 @@ Numpy seed was set to 42
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="instantiates-the-model">
-<h3>Instantiates the model<a class="headerlink" href="#instantiates-the-model" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="instantiates-the-model">
+<h3>Instantiates the model<a class="headerlink" href="#instantiates-the-model" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cpuinfo</span>
@@ -1115,9 +1129,9 @@ Estimated Total Size (MB): 0.00
 <li><p>Decoder with with size 10 –&gt; same as orignal spectral length</p></li>
 <li><p>Autoencoder considers time by saying each timestep is its own fully-uncorrelated sample</p></li>
 </ul>
-</div>
-<div class="section" id="builds-the-dataloader">
-<h3>Builds the dataloader<a class="headerlink" href="#builds-the-dataloader" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="builds-the-dataloader">
+<h3>Builds the dataloader<a class="headerlink" href="#builds-the-dataloader" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_iterator</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
@@ -1126,9 +1140,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="trains-the-model">
-<h3>Trains the model<a class="headerlink" href="#trains-the-model" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="trains-the-model">
+<h3>Trains the model<a class="headerlink" href="#trains-the-model" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
@@ -7639,9 +7653,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="evaluates-the-model-after-training">
-<h3>Evaluates the model after training<a class="headerlink" href="#evaluates-the-model-after-training" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="evaluates-the-model-after-training">
+<h3>Evaluates the model after training<a class="headerlink" href="#evaluates-the-model-after-training" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">encode</span><span class="p">,</span> <span class="n">decode</span> <span class="o">=</span> <span class="n">transform_nn</span><span class="p">(</span><span class="n">dog_data</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
@@ -7665,12 +7679,12 @@ Estimated Total Size (MB): 0.00
 <ul class="simple">
 <li><p>We know that we only have 3 intrinsic latent variables</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="model-with-3-latent-variables">
-<h2>Model with 3 latent variables<a class="headerlink" href="#model-with-3-latent-variables" title="Permalink to this headline">#</a></h2>
-<div class="section" id="instantiates-the-model-3-latent-variables">
-<h3>Instantiates the model (3 latent variables)<a class="headerlink" href="#instantiates-the-model-3-latent-variables" title="Permalink to this headline">#</a></h3>
+</section>
+</section>
+<section id="model-with-3-latent-variables">
+<h2>Model with 3 latent variables<a class="headerlink" href="#model-with-3-latent-variables" title="Permalink to this heading">#</a></h2>
+<section id="instantiates-the-model-3-latent-variables">
+<h3>Instantiates the model (3 latent variables)<a class="headerlink" href="#instantiates-the-model-3-latent-variables" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">encoder</span> <span class="o">=</span> <span class="n">Encoder</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
@@ -7724,9 +7738,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="id1">
-<h3>Trains the model<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id1">
+<h3>Trains the model<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input above-output-prompt docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
@@ -14263,9 +14277,9 @@ Estimated Total Size (MB): 0.00
 <ul class="simple">
 <li><p>This is clearly an overcomplete example since we are learning 10 timesteps with 12 latent variables</p></li>
 </ul>
-</div>
-<div class="section" id="generator">
-<h3>Generator<a class="headerlink" href="#generator" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="generator">
+<h3>Generator<a class="headerlink" href="#generator" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Now we want to see how the spectra changes as we traverse the latent space</p></li>
 </ul>
@@ -14280,10 +14294,10 @@ Estimated Total Size (MB): 0.00
 <img alt="../../_images/90e085508b0cddd5e233eecac415f4fe44180c1326c2a7d4ab4a6e22f4e55be2.png" src="../../_images/90e085508b0cddd5e233eecac415f4fe44180c1326c2a7d4ab4a6e22f4e55be2.png" />
 </div>
 </div>
-</div>
-</div>
-<div class="section" id="recurrent-neural-network-autoencoders">
-<h2>Recurrent Neural Network Autoencoders<a class="headerlink" href="#recurrent-neural-network-autoencoders" title="Permalink to this headline">#</a></h2>
+</section>
+</section>
+<section id="recurrent-neural-network-autoencoders">
+<h2>Recurrent Neural Network Autoencoders<a class="headerlink" href="#recurrent-neural-network-autoencoders" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>The above example did not consider the temporal information in the data.</p></li>
 </ul>
@@ -14295,8 +14309,8 @@ Estimated Total Size (MB): 0.00
 </ul>
 <p><img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/Autoencoder_Med.png?raw=true" /></p>
 <p><img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/LSTM%20Node.png?raw=true" /></p>
-<div class="section" id="builds-the-model">
-<h3>Builds the model<a class="headerlink" href="#builds-the-model" title="Permalink to this headline">#</a></h3>
+<section id="builds-the-model">
+<h3>Builds the model<a class="headerlink" href="#builds-the-model" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latent_dim</span> <span class="o">=</span> <span class="mi">12</span>
@@ -14352,9 +14366,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="dataloader">
-<h3>Dataloader<a class="headerlink" href="#dataloader" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="dataloader">
+<h3>Dataloader<a class="headerlink" href="#dataloader" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_iterator</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
@@ -14364,9 +14378,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="training">
-<h3>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="training">
+<h3>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h3>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input above-output-prompt docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
@@ -20928,9 +20942,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </details>
 </div>
-</div>
-<div class="section" id="validation">
-<h3>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="validation">
+<h3>Validation<a class="headerlink" href="#validation" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">encode</span><span class="p">,</span> <span class="n">decode</span> <span class="o">=</span> <span class="n">transform_nn</span><span class="p">(</span><span class="n">dog_data</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
@@ -20951,10 +20965,10 @@ Estimated Total Size (MB): 0.00
 <ul class="simple">
 <li><p>This does not really mean too much because the latent variables are all competing with one another</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="lstm-autoencoder-with-3-latent-variables">
-<h2>LSTM Autoencoder with 3 Latent Variables<a class="headerlink" href="#lstm-autoencoder-with-3-latent-variables" title="Permalink to this headline">#</a></h2>
+</section>
+</section>
+<section id="lstm-autoencoder-with-3-latent-variables">
+<h2>LSTM Autoencoder with 3 Latent Variables<a class="headerlink" href="#lstm-autoencoder-with-3-latent-variables" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">encoder</span> <span class="o">=</span> <span class="n">Encoder</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
@@ -20989,8 +21003,8 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-<div class="section" id="id2">
-<h3>Dataloader<a class="headerlink" href="#id2" title="Permalink to this headline">#</a></h3>
+<section id="id2">
+<h3>Dataloader<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_iterator</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
@@ -21000,9 +21014,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="id3">
-<h3>Training<a class="headerlink" href="#id3" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id3">
+<h3>Training<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input above-output-prompt docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
@@ -27581,9 +27595,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </details>
 </div>
-</div>
-<div class="section" id="id4">
-<h3>Validation<a class="headerlink" href="#id4" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id4">
+<h3>Validation<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">encode</span><span class="p">,</span> <span class="n">decode</span> <span class="o">=</span> <span class="n">transform_nn</span><span class="p">(</span><span class="n">dog_data</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
@@ -27615,16 +27629,16 @@ Estimated Total Size (MB): 0.00
 <ul class="simple">
 <li><p>This once again is very hard to interpret and the spectra do not really contain the necessary details</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="disentanglement">
-<h2>Disentanglement<a class="headerlink" href="#disentanglement" title="Permalink to this headline">#</a></h2>
-<div class="section" id="regularization">
-<h3>Regularization<a class="headerlink" href="#regularization" title="Permalink to this headline">#</a></h3>
+</section>
+</section>
+<section id="disentanglement">
+<h2>Disentanglement<a class="headerlink" href="#disentanglement" title="Permalink to this heading">#</a></h2>
+<section id="regularization">
+<h3>Regularization<a class="headerlink" href="#regularization" title="Permalink to this heading">#</a></h3>
 <p><img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/L1_reg.png?raw=true" /></p>
-</div>
-<div class="section" id="id5">
-<h3>Builds the Model<a class="headerlink" href="#id5" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id5">
+<h3>Builds the Model<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latent_dim</span> <span class="o">=</span> <span class="mi">12</span>
@@ -27703,9 +27717,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="id6">
-<h3>Dataloader<a class="headerlink" href="#id6" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id6">
+<h3>Dataloader<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_iterator</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
@@ -27715,9 +27729,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="id7">
-<h3>Training<a class="headerlink" href="#id7" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id7">
+<h3>Training<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h3>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input above-output-prompt docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
@@ -35508,9 +35522,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </details>
 </div>
-</div>
-<div class="section" id="id8">
-<h3>Validation<a class="headerlink" href="#id8" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id8">
+<h3>Validation<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">encode</span><span class="p">,</span> <span class="n">decode</span> <span class="o">=</span> <span class="n">transform_nn</span><span class="p">(</span><span class="n">dog_data</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
@@ -35584,28 +35598,28 @@ Estimated Total Size (MB): 0.00
 </div>
 <div class="output text_html"><iframe width="560" height="315" src="https://www.youtube.com/embed/ElTwQClLsW0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>
 </div>
-</div>
-</div>
-<div class="section" id="beta-variational-autoencoder">
-<h2>Beta Variational Autoencoder<a class="headerlink" href="#beta-variational-autoencoder" title="Permalink to this headline">#</a></h2>
+</section>
+</section>
+<section id="beta-variational-autoencoder">
+<h2>Beta Variational Autoencoder<a class="headerlink" href="#beta-variational-autoencoder" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Constrict and sample the latent space from some prior distribution –&gt; generally a gaussian distribution</p></li>
 </ul>
-<div class="section" id="normal-autoencoder">
-<h3>Normal Autoencoder<a class="headerlink" href="#normal-autoencoder" title="Permalink to this headline">#</a></h3>
+<section id="normal-autoencoder">
+<h3>Normal Autoencoder<a class="headerlink" href="#normal-autoencoder" title="Permalink to this heading">#</a></h3>
 <p><img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/VAE1.png?raw=true" /></p>
-</div>
-<div class="section" id="vae">
-<h3>VAE<a class="headerlink" href="#vae" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="vae">
+<h3>VAE<a class="headerlink" href="#vae" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Encoder identifies some distribution –&gt; generates from that distribution
 <img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/VAE2.png?raw=true" /></p></li>
 </ul>
 <p><img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/VAE3.png?raw=true" /></p>
 <p><img alt="" src="https://github.com/jagar2/m3_learning/blob/main/m3_learning/Tutorials/Unsupervised_Learning_with_AEs/figs/VAE4.png?raw=true" /></p>
-</div>
-<div class="section" id="id9">
-<h3>Builds the Model<a class="headerlink" href="#id9" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id9">
+<h3>Builds the Model<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latent_dim</span> <span class="o">=</span> <span class="mi">12</span>
@@ -35670,9 +35684,9 @@ Estimated Total Size (MB): 0.00
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="id10">
-<h3>Training<a class="headerlink" href="#id10" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id10">
+<h3>Training<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">Train</span><span class="p">(</span>
@@ -43748,9 +43762,9 @@ tensorflow seed was set to 42
 </div>
 </details>
 </div>
-</div>
-<div class="section" id="id11">
-<h3>Validation<a class="headerlink" href="#id11" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="id11">
+<h3>Validation<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">encoded_spectra</span><span class="p">,</span> <span class="n">mn</span><span class="p">,</span> <span class="n">sd</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">(</span>
@@ -43795,9 +43809,9 @@ tensorflow seed was set to 42
 <ul class="simple">
 <li><p>disentanglement with <span class="math notranslate nohighlight">\(\beta\)</span> VAE requires careful control of optimiztion.</p></li>
 </ul>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -43831,12 +43845,12 @@ tensorflow seed was set to 42
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../../papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html"
+       href="../../papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</p>
+        <p class="prev-next-title">Characteristic Time with Details</p>
       </div>
     </a>
     <a class="right-next"
