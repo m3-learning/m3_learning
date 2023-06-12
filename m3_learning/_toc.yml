@@ -21,7 +21,7 @@ parts:
         - file: papers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details
           title: RHEED Metrics with Details
         - file: papers/2023_RHEED_PLD_SrTiO3/4_AFM_and_XRD
-          title: AFM_and_XRD
+          title: AFM and XRD
         - file: papers/2023_RHEED_PLD_SrTiO3/5_AFM_and_XRD-details
           title: AFM and XRD with Details
         - file: papers/2023_RHEED_PLD_SrTiO3/6_Growth_mechanism
