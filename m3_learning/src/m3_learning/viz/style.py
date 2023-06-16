@@ -44,6 +44,8 @@ def set_style(name="default"):
 
         except:
             pass
+        
+
         import matplotlib.pyplot as plt
         # setting default plotting params
         plt.rcParams['image.cmap'] = 'viridis'
