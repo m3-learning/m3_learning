@@ -22,10 +22,11 @@ import dask.array as da
 
 class Bright_Field_Dataset:
 
-    def __init__(self, path, filename, verbose=False):
+    def __init__(self, path, filename, combined_name='', verbose=False):
 
         self.path = path
         self.filename = filename
+        self.combined_name = combined_name
         self.verbose = verbose
 
         # make list of file names for original bright field images
@@ -60,7 +61,6 @@ class Bright_Field_Dataset:
         im = rgb2gray(imageio.imread(s))
         return im
 
-
     def get_index(self):
         pass
 
@@ -81,7 +81,7 @@ class Bright_Field_Dataset:
         temps = up+down
         return temps
     
-    def open_combined_h5(self,name):
+    def open_combined_h5(self):
         """_summary_
 
         Args:
@@ -90,12 +90,28 @@ class Bright_Field_Dataset:
         Returns:
             _type_: _description_
         """        
-        if len(name) > 0:
-            name += '_'
-        combined = self.path +"/" + name + 'preprocessed.h5'
+        if len(self.combined_name) > 0:
+            combined = self.path +"/" + self.combined_name + '_combined.h5'
+        else:         
+            combined = self.path +"/" + self.combined_name + 'combined.h5'
+
         return h5py.File(combined,'a')
 
-    def get_window_indx(self,t,a,b,name='',
+    def get_shape(self,path):
+        """_summary_
+
+        Args:
+            path (string): path to h5 dataset
+
+        Returns:
+            sh (tuple): = shape of h5 dataset
+        """        
+        h = self.open_combined_h5()
+        sh = h[path].shape
+        h.close()
+        return sh
+
+    def get_window_indx(self,t,a,b,
                       windows_group = '',
                       dset_name = '',
                       logset_name = '',):
@@ -115,7 +131,7 @@ class Bright_Field_Dataset:
             idx (integer):
             bbox (list):
         """        
-        h = self.open_combined_h5(name)
+        h = self.open_combined_h5()
         windows_group+='windows'
         dset_name+='windows_data'
         logset_name+='windows_logdata'
@@ -138,8 +154,7 @@ class Bright_Field_Dataset:
         # except:
         #     print('Shape mismatch, or you have not generated windows yet')
 
-
-    def write_h5(self, c1, c2, step, name=""):
+    def write_h5(self, c1, c2, step):
         """Creates h5_file if it doesn't already exist. Crops raw data and create a dataset with and without Gaussian filtering.
 
         Args:
@@ -150,7 +165,7 @@ class Bright_Field_Dataset:
         """
 
         # put the name of the file you would like to use
-        h = self.open_combined_h5(name)
+        h = self.open_combined_h5()
         t_len = len(self.temps)
 
         if 'All' in h.keys():
@@ -182,22 +197,21 @@ class Bright_Field_Dataset:
 
         h.close()
 
-    def write_windows(self,name='',
-                      windows_group = '',
+    def write_windows(self,windows_group = '',
                       dset_name = '',
                       logset_name = '',
                       target_size=128,
                       filter_threshold=5,
                       overwrite = False,
-                      window_parms={  'fft_mode': 'abs',
-                                        'interpol_factor': 2,
-                                        'mode': 'fft',
-                                        'window_size_x': 128,
-                                        'window_size_y': 128,
-                                        'window_step_x': 32,
-                                        'window_step_y': 32,
-                                        'zoom_factor': 2 }
-                  ):
+                      window_parms={'fft_mode': 'abs',
+                                    'interpol_factor': 2,
+                                    'mode': 'fft',
+                                    'window_size_x': 128,
+                                    'window_size_y': 128,
+                                    'window_step_x': 32,
+                                    'window_step_y': 32,
+                                    'zoom_factor': 2 }
+                ):
         """Generate and take tiled windows with applied parameters. 
         Writes a raw version and version with logarithm and thresholding applied to h5 file
 
@@ -217,7 +231,7 @@ class Bright_Field_Dataset:
         """     
         window_parms['interpol_factor'] = target_size/window_parms['window_size_x']*window_parms['zoom_factor']
         iw = ImageWindowing(window_parms)
-        h = self.open_combined_h5(name)
+        h = self.open_combined_h5()
 
         windows_group+='windows'
         dset_name+='windows_data'
@@ -248,7 +262,7 @@ class Bright_Field_Dataset:
                 d_windows=h[windows_group].create_dataset(dset_name,shape=(self.t_len*a*b,x,y))
                 if logset_name in h[windows_group].keys(): del h[windows_group][logset_name]
                 logdata= h[windows_group].create_dataset(logset_name,
-                                                        shape=(self.t_len*a*b,1,target_size,target_size),
+                                                        shape=(self.t_len*a*b,target_size,target_size),
                                                         dtype='f4')
             
             # toc = time.perf_counter()
@@ -259,7 +273,7 @@ class Bright_Field_Dataset:
                     d_windows=h[windows_group].create_dataset(dset_name,shape=(self.t_len*a*b,x,y))
                 if logset_name not in h[windows_group].keys(): 
                     logdata= h[windows_group].create_dataset(logset_name,
-                                                            shape=(self.t_len*a*b,1,target_size,target_size),
+                                                            shape=(self.t_len*a*b,target_size,target_size),
                                                             dtype='f4')            
             d_windows=h[windows_group][dset_name]
             logdata=h[windows_group][logset_name]
@@ -281,31 +295,7 @@ class Bright_Field_Dataset:
         for key,val in window_parms.items(): # write metadata
             d_windows.attrs[key]=val
             logdata.attrs[key]=val
-
+        self.shape = logdata.shape
         h.close()
 
         return iw
-
-
-# class Bright_Field_Dataset:
-#     """Class for the STEM dataset.
-#     """
-
-#     def __init__(self, data_path):
-#         """Initialization of the class.
-
-#         Args:
-#             data_path (string): path where the hyperspy file is located
-#         """
-
-#     self.data_path = data_path
-
-
-    # @property
-    # def log_data(self):
-    #     return self._log_data
-
-    # @log_data.setter
-    # def log_data(self, log_data):
-    #     # add 1 to avoid log(0)
-    #     self._log_data = np.log(log_data.data + 1)
