@@ -1437,7 +1437,7 @@ class Viz:
 
     def build_figure_for_movie(self, comparison,
                                fig_width, inter_gap, intra_gap, cbar_space,
-                               colorbars, voltage_plot_height):
+                               colorbars, voltage_plot_height, labels=None):
         """function that builds the figure for the movie
 
         Args:
@@ -1448,6 +1448,7 @@ class Viz:
             cbar_space (float): gap between the colorbar and the image in inches
             colorbars (bool): if a colorbar is included
             voltage_plot_height (float): height of the voltage plot in inches
+            labels (list, optional): list of labels for the plots. Defaults to None.
 
         Returns:
             matplotlib.fig, matplotlib.ax, figbar.scalar: The figure object, a list of ax objects, and the scalar to convert inches to relative coordinates
@@ -1456,19 +1457,20 @@ class Viz:
         # instantiates the list of axes
         ax = []
 
-        # number of rows
-        rows = 2
+        rows = len(comparison)*2
 
-        if comparison is not None:
-            rows *= 2
+        if labels is not None:
+            inter_gap_count = 2
+        else:
+            inter_gap_count = 1
 
         # calculates the size of the embedding image
-        embedding_image_size = (fig_width - inter_gap -
+        embedding_image_size = (fig_width - inter_gap*inter_gap_count -
                                 intra_gap * 2 - cbar_space*colorbars) / (4)
 
         # calculates the figure height based on the image details
         fig_height = rows * (embedding_image_size +
-                             inter_gap/2 + intra_gap/2) + voltage_plot_height + .33
+                             inter_gap/2 + intra_gap/2) + voltage_plot_height + .33*(1+inter_gap_count)
 
         # defines a scalar to convert inches to relative coordinates
         fig_scalar = FigDimConverter((fig_width, fig_height))
@@ -1485,7 +1487,7 @@ class Viz:
 
         # resets the x0 position for the embedding plots
         pos_inch[0] = 0
-        pos_inch[1] -= embedding_image_size + 0.33
+        pos_inch[1] -= embedding_image_size + 0.33*inter_gap_count
 
         # sets the embedding size of the image
         pos_inch[2] = embedding_image_size
@@ -1511,16 +1513,13 @@ class Viz:
             pos_inch[0] = 0
 
             if (j+1) % 2 == 0:
-                pos_inch[1] -= embedding_image_size + inter_gap
+                pos_inch[1] -= embedding_image_size + inter_gap*inter_gap_count
             else:
                 pos_inch[1] -= embedding_image_size + intra_gap
 
         ax_ = [ax[0]]
 
-        if comparison is not None:
-            z = 1
-        else:
-            z = 0
+        z = len(comparison) - 1
 
         # reshapes the axis so it is easier to work with goes from left to right, top to bottom.
         for j in range(1 + z):
@@ -1560,6 +1559,24 @@ class Viz:
 
         return model
 
+    def get_SHO_data(self, noise, model):
+        # sets the noise state
+        self.dataset.noise = noise
+
+        # gets the on state of the data
+        self.dataset.measurement_state = "on"
+
+        # gets the fit results
+        on_data = self.dataset.SHO_fit_results(model=model)
+
+        # sets the state to the off state to get the data
+        self.dataset.measurement_state = "off"
+
+        # gets the off state of the data
+        off_data = self.dataset.SHO_fit_results(model=model)
+
+        return on_data, off_data
+
     def SHO_fit_movie_images(self,
                              noise=0,
                              model_path=None,
@@ -1576,15 +1593,18 @@ class Viz:
                              filename=None,
                              basepath=None,
                              model=None,
+                             labels=None,
                              ):
-
-        model = self.get_model(model_path, noise)
 
         # builds the basepath for the images of the movie
         if basepath is not None:
 
             # if a model is provided name based on the model
             if model_path is not None:
+
+                model_filename = model_path + '/' + \
+                    get_lowest_loss_for_noise_level(model_path, noise)
+
                 basepath += f"/{model_filename.split('/')[-1].split('.')[0]}"
 
             # if no model is provided name based on the noise level
@@ -1594,20 +1614,23 @@ class Viz:
             # makes the folder
             basepath = make_folder(basepath)
 
-        # sets the noise state
-        self.dataset.noise = noise
+        # if comparison is given
+        if comparison is not None:
+            # builds the arrays
+            on_data = []
+            off_data = []
+            noise_labels = []
 
-        # gets the on state of the data
-        self.dataset.measurement_state = "on"
-
-        # gets the fit results
-        on_data = self.dataset.SHO_fit_results(model=model)
-
-        # sets the state to the off state to get the data
-        self.dataset.measurement_state = "off"
-
-        # gets the off state of the data
-        off_data = self.dataset.SHO_fit_results(model=model)
+            # loops around the different models for comparison
+            for model_ in comparison:
+                on_comparison, off_comparison = self.get_SHO_data(
+                    noise, model_)
+                on_data.append(on_comparison)
+                off_data.append(off_comparison)
+                noise_labels.append(noise)
+        else:
+            model = self.get_model(model_path, noise)
+            on_data, off_data = self.get_SHO_data(noise, model)
 
         # labels for the different figures
         names = ["A", "\u03C9", "Q", "\u03C6"]
@@ -1631,7 +1654,8 @@ class Viz:
                                                               intra_gap,  # gap between the graphs of same datasets,
                                                               cbar_space,  # gap between the graphs and the colorbar
                                                               colorbars,  # colorbars
-                                                              voltage_plot_height)  # height of the voltage plot
+                                                              voltage_plot_height,
+                                                              labels)  # height of the voltage plot
 
             # plots the voltage
             ax[0].plot(self.dataset.dc_voltage, "k")
@@ -1639,48 +1663,75 @@ class Viz:
             ax[0].set_ylabel("Voltage (V)")
             ax[0].set_xlabel("Step")
 
-            # plots each of the SHO parameters for the off and on state
-            for j in range(4):
-                imagemap(ax[j+1], on_data[:, z, j],
-                         colorbars=False, clim=self.SHO_ranges[j])
-                imagemap(ax[j+5], off_data[:, z, j],
-                         colorbars=False, clim=self.SHO_ranges[j])
-                labelfigs(ax[j+1], string_add=f"On {names[j]}", loc='ct')
-                labelfigs(ax[j+5], string_add=f"Off {names[j]}", loc='ct')
+            for compare_num in range(len(comparison)):
 
-            # if add colorbars
-            if colorbars:
+                # plots each of the SHO parameters for the off and on state
+                for j in range(4):
+                    imagemap(ax[j+1 + compare_num*8], on_data[compare_num][:, z, j],
+                             colorbars=False, clim=self.SHO_ranges[j])
+                    imagemap(ax[j+5 + compare_num*8], off_data[compare_num][:, z, j],
+                             colorbars=False, clim=self.SHO_ranges[j])
+                    labelfigs(ax[j+1], string_add=f"On {names[j]}", loc='ct')
+                    labelfigs(ax[j+5], string_add=f"Off {names[j]}", loc='ct')
 
-                # builds a list to store the colorbar axis objects
-                bar_ax = []
+                if labels is not None:
+                    # Get the position of the axis
+                    bbox = ax[5+compare_num*8].get_position()
 
-                # gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
-                voltage_ax_pos = fig_scalar.to_inches(
-                    np.array(ax[0].get_position()).flatten())
+                    # bbox bounds are in the form [left, bottom, width, height]
+                    # in the normalized unit with respect to the figure size
+                    # bottom + height
+                    top_in_norm_units = bbox.bounds[1] + bbox.bounds[3]
+                    # bottom + height
+                    right_in_norm_units = bbox.bounds[0] + bbox.bounds[2]
 
-                # loops around the 4 axis
-                for i in range(4):
+                    # Get the figure size in inches
+                    fig_size_inches = fig.get_size_inches()  # Returns width, height
 
-                    # calculates the height and width of the colorbars
-                    cbar_h = (voltage_ax_pos[1] - inter_gap*2 - .33)/2
-                    cbar_w = (cbar_space - inter_gap - cbar_gap)/2
+                    # The height of the figure in inches
+                    fig_height_inches = fig_size_inches[1]
+                    fig_width_inches = fig_size_inches[0]
 
-                    # sets the position of the axis in inches
-                    pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap + cbar_w,
-                                voltage_ax_pos[1] - (i//2) *
-                                (inter_gap + cbar_h) - .33 - cbar_h,
-                                cbar_w,
-                                cbar_h]
+                    # Convert the top position to inches
+                    top_in_inches = top_in_norm_units * fig_height_inches
+                    right_in_inches = right_in_norm_units * fig_width_inches + inter_gap
 
-                    # adds the plot to the figure
-                    bar_ax.append(fig.add_axes(
-                        fig_scalar.to_relative(pos_inch)))
+                    add_text_to_figure(fig, f"{labels[compare_num]} Noise {noise_labels[compare_num]}", [
+                                       right_in_inches/2, top_in_inches+.33/2])
 
-                    # adds the colorbars to the plots
-                    cbar = plt.colorbar(ax[i+1].images[0], cax=bar_ax[i], format='%.1e',
-                                        ticks=np.linspace(self.SHO_ranges[i][0], self.SHO_ranges[i][1], 5))
+                # if add colorbars
+                if colorbars:
 
-                    cbar.set_label(names[i])  # Add a label to the colorbar
+                    # builds a list to store the colorbar axis objects
+                    bar_ax = []
+
+                    # gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
+                    voltage_ax_pos = fig_scalar.to_inches(
+                        np.array(ax[0].get_position()).flatten())
+
+                    # loops around the 4 axis
+                    for i in range(4):
+
+                        # calculates the height and width of the colorbars
+                        cbar_h = (voltage_ax_pos[1] - inter_gap*2 - .33)/2
+                        cbar_w = (cbar_space - inter_gap - cbar_gap)/2
+
+                        # sets the position of the axis in inches
+                        pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap + cbar_w,
+                                    voltage_ax_pos[1] - (i//2) *
+                                    (inter_gap + cbar_h) - .33 - cbar_h,
+                                    cbar_w,
+                                    cbar_h]
+
+                        # adds the plot to the figure
+                        bar_ax.append(fig.add_axes(
+                            fig_scalar.to_relative(pos_inch)))
+
+                        # adds the colorbars to the plots
+                        cbar = plt.colorbar(ax[i+1].images[0], cax=bar_ax[i], format='%.1e',
+                                            ticks=np.linspace(self.SHO_ranges[i][0], self.SHO_ranges[i][1], 5))
+
+                        cbar.set_label(names[i])  # Add a label to the colorbar
 
             if self.image_scalebar is not None:
                 scalebar(ax[-1], *self.image_scalebar)
