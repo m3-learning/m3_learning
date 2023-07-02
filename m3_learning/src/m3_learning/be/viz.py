@@ -1275,7 +1275,7 @@ class Viz:
 
                 ax[i*4+j+1].images[0].set_clim(clims[j])
             labelfigs(ax[1::4][i], string_add=str(i+1),
-                      size=5, loc="bl", inset_fraction=(.2,.2))
+                      size=5, loc="bl", inset_fraction=(.2, .2))
 
         # if add colorbars
         if colorbars:
@@ -1530,24 +1530,7 @@ class Viz:
 
         return fig, ax_, fig_scalar
 
-    # @static_state_decorator
-    def SHO_fit_movie_images(self,
-                             noise=0,
-                             model_path=None,
-                             comparison=None,
-                             fig_width=6.5,
-                             voltage_plot_height=1.25,  # height of the voltage plot
-                             intra_gap=0.02,  # gap between the graphs,
-                             inter_gap=0.2,  # gap between the graphs,
-                             cbar_gap=.6,  # gap between the graphs of colorbars
-                             # space on the right where the cbar is not):
-                             cbar_space=1.3,
-                             colorbars=True,
-                             scalebar_=True,
-                             filename=None,
-                             basepath=None,
-                             ):
-
+    def get_model(self, model_path, noise):
         # if a model path is not provided then data is from LSQF
         if model_path is not None:
 
@@ -1567,10 +1550,35 @@ class Viz:
                 # prints which model is being used
                 print("Using model: ", model_filename)
 
+        elif model is not None:
+            pass
+
         else:
 
             # sets the model equal to None if no model is provided
             model = None
+
+        return model
+
+    def SHO_fit_movie_images(self,
+                             noise=0,
+                             model_path=None,
+                             comparison=None,
+                             fig_width=6.5,
+                             voltage_plot_height=1.25,  # height of the voltage plot
+                             intra_gap=0.02,  # gap between the graphs,
+                             inter_gap=0.2,  # gap between the graphs,
+                             cbar_gap=.6,  # gap between the graphs of colorbars
+                             # space on the right where the cbar is not):
+                             cbar_space=1.3,
+                             colorbars=True,
+                             scalebar_=True,
+                             filename=None,
+                             basepath=None,
+                             model=None,
+                             ):
+
+        model = self.get_model(model_path, noise)
 
         # builds the basepath for the images of the movie
         if basepath is not None:
@@ -1674,7 +1682,7 @@ class Viz:
 
                     cbar.set_label(names[i])  # Add a label to the colorbar
 
-            if scalebar_:
+            if self.image_scalebar is not None:
                 scalebar(ax[-1], *self.image_scalebar)
 
             # prints the figure
