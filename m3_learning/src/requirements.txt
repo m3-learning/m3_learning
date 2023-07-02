@@ -19,3 +19,6 @@ wget==3.2
 zenodopy==0.3.0
 hyperspy == 1.7.4
 jupyter-book
+torch
+torchvision
+torchaudio
