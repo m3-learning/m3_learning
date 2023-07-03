@@ -146,7 +146,7 @@ def visualize_characteristic_time():
     Viz.set_labels(ax2, ylabel='Characteristic Time (s)', yaxis_style='lineplot', ylim=(-0.05, 0.5), ticks_both_sides=False)
     ax2.tick_params(axis="y", color='k', labelcolor=seq_colors[0])
     ax2.set_ylabel('Characteristic Time (s)', color=seq_colors[0])
-    ax2.legend(['original', 'processed'], fontsize=8)
+    ax2.legend(['original', 'processed'], fontsize=8, loc="upper right", frameon=True)
 
     x_all_sample2, y_all_sample2 = np.load('Saved_data/treated_81nm-x_all.npy'), np.load('Saved_data/treated_81nm-y_all.npy')
     x_sklearn_sample2, tau_sklearn_sample2 = np.swapaxes(np.load('Saved_data/treated_81nm-fitting_results(sklearn).npy'), 0, 1)[[0, -1]]
@@ -165,7 +165,7 @@ def visualize_characteristic_time():
     Viz.set_labels(ax4, ylabel='Characteristic Time (s)', yaxis_style='lineplot', ylim=(-0.05, 0.5), ticks_both_sides=False)
     ax4.tick_params(axis="y", color='k', labelcolor=seq_colors[0])
     ax4.set_ylabel('Characteristic Time (s)', color=seq_colors[0])
-    ax4.legend(['original', 'processed'], fontsize=8)    
+    ax4.legend(['original', 'processed'], fontsize=8, loc="upper right", frameon=True)    
 
     x_all_sample3, y_all_sample3 = np.load('Saved_data/untreated_162nm-x_all.npy'), np.load('Saved_data/untreated_162nm-y_all.npy')
     x_sklearn_sample3, tau_sklearn_sample3 = np.swapaxes(np.load('Saved_data/untreated_162nm-fitting_results(sklearn).npy'), 0, 1)[[0, -1]]
@@ -183,7 +183,7 @@ def visualize_characteristic_time():
     Viz.set_labels(ax6, ylabel='Characteristic Time (s)', yaxis_style='lineplot', ylim=(-0.05, 0.5), ticks_both_sides=False)
     ax6.tick_params(axis="y", color='k', labelcolor=seq_colors[0])
     ax6.set_ylabel('Characteristic Time (s)', color=seq_colors[0])
-    ax6.legend(['original', 'processed'], fontsize=8) 
+    ax6.legend(['original', 'processed'], fontsize=8, loc="upper right", frameon=True) 
     plt.show()
 
 def violinplot_characteristic_time():
@@ -211,8 +211,8 @@ def violinplot_characteristic_time():
 
     fig, ax = plt.subplots(figsize=(6, 2), layout='compressed')
     titles = ['Treated substrate\n(step width=213±88nm)',
-            'Treated substrate\n(step width=81±44nm)',
-            'Untreated substrate\n(step width=162±83μm)']
+              'Treated substrate\n(step width=81±44nm)',
+              'Untreated substrate\n(step width=162±83μm)']
     ax = sns.violinplot(data=[tau_clean_sample1, tau_clean_sample2, tau_clean_sample3], 
                         palette=[color_blue, color_orange, color_purple], linewidth=0.8)
     ax.set_xticklabels(titles)
