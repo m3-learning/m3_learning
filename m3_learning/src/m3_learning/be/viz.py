@@ -1460,7 +1460,7 @@ class Viz:
         rows = len(comparison)*2
 
         if labels is not None:
-            inter_gap_count = 2
+            inter_gap_count = len(comparison) + 1 
         else:
             inter_gap_count = 1
 
@@ -1470,7 +1470,7 @@ class Viz:
 
         # calculates the figure height based on the image details
         fig_height = rows * (embedding_image_size +
-                             inter_gap/2 + intra_gap/2) + voltage_plot_height + .33*(1+inter_gap_count)
+                             inter_gap/2 + intra_gap/2) + voltage_plot_height + .33*inter_gap_count
 
         # defines a scalar to convert inches to relative coordinates
         fig_scalar = FigDimConverter((fig_width, fig_height))
@@ -1580,7 +1580,7 @@ class Viz:
     def SHO_fit_movie_images(self,
                              noise=0,
                              model_path=None,
-                             comparison=None,
+                             models=[None],
                              fig_width=6.5,
                              voltage_plot_height=1.25,  # height of the voltage plot
                              intra_gap=0.02,  # gap between the graphs,
@@ -1592,10 +1592,10 @@ class Viz:
                              scalebar_=True,
                              filename=None,
                              basepath=None,
-                             model=None,
                              labels=None,
                              ):
-
+        
+        #TODO - This needs to be moved in
         # builds the basepath for the images of the movie
         if basepath is not None:
 
@@ -1614,19 +1614,19 @@ class Viz:
             # makes the folder
             basepath = make_folder(basepath)
 
-        # if comparison is given
-        if comparison is not None:
+        # if models is given
+        if models is not None:
             # builds the arrays
             on_data = []
             off_data = []
             noise_labels = []
 
-            # loops around the different models for comparison
-            for model_ in comparison:
-                on_comparison, off_comparison = self.get_SHO_data(
+            # loops around the different models for models
+            for model_ in models:
+                on_models, off_models = self.get_SHO_data(
                     noise, model_)
-                on_data.append(on_comparison)
-                off_data.append(off_comparison)
+                on_data.append(on_models)
+                off_data.append(off_models)
                 noise_labels.append(noise)
         else:
             model = self.get_model(model_path, noise)
@@ -1648,7 +1648,7 @@ class Viz:
         for z, voltage in enumerate(voltage):
 
             # calls the function to build the figure
-            fig, ax, fig_scalar = self.build_figure_for_movie(comparison,  # dataset to compare to
+            fig, ax, fig_scalar = self.build_figure_for_movie(models,  # dataset to compare to
                                                               fig_width,  # width of the figure
                                                               inter_gap,  # gap between the graphs of different datasets,
                                                               intra_gap,  # gap between the graphs of same datasets,
@@ -1663,7 +1663,7 @@ class Viz:
             ax[0].set_ylabel("Voltage (V)")
             ax[0].set_xlabel("Step")
 
-            for compare_num in range(len(comparison)):
+            for compare_num in range(len(models)):
 
                 # plots each of the SHO parameters for the off and on state
                 for j in range(4):
