@@ -585,6 +585,7 @@ class Viz:
             folder=make_folder(save_folder)
             plt.savefig(save_folder+f'/relative_area_{self.env}.png',facecolor='white');
 
+        plt.close('all')
         # print('line2 changed')
         return dict(zip(legends,smooth_list))
 # TODO:
