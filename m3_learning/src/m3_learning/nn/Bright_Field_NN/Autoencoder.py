@@ -67,7 +67,7 @@ class ConvAutoencoder():
         self.decoder = Decoder(
             original_step_size=self.decoder_step_size,
             upsampling_list=self.upsampling_list,
-            embedding_size=self.embedding_size,
+            embedding_size=self.embedding_size*4,
             conv_size=self.conv_size,
             pooling_list=self.pooling_list,
             device=self.device
@@ -98,7 +98,8 @@ class ConvAutoencoder():
               epoch_=None,
               folder_path='./',
               batch_size=32,
-              best_train_loss=None):
+              best_train_loss=None,
+              save_all = False):
         """function that trains the model
 
         Args:
@@ -157,11 +158,11 @@ class ConvAutoencoder():
                 self.DataLoader_, coef_1, coef_2, coef_3, ln_parm)
             train_loss = train
             train_loss /= len(self.DataLoader_)
-            print(f'Epoch: {epoch:03d}/{N_EPOCHS:03d} | Train Loss: {train_loss:.4e}')
+            print(f'Epoch: {epoch:03d}/{N_EPOCHS-1:03d} | Train Loss: {train_loss:.4e}')
             print('.............................')
 
           #  schedular.step()
-            if best_train_loss > train_loss:
+            if best_train_loss > train_loss or save_all:
                 best_train_loss = train_loss
                 checkpoint = {
                     "net": self.autoencoder.state_dict(),
@@ -176,9 +177,8 @@ class ConvAutoencoder():
                     }
                 if epoch >= 0:
                     lr_ = format(self.optimizer.param_groups[0]['lr'], '.5f')
-                    file_path = folder_path + '/Weight_' +\
-                        f'epoch:{epoch:04d}_l1coef:{coef_1:.3E}'+'_lr:'+lr_ +\
-                        f'_trainloss:{train_loss:.4f}.pkl'
+                    file_path = folder_path + '/Weight_' + date +\
+                        f'_epoch:{epoch:04d}_trainloss:{train_loss:.4f}.pkl'
                     torch.save(checkpoint, file_path)
 
             if scheduler is not None:
@@ -226,17 +226,17 @@ class ConvAutoencoder():
             else:
                 embedding, sd, mn = self.encoder(x)
 
-            reg_loss_1 = coef * \
-                torch.norm(embedding[0], ln_parm).to(self.device)/x.shape[0]
+            reg_loss_1 = coef * torch.norm(embedding[0].reshape(x.shape[0],-1),
+                                           ln_parm).to(self.device)/x.shape[0]
 
             if reg_loss_1 == 0:
 
                 reg_loss_1 = 0.5
 
-            predicted_x = self.decoder(embedding[0])
+            predicted_x = self.decoder(embedding[0].reshape(x.shape[0],-1))
 
-            contras_loss = con_l(embedding[0])
-            maxi_loss = maxi_(embedding[0])
+            contras_loss = con_l(embedding[0].reshape(x.shape[0],-1),)
+            maxi_loss = maxi_(embedding[0].reshape(x.shape[0],-1),)
 
             # reconstruction loss
             loss = F.mse_loss(x, predicted_x, reduction='mean')
@@ -264,7 +264,7 @@ class ConvAutoencoder():
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.start_epoch = checkpoint['epoch']
 
-    def get_embedding(self, data, batch_size=32):
+    def get_embedding(self, data, batch_size_=32):
         """extracts embeddings from the data
 
         Args:
@@ -277,21 +277,37 @@ class ConvAutoencoder():
 
         # builds the dataloader
         dataloader = DataLoader(
-            data.reshape(-1, data.shape[2], data.shape[3]), batch_size, shuffle=False)
+            data.reshape(-1, data.shape[-2], data.shape[-1]), batch_size_, shuffle=False)
 
         embedding_ = np.zeros(
-            [data.shape[0]*data.shape[1], self.embedding_size])
+            [data.shape[0], self.embedding_size])
+        rotation_ = np.zeros(
+            [data.shape[0], 2, 3])
+        translation_ = np.zeros(
+            [data.shape[0], 2, 3])
+        scaling_ = np.zeros(
+            [data.shape[0], 2, 3])
+        
         for i, x in enumerate(tqdm(dataloader, leave=True, total=len(dataloader))):
             with torch.no_grad():
                 value = x
                 test_value = Variable(value.to(self.device))
                 test_value = test_value.float()
-                embedding = self.encoder(test_value).to('cpu').detach().numpy()
+                batch_size = x.shape[0]
+
+                embedding = self.encoder(test_value)[0][:,0,:].to('cpu').detach().numpy()
+                rotation = self.encoder(test_value)[1].to('cpu').detach().numpy()
+                translation = self.encoder(test_value)[2].to('cpu').detach().numpy()
+                scaling = self.encoder(test_value)[3].to('cpu').detach().numpy()
+                
                 embedding_[i*batch_size:(i+1)*batch_size, :] = embedding
+                rotation_[i*batch_size:(i+1)*batch_size, :] = rotation
+                translation_[i*batch_size:(i+1)*batch_size, :] = translation
+                scaling_[i*batch_size:(i+1)*batch_size, :] = scaling
 
-        self.embedding = embedding_
+        # self.embeddings = (embedding_, rotation_, translation_, scaling_)
 
-        return embedding_
+        return (embedding_, rotation_, translation_, scaling_)
 
     def generate_spectra(self, embedding):
         """generates spectra from embeddings
@@ -402,7 +418,12 @@ class Encoder(nn.Module):
         nn (nn.Module): Torch module class
     """
 
-    def __init__(self, original_step_size, pooling_list, embedding_size, conv_size, device='cpu'):
+    def __init__(self, 
+                 original_step_size, 
+                 pooling_list, 
+                 embedding_size, 
+                 conv_size, 
+                 device='cpu'):
         """Build the encoder
 
         Args:
@@ -460,7 +481,7 @@ class Encoder(nn.Module):
 
         self.relu_1 = nn.ReLU()
 
-        self.dense = nn.Linear(input_size, embedding_size)
+        self.dense1 = nn.Linear(input_size, embedding_size)
 
     def forward(self, x):
         """Forward pass of the encoder
@@ -477,34 +498,34 @@ class Encoder(nn.Module):
             out = self.block_layer[i](out)
         out = self.cov2d_1(out)
         out = torch.flatten(out, start_dim=1)
-        out = self.dense(out)
+        out = self.dense1(out)
         selection = self.relu_1(out)
 
         scale_1 = nn.Tanh()(out[:,0])*0.1+1
         scale_2 = nn.Tanh()(out[:,1])*0.1+1
         trans_1 = out[:,3]
         trans_2 = out[:,4]
-        rotate = out[:,2]
+        rotate = out[:,2] # theta
         
         a_1 = torch.cos(rotate)
         a_2 = torch.sin(rotate)
         a_4 = torch.ones(rotate.shape).to(self.device)
         a_5 = rotate*0
         
-        b1 = torch.stack((a_1,a_2), dim=0).squeeze()
-        b2 = torch.stack((-a_2,a_1), dim=0).squeeze()
-        b3 = torch.stack((a_5,a_5),  dim=0).squeeze()
-        rotation = torch.stack((b1, b2, b3), dim=1)
+        b1 = torch.stack((a_1,a_2), dim=1).squeeze()
+        b2 = torch.stack((-a_2,a_1), dim=1).squeeze()
+        b3 = torch.stack((a_5,a_5),  dim=1).squeeze()
+        rotation = torch.stack((b1, b2, b3), dim=2)
         
-        c1 = torch.stack((scale_1,a_5), dim=0).squeeze()
-        c2 = torch.stack((a_5,scale_2), dim=0).squeeze()
-        c3 = torch.stack((a_5,a_5), dim=0).squeeze()
-        scaler = torch.stack((c1, c2, c3), dim=1)
+        c1 = torch.stack((scale_1,a_5), dim=1).squeeze()
+        c2 = torch.stack((a_5,scale_2), dim=1).squeeze()
+        c3 = torch.stack((a_5,a_5), dim=1).squeeze()
+        scaler = torch.stack((c1, c2, c3), dim=2)
 
-        d1 = torch.stack((a_4,a_5), dim=0).squeeze()
-        d2 = torch.stack((a_5,a_4), dim=0).squeeze()
-        d3 = torch.stack((trans_1,trans_2), dim=0).squeeze()
-        translation = torch.stack((d1, d2, d3), dim=1)
+        d1 = torch.stack((a_4,a_5), dim=1).squeeze()
+        d2 = torch.stack((a_5,a_4), dim=1).squeeze()
+        d3 = torch.stack((trans_1,trans_2), dim=1).squeeze()
+        translation = torch.stack((d1, d2, d3), dim=2)
         
         size_grid = torch.ones([x.shape[0],1,2,2])
 
@@ -602,7 +623,6 @@ class Decoder(nn.Module):
         Returns:
             Tensor: output tensor
         """
-
         out = self.dense(x)
         out = out.view(-1, 1, self.input_size_0, self.input_size_1)
 

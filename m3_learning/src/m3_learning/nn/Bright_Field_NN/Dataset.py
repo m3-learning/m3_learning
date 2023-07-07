@@ -11,6 +11,7 @@ import imageio
 from pprint import pprint
 import time
 import math
+import matplotlib.pyplot as plt
 
 # Pycroscopy
 import sidpy
@@ -45,10 +46,12 @@ class Bright_Field_Dataset:
         else:
             return '-0.png'
 
+
     def list_imgs(self):
         l = [file.split('/')[-2] + ' ' + file.split('/')[-1][:-4] for file in self.temps]
         # pprint(l)
         return l
+
 
     def get_raw_img(self, state, temperature):
         """_summary_
@@ -61,8 +64,10 @@ class Bright_Field_Dataset:
         im = rgb2gray(imageio.imread(s))
         return im
 
+
     def get_index(self):
         pass
+
 
     def get_temps(self):
         """gets list of paths to files of all temperatures
@@ -80,7 +85,8 @@ class Bright_Field_Dataset:
 
         temps = up+down
         return temps
-    
+
+
     def open_combined_h5(self):
         """_summary_
 
@@ -97,6 +103,7 @@ class Bright_Field_Dataset:
 
         return h5py.File(combined,'a')
 
+
     def get_shape(self,path):
         """_summary_
 
@@ -111,25 +118,25 @@ class Bright_Field_Dataset:
         h.close()
         return sh
 
-    def get_window_indx(self,t,a,b,
+
+    def get_window_index(self,t,a,b,
                       windows_group = '',
                       dset_name = '',
                       logset_name = '',):
         """gets the scan from temperature idx t and point a,b, on the sample.
 
         Args:
-            t (_type_): _description_
-            a (_type_): _description_
-            b (_type_): _description_
-            name (str, optional): _description_. Defaults to ''.
-            windows_group (str, optional): _description_. Defaults to ''.
-            dset_name (str, optional): _description_. Defaults to ''.
-            logset_name (str, optional): _description_. Defaults to ''.
+            t (int): temperature index
+            a (int): window index in x direction
+            b (int): window index in y direction
+            windows_group (str, optional): name of the h5 group where window datasets are written. Defaults to 'windows'.
+            dset_name (str, optional): name of the raw h5 dataset. Defaults to 'windows_data'.
+            logset_name (str, optional): name of the log+threshold h5 dataset. Defaults to 'windows_logdata'.
             filtered (bool, optional): _description_. Defaults to True.
 
         Returns:
-            idx (integer):
-            bbox (list):
+            idx (integer): index of the window in the flattened input datset
+            bbox (list): bounding corners [x1,x2,y1,y2]
         """        
         h = self.open_combined_h5()
         windows_group+='windows'
@@ -146,13 +153,15 @@ class Bright_Field_Dataset:
         x = x_ + a*grp.attrs['window_step_x']
         y = x_ + b*grp.attrs['window_step_y']
 
-        idx = t*a_*b_+a_*a+b
+        idx = t*a_*b_+b*b_+a
         bbox = [x-x_, x+x_, y-y_, y+y_]
+        h.close()
         return idx, bbox
 
 
         # except:
         #     print('Shape mismatch, or you have not generated windows yet')
+
 
     def write_h5(self, c1, c2, step):
         """Creates h5_file if it doesn't already exist. Crops raw data and create a dataset with and without Gaussian filtering.
@@ -197,14 +206,15 @@ class Bright_Field_Dataset:
 
         h.close()
 
+
     def write_windows(self,windows_group = '',
                       dset_name = '',
                       logset_name = '',
                       target_size=128,
-                      filter_threshold=5,
+                      filter_threshold=0,
                       overwrite = False,
                       window_parms={'fft_mode': 'abs',
-                                    'interpol_factor': 2,
+                                    # 'interpol_factor': 2,
                                     'mode': 'fft',
                                     'window_size_x': 128,
                                     'window_size_y': 128,
@@ -244,7 +254,7 @@ class Bright_Field_Dataset:
         h_windows=h[windows_group]
         
         for i,img_path in enumerate(tqdm(self.list_imgs())):
-            tic = time.perf_counter()
+            # tic = time.perf_counter()
             im_dataset = sidpy.Dataset.from_array( 
                 h['All_filtered'][i]
                     )
@@ -279,11 +289,15 @@ class Bright_Field_Dataset:
             logdata=h[windows_group][logset_name]
             
             d_windows[i*a*b:(i+1)*a*b] = data
-            data = data.reshape(-1,1,x,y)
-            # data = skimage.transform.resize(data,(a*b,1,target_size,target_size))
+
+            data -= data.min(axis=(0))
             data = np.log(data+1)
-            data[data>filter_threshold]=filter_threshold
-            logdata[i*a*b:(i+1)*a*b] = data
+            if filter_threshold:
+                data[data>filter_threshold]=filter_threshold
+            scaler = MinMaxScaler()
+            data = scaler.fit_transform(data.reshape(a*b,-1))
+
+            logdata[i*a*b:(i+1)*a*b] = data.reshape(-1,x,y)
 
         if self.verbose: # print shape and 
             print('shape: ',a,b,target_size,target_size)
