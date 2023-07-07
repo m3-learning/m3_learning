@@ -4,6 +4,7 @@ from m3_learning.util.file_IO import make_folder
 from m3_learning.viz.layout import layout_fig
 import numpy as np
 import torch
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import re
@@ -331,8 +332,10 @@ class Viz:
             fig, axs = layout_fig(len(channels), mod=2, **kwargs)
             for i,c in enumerate(channels):
                 imagemap(axs[i], embedding[idx[0]:idx[1], c].reshape((n,n)), 
-                            divider_=False, colorbars=(i==len(channels)-1),
-                            clim = elim, **kwargs)
+                            divider_=False, 
+                            # colorbars=(i==len(channels)-1),
+                            # clim = elim, 
+                            **kwargs)
             self.plot_into_graph(axsg[1],fig)
 
             # Transforms
@@ -345,7 +348,7 @@ class Viz:
             for i,data in enumerate(to_plot):
                 if i==3: 
                     imagemap(axs[i], data.reshape((n,n)),divider_=False, 
-                             colorbars=True, cmap_='twilight')
+                             colorbars=True, cmap_='twilight',clim = (-np.pi,np.pi))
                 else: imagemap(axs[i], data.reshape((n,n)),divider_=False, 
                                colorbars=True)
             self.plot_into_graph(axsg[2],fig)
@@ -355,6 +358,7 @@ class Viz:
             plt.close('all')
 
         h.close()
+
 
     def ezmask(self,image,thresh,eps=2):
         n = int(image.shape[0]**0.5)
@@ -428,21 +432,21 @@ class Viz:
 
         if plot_==True:
             ## make figure
-            fig,axes = layout_fig(length, mod=2)
+            fig,axes = layout_fig(length, mod=2);
 
-            fig.set_figheight(10)
-            fig.set_figwidth(10)
+            fig.set_figheight(8)
+            fig.set_figwidth(8)
             temp = self.dset.temps[t].split('/')[-2]+ ' '+self.dset.temps[t].split('/')[-1].split('.')[-2]
-            fig.suptitle(f'{self.dset.combined_name} at {temp}$^\circ$C')
+            # fig.suptitle(f'{self.dset.combined_name} at {temp}$^\circ$C')
 
-            axes[0].set_title('Original Image')
+            axes[0].set_title(f'{self.dset.combined_name} at {temp}$^\circ$C')
             imagemap(axes[0],orig_images[t])
 
             axes[1].set_title(f'Embedding channel {c}')
             imagemap(axes[1],im.T)
 
             axes[2].set_title(f'Histogram for Embedding')
-            axes[2].hist(image.flatten(),bins=50)
+            axes[2].hist(image.flatten(),bins=50);
             axes[2].axvline(thresh, color='k', ls='--')
             if err_std>0:
                 axes[2].axvline(thresh+im.std()*err_std,color='r',ls='--')
@@ -451,9 +455,9 @@ class Viz:
 
             axes[3].set_title(f'Mask')
             if err_std>0: 
-                imagemap(axes[3], (mask+mask0+mask1).T, clim=(0,3))
+                imagemap(axes[3], (mask+mask0+mask1).T, clim=(0,3), str='%.0d')
             else: 
-                imagemap(axes[3], mask.T, clim=(0,1))
+                imagemap(axes[3], mask.T, clim=(0,1), str='%.0d')
 
             if d!=None:
                 axes[4].set_title('Cleaned')
@@ -471,5 +475,117 @@ class Viz:
         else:
             return mask
 
+    
+    def graph_relative_area(self,embedding,channels=range(8),masked=False,clean_div=None,smoothing=None,
+                            legends=None,plot=True,err_std=0,save_folder=None):
+        '''
+        Makes a graph of the average intensity of selected embeddings channels across temperature range.
+        Returns dictionary of domain structure and smooth values
+
+        channels: (list) default is all channels. Othewise, specify indices
+        masked: (Bool) Whether to calculate average area with only mask or with original embedding intensities
+        clean_div: (list) Channels that can be used to eliminate stray signal in selected embedding channels
+        smoothing: (int) convolution (smoothing) factor. Must be odd for odd length dataset, and even for even length dataset.
+        legends: (list) Domain labels
+        '''
+        rel_areas_emb = np.zeros((len(channels),self.dset.t_len))
+        rel_areas_err = np.zeros((len(channels),self.dset.t_len,2))
+        n = int((embedding.shape[0]/self.dset.t_len)**0.5)
+        
+        for t in tqdm(range(self.dset.t_len)):
+            for i,c in enumerate(channels):
+                im=embedding[t*n*n:(t+1)*n*n,c]
+                if im.max()==0:
+                    mask = np.zeros(im.shape)
+                else:   
+                    if clean_div!=None: 
+                        if clean_div=='All': 
+                            div = self.div_except(t,c)
+                        else: 
+                            div = embedding[t*n*n:(t+1)*n*n,clean_div[i]]
+                        #divide by warp
+                        im = im/(embedding[int(self.dset.t_len/2)*n*n:\
+                                           int(self.dset.t_len/2+1)*n*n,2] + div+1)
+                        im = im/(div+1)
+
+                    if clean_div==None: 
+                        mask = self.make_mask(embedding,t,c,plot_=False,err_std=err_std)
+                    elif clean_div=='All': 
+                        mask = self.make_mask(embedding,t,c,d='All',plot_=False,err_std=err_std)
+                    else: 
+                        mask = self.make_mask(embedding,t,c,d=clean_div[i],plot_=False,err_std=err_std)
+                
+                if masked:
+                    if err_std==0: rel_areas_emb[i][t] = mask.mean()
+                    else:
+                        rel_areas_emb[i][t] = mask[0].mean()
+                        rel_areas_err[i][t][0] = mask[1].mean()
+                        rel_areas_err[i][t][1] = mask[2].mean()
+                else:   
+                    # rel_areas_emb[i][t] = im.mean()
+                    if err_std==0: 
+                        rel_areas_emb[i][t] = (im*mask).mean()
+                    else:
+                        rel_areas_emb[i][t] = (im*mask[0]).mean()
+                        rel_areas_err[i][t][0] = (im*mask[1]).mean()
+                        rel_areas_err[i][t][1] = (im*mask[2]).mean()
+
+        # smooth down the curves
+        smooth_list=[]
+        smooth_err=[[],[]]
+        for i,r in enumerate(rel_areas_emb):
+            if smoothing!=None: 
+                x=int((smoothing-1)/2)
+                rel_area_smooth = np.convolve(np.pad(r,x,mode='edge'), 
+                                              np.ones(smoothing)/smoothing,'valid' )
+                rel_area_smooth_err0 = np.convolve(np.pad(rel_areas_err[i,:,0],x,mode='edge'), 
+                                                   np.ones(smoothing)/smoothing,'valid')
+                rel_area_smooth_err1 = np.convolve(np.pad(rel_areas_err[i,:,1],x,mode='edge') ,
+                                                   np.ones(smoothing)/smoothing,'valid')
+                # rel_area_smooth = resize(rel_area_smooth.reshape(1,-1),(1,self.t_len)).flatten()
+                smooth_list.append(rel_area_smooth)
+                smooth_err[0].append(rel_area_smooth_err0)
+                smooth_err[1].append(rel_area_smooth_err1)
+            else: 
+                smooth_list.append(r)
+                if err_std:
+                    smooth_err[0].append(rel_areas_err[i])
+                    smooth_err[1].append(rel_areas_err[i])
+
+        if plot==True:
+            matplotlib.rcParams.update({'font.size': 16})
+            t_half=int(self.dset.t_len/2)
+            x=np.linspace(0,self.dset.t_len-1,self.dset.t_len)
+            new_labels=[]
+            wanted_labels = ['23','120',f'{self.dset.temp_labels[t_half]}']
+            for val in self.temp_labels:
+                if val in wanted_labels: new_labels.append(val)
+                else: new_labels.append('')
+                
+            plt.Figure(figsize=(4,4),dpi=400)   
+            plt.xticks(x, new_labels)
+            plt.ylabel('Area Fraction')
+            plt.xlabel('Temperature ($^\circ$C)')
+            plt.text(t_half-int(t_half/4), 0.6, '+$\Delta$T')
+            plt.text(t_half+int(t_half/10), 0.6, '-$\Delta$T')
+            plt.suptitle(f'Relative Areas of {self.env}')
+            
+            for i,r in enumerate(smooth_list): # fill error bars
+                plt.plot(x,r,'-o',linewidth=3);
+                if err_std>0: 
+                    plt.fill_between(x,smooth_err[0][i],smooth_err[1][i],
+                                     alpha=0.25,label='_nolegend_')
+                plt.ylim(0,1)
+                
+            plt.axvline(int(t_half), color='k', ls='--')
+            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+            # if legends!=None: plt.legend(legends)
+
+        if save_folder!=None: 
+            folder=make_folder(save_folder)
+            plt.savefig(save_folder+f'/relative_area_{self.env}.png',facecolor='white');
+
+        # print('line2 changed')
+        return dict(zip(legends,smooth_list))
 # TODO:
 # widget to see all temps for 1) raw 2) filtered 3) unfiltered
