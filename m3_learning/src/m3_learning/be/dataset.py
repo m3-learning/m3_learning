@@ -191,7 +191,7 @@ class BE_Dataset:
                           "LSQF_phase_shift": None,
                           "NN_phase_shift": None, }
 
-        self.set_state(**default_state_)
+        self.set_attributes(**default_state_)
 
     def print_be_tree(self):
         """Utility file to print the Tree of a BE Dataset
