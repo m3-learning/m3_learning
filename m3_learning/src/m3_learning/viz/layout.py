@@ -240,7 +240,7 @@ def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_for
     if clim is None:
         im = ax.imshow(data, cmap=cmap)
     else:
-        im = ax.imshow(data, clim=clim, cmap=cmap)
+        im = ax.imshow(data, vmin=clim[0], vmax=clim[1], clim=clim, cmap=cmap)
 
     ax.set_yticklabels("")
     ax.set_xticklabels("")
