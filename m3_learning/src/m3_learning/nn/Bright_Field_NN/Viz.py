@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
 from m3_learning.viz.layout import imagemap, add_scalebar
 from m3_learning.util.file_IO import make_folder
-from m3_learning.viz.layout import layout_fig
+from m3_learning.viz.layout import layout_fig,subfigures
 import numpy as np
 import torch
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import re
 import io
 import PIL
@@ -271,7 +272,7 @@ class Viz:
         return
        
 
-    def plot_into_graph(self,axg,fig):
+    def plot_into_graph(self,axg,fig,clim=None):
         """Given an axes and figure, it will convert the figure to an image and plot it in
 
         Args:
@@ -281,7 +282,11 @@ class Viz:
         img_buf = io.BytesIO();
         fig.savefig(img_buf,bbox_inches='tight',format='png');
         im = PIL.Image.open(img_buf);
-        axg.imshow(im);
+        if clim!=None: ax_im = axg.imshow(im,clim=clim);
+        else: ax_im = axg.imshow(im);
+        divider = make_axes_locatable(axg)
+        cax = divider.append_axes("right", size="10%", pad=0.05)
+        cbar = plt.colorbar(ax_im, cax=cax, format="%.1e")
         img_buf.close()
 
 
@@ -301,6 +306,7 @@ class Viz:
 
         xyscaling, rotations, translations = self.real_space_affine(rotation, translation, scaling)
         elim = embedding.max()*0.05,embedding.min()*0.95
+        if elim[0]==elim[1]: elim = (0,1)
         folder = make_folder(f'{save_folder}/embedding_affine_maps')
         h = self.dset.open_combined_h5()
         n = int((embedding.shape[0]/self.dset.t_len)**0.5)
@@ -332,10 +338,10 @@ class Viz:
             for i,c in enumerate(channels):
                 imagemap(axs[i], embedding[idx[0]:idx[1], c].reshape((n,n)), 
                             divider_=False, 
-                            # colorbars=(i==len(channels)-1),
-                            # clim = elim, 
+                            # colorbars=False,
+                            clim = elim, 
                             **kwargs)
-            self.plot_into_graph(axsg[1],fig)
+            self.plot_into_graph(axsg[1],fig,clim=elim)
 
             # Transforms
             axsg[2].set_title('Transforms');
@@ -431,7 +437,7 @@ class Viz:
 
         if plot_==True:
             ## make figure
-            fig,axes = layout_fig(length, mod=2);
+            fig,axes = subfigures(3,2);
 
             fig.set_figheight(8)
             fig.set_figwidth(8)
@@ -461,11 +467,16 @@ class Viz:
             if d!=None:
                 axes[4].set_title('Cleaned')
                 imagemap(axes[4],image.T)
+                fig.delaxes(axes[5])
+            else: 
+                fig.delaxes(axes[5])
+                fig.delaxes(axes[4])
+
 
             if save_folder!=None:
                 plt.savefig(save_folder)
-        plt.show()
-        plt.clf()
+            plt.show()
+            plt.clf()
         h.close()
 
         if err_std>0:
@@ -552,26 +563,35 @@ class Viz:
                     smooth_err[1].append(rel_areas_err[i])
 
         if plot==True:
-            matplotlib.rcParams.update({'font.size': 16})
+            temp_labels = [temp.split('/')[-1].split('.')[0] for temp in self.dset.temps]
+            # fonts = {'size'   : 16}
+            # xticks = {'labelsize':10,}
+            # yticks = {'labelsize':10,}
+            # plt.rc('font',**fonts)
+            # plt.rc('xtick',**xticks)
+            # plt.rc('ytick',**yticks)
+            # plt.rc('axes',**{'labelsize':10,
+            #                  'titlesize':'large'})
+
             t_half=int(self.dset.t_len/2)
             x=np.linspace(0,self.dset.t_len-1,self.dset.t_len)
             new_labels=[]
-            wanted_labels = ['23','120',f'{self.dset.temp_labels[t_half]}']
-            for val in self.temp_labels:
+            wanted_labels = ['20','23','120',f'{temp_labels[t_half]}']
+            for val in temp_labels:
                 if val in wanted_labels: new_labels.append(val)
                 else: new_labels.append('')
                 
-            plt.Figure(figsize=(4,4),dpi=400)   
+            plt.figure(figsize=(4,4),dpi=400)   
             plt.xticks(x, new_labels)
             plt.ylabel('Area Fraction')
             plt.xlabel('Temperature ($^\circ$C)')
             plt.text(t_half-int(t_half/4), 0.6, '+$\Delta$T')
             plt.text(t_half+int(t_half/10), 0.6, '-$\Delta$T')
-            plt.suptitle(f'Relative Areas of {self.env}')
+            plt.suptitle(f'Relative Areas of {self.dset.combined_name}')
             
-            for i,r in enumerate(smooth_list): # fill error bars
+            for i,r in enumerate(smooth_list): 
                 plt.plot(x,r,'-o',linewidth=3);
-                if err_std>0: 
+                if err_std>0: # fill error bars
                     plt.fill_between(x,smooth_err[0][i],smooth_err[1][i],
                                      alpha=0.25,label='_nolegend_')
                 plt.ylim(0,1)
@@ -582,8 +602,8 @@ class Viz:
 
         if save_folder!=None: 
             folder=make_folder(save_folder)
-            plt.savefig(save_folder+f'/relative_area_{self.env}.png',facecolor='white');
-
+            plt.savefig(save_folder+f'/relative_area_{self.dset.combined_name}.png',facecolor='white');
+        plt.show();
         plt.close('all')
         # print('line2 changed')
         return dict(zip(legends,smooth_list))
