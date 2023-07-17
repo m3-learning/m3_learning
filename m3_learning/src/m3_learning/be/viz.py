@@ -7,6 +7,7 @@ from m3_learning.be.nn import SHO_Model
 import m3_learning
 from m3_learning.util.rand_util import get_tuple_names
 import torch
+from torch import nn
 import pandas as pd
 import seaborn as sns
 from m3_learning.util.file_IO import make_folder
@@ -736,6 +737,8 @@ class Viz:
             self.dataset.scaled = False
 
             params = self.dataset.SHO_fit_results()
+            
+            params = params.reshape(-1, 4)
 
             self.dataset.scaled = True
 
@@ -1746,3 +1749,24 @@ class Viz:
         # makes the movie
         make_movie(f"{filename}_noise_{noise}", basepath,
                    basepath, file_format="png", fps=5)
+        
+    def MSE_compare(self, true_data, predictions, labels):
+
+        for pred, label in zip(predictions, labels):
+            
+            if isinstance(pred, m3_learning.be.nn.SHO_Model):
+                
+                pred_data, scaled_param, parm = pred.predict(true_data)
+            
+            elif isinstance(pred, dict):
+                
+                pred_data, _ = self.dataset.get_raw_data_from_LSQF_SHO(
+                        pred)
+
+                pred_data = torch.from_numpy(pred_data)
+                
+            # Computes the MSE
+            out = nn.MSELoss()(true_data, pred_data)
+
+            # prints the MSE
+            print(f"{label} Mean Squared Error: {out:0.4f}")

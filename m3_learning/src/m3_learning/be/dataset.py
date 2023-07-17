@@ -669,11 +669,11 @@ class BE_Dataset:
                         pixel=None,
                         voltage_step=None,
                         state=None,
-                        model = None):
+                        model=None):
 
         # if a neural network model is not provided use the LSQF
         if model is None:
-            
+
             # reads the H5 file
             with h5py.File(self.file, "r+") as h5_f:
 
@@ -707,29 +707,28 @@ class BE_Dataset:
                 # reshapes the data to be (index, SHO_params)
                 if self.output_shape == "index":
                     return data.reshape(-1, 4)
-                
+
         if model is not None:
 
             X_data, Y_data = self.NN_data()
 
             # you can view the test and training dataset by replacing X_data with X_test or X_train
             pred_data, scaled_param, data = model.predict(X_data)
-            
+
             if self.measurement_state == 'all':
                 voltage_step = self.voltage_steps
             else:
                 voltage_step = int(self.voltage_steps/2)
-                
-            
+
             data = data.reshape(self.num_pix, voltage_step, 4)
 
             if self.scaled:
                 data = self.SHO_scaler.transform(
-                        data.reshape(-1, 4)).reshape(self.num_pix, voltage_step, 4)
-                
+                    data.reshape(-1, 4)).reshape(self.num_pix, voltage_step, 4)
+
             # reshapes the data to be (index, SHO_params)
             if self.output_shape == "index":
-                return data.reshape(-1, 4)          
+                return data.reshape(-1, 4)
 
         return data
 
@@ -823,7 +822,7 @@ class BE_Dataset:
             self.set_attributes(**state)
 
         with h5py.File(self.file, "r+") as h5_f:
-            
+
             # sets the shaper_ equal to true to correct the shape
             shaper_ = True
 
