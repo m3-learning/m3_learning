@@ -737,7 +737,7 @@ class Viz:
             self.dataset.scaled = False
 
             params = self.dataset.SHO_fit_results()
-            
+
             params = params.reshape(-1, 4)
 
             self.dataset.scaled = True
@@ -1321,6 +1321,203 @@ class Viz:
         fig.show()
 
     @static_state_decorator
+    def SHO_switching_maps_test(self,
+                                SHO_,
+                                colorbars=True,
+                                clims=[(0, 1.4e-4),  # amplitude
+                                       (1.31e6, 1.33e6),  # resonance frequency
+                                       (-230, -160),  # quality factor
+                                       (-np.pi, np.pi)],  # phase
+                                measurement_state="off",  # sets the measurement state to get the data
+                                cycle=2,  # sets the cycle to get the data
+                                cols=3,
+                                fig_width=6.5,  # figure width in inches
+                                number_of_steps=9,  # number of steps on the graph
+                                voltage_plot_height=1.25,  # height of the voltage plot
+                                intra_gap=0.02,  # gap between the graphs,
+                                inter_gap=0.05,  # gap between the graphs,
+                                cbar_gap=.5,  # gap between the graphs of colorbars
+                                cbar_space=1.3,  # space on the right where the cbar is not
+                                filename=None,
+                                ):
+
+        if type(SHO_) is not list:
+            SHO_ = [SHO_]
+
+        comp_number = len(SHO_)
+
+        # sets the voltage state to off, and the cycle to get
+        self.dataset.measurement_state = measurement_state
+        self.dataset.cycle = cycle
+
+        # instantiates the list of axes
+        ax = []
+
+        # number of rows
+        rows = np.ceil(number_of_steps * comp_number / 3)
+
+        # calculates the size of the embedding image
+        embedding_image_size = (fig_width - (inter_gap * (cols - 1)) -
+                                intra_gap * 3 * cols - cbar_space*colorbars) / (cols * 4)
+
+        # calculates the figure height based on the image details
+        fig_height = rows * (embedding_image_size +
+                             inter_gap) + voltage_plot_height + .33 + inter_gap*(comp_number -1)
+
+        # defines a scalar to convert inches to relative coordinates
+        fig_scalar = FigDimConverter((fig_width, fig_height))
+
+        # creates the figure
+        fig = plt.figure(figsize=(fig_width, fig_height))
+
+        # left bottom width height
+        pos_inch = [0.33, fig_height - voltage_plot_height,
+                    6.5 - .33, voltage_plot_height]
+
+        # adds the plot for the voltage
+        ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+
+        # resets the x0 position for the embedding plots
+        pos_inch[0] = 0
+        pos_inch[1] -= embedding_image_size + 0.33
+
+        # sets the embedding size of the image
+        pos_inch[2] = embedding_image_size
+        pos_inch[3] = embedding_image_size
+
+        # This makes the figures
+        for k, SHO_ in enumerate(SHO_):
+            # adds the embedding plots
+            for i in range(number_of_steps):
+
+                # loops around the amp, phase, and freq
+                for j in range(4):
+
+                    # adds the plot to the figure
+                    ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+
+                    # adds the inter plot gap
+                    pos_inch[0] += embedding_image_size + intra_gap
+
+                # if the last column in row, moves the position to the next row
+                if (i+1) % cols == 0 and i != 0:
+
+                    # resets the x0 position for the embedding plots
+                    pos_inch[0] = 0
+
+                    # moves the y0 position to the next row
+                    pos_inch[1] -= embedding_image_size + inter_gap
+
+                    if (i + 1) % (cols * comp_number) == 0 and comp_number > 1:
+                        pos_inch[1] -= inter_gap
+
+                else:
+                    # adds the small gap between the plots
+                    pos_inch[0] += inter_gap
+
+        # gets the DC voltage data - this is for only the on state or else it would all be 0
+        voltage = self.dataset.dc_voltage
+
+        # gets just part of the loop
+        if hasattr(self.dataset, 'cycle') and self.dataset.cycle is not None:
+            # gets the cycle of interest
+            voltage = self.dataset.get_cycle(voltage)
+
+        # gets the index of the voltage steps to plot
+        inds = np.linspace(0, len(voltage)-1, number_of_steps, dtype=int)
+        
+        # plots the voltage
+        ax[0].plot(voltage, "k")
+        ax[0].set_ylabel("Voltage (V)")
+        ax[0].set_xlabel("Step")
+        
+        print("yes")
+
+        # Plot the data with different markers
+        for i, ind in enumerate(inds):
+            # this adds the labels to the graphs
+            ax[0].plot(ind, voltage[ind], 'o', color='k', markersize=10)
+            vshift = (ax[0].get_ylim()[1] - ax[0].get_ylim()[0]) * .25
+
+            # positions the location of the labels
+            if voltage[ind] - vshift - .15 < ax[0].get_ylim()[0]:
+                vshift = -vshift/2
+
+            # adds the text to the graphs
+            ax[0].text(ind, voltage[ind] - vshift,
+                       str(i+1), color="k", fontsize=12)
+
+    for k, SHO_ in enumerate(SHO_):
+        # converts the data to a numpy array
+        if isinstance(SHO_, torch.Tensor):
+            SHO_ = SHO_.detach().numpy()
+
+        SHO_ = SHO_.reshape(self.dataset.num_pix,
+                            self.dataset.voltage_steps, 4)
+
+        # get the selected measurement cycle
+        SHO_ = self.dataset.get_measurement_cycle(SHO_, axis=1)
+
+        names = ["A", "\u03C9", "Q", "\u03C6"]
+
+        for i, ind in enumerate(inds):
+            
+            axis_start = int(i % cols*4 + 1 + (i) // cols * len(SHO_) * cols * 4 + k*(cols * 4)) 
+
+        # loops around the amp, resonant frequency, and Q, Phase
+        for j in range(4):
+            imagemap(ax[i*4+j+1], SHO_[:, ind, j],
+                        colorbars=False, cmap="viridis",)
+
+            if i // rows == 0:
+                labelfigs(ax[axis_start+j+1], string_add=names[j],
+                            loc="cb", size=5, inset_fraction=(.2, .2))
+
+            ax[axis_start+j+1].images[0].set_clim(clims[j])
+            # labelfigs(ax[1::4][i], string_add=str(i+1),
+            #           size=5, loc="bl", inset_fraction=(.2, .2))
+
+        # # if add colorbars
+        # if colorbars:
+
+        #     # builds a list to store the colorbar axis objects
+        #     bar_ax = []
+
+        #     # gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
+        #     voltage_ax_pos = fig_scalar.to_inches(
+        #         np.array(ax[0].get_position()).flatten())
+
+        #     # loops around the 4 axis
+        #     for i in range(4):
+
+        #         # calculates the height and width of the colorbars
+        #         cbar_h = (voltage_ax_pos[1] -
+        #                   inter_gap - 2 * intra_gap - .33)/2
+        #         cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
+
+        #         # sets the position of the axis in inches
+        #         pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap,
+        #                     voltage_ax_pos[1] - (i//2) *
+        #                     (inter_gap + cbar_h) - .33 - cbar_h,
+        #                     cbar_w,
+        #                     cbar_h]
+
+        #         # adds the plot to the figure
+        #         bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+
+        #         # adds the colorbars to the plots
+        #         cbar = plt.colorbar(ax[i+1].images[0],
+        #                             cax=bar_ax[i], format='%.1e')
+        #         cbar.set_label(names[i])  # Add a label to the colorbar
+
+        # # prints the figure
+        # if self.Printer is not None and filename is not None:
+        #     self.Printer.savefig(
+        #         fig, filename, size=6, loc='tl', inset_fraction=(.2, .2))
+
+        fig.show()
+
+    @static_state_decorator
     def noisy_datasets(self, state, noise_level=None, pixel=None,
                        voltage_step=None, filename=None):
 
@@ -1463,7 +1660,7 @@ class Viz:
         rows = len(comparison)*2
 
         if labels is not None:
-            inter_gap_count = len(comparison) + 1 
+            inter_gap_count = len(comparison) + 1
         else:
             inter_gap_count = 1
 
@@ -1597,8 +1794,8 @@ class Viz:
                              basepath=None,
                              labels=None,
                              ):
-        
-        #TODO - This needs to be moved in
+
+        # TODO - This needs to be moved in
         # builds the basepath for the images of the movie
         if basepath is not None:
 
@@ -1749,22 +1946,22 @@ class Viz:
         # makes the movie
         make_movie(f"{filename}_noise_{noise}", basepath,
                    basepath, file_format="png", fps=5)
-        
+
     def MSE_compare(self, true_data, predictions, labels):
 
         for pred, label in zip(predictions, labels):
-            
+
             if isinstance(pred, m3_learning.be.nn.SHO_Model):
-                
+
                 pred_data, scaled_param, parm = pred.predict(true_data)
-            
+
             elif isinstance(pred, dict):
-                
+
                 pred_data, _ = self.dataset.get_raw_data_from_LSQF_SHO(
-                        pred)
+                    pred)
 
                 pred_data = torch.from_numpy(pred_data)
-                
+
             # Computes the MSE
             out = nn.MSELoss()(true_data, pred_data)
 
