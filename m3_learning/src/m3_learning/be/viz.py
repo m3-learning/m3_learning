@@ -1339,6 +1339,7 @@ class Viz:
                                 cbar_gap=.5,  # gap between the graphs of colorbars
                                 cbar_space=1.3,  # space on the right where the cbar is not
                                 filename=None,
+                                labels = None,
                                 ):
 
         if type(SHO_) is not list:
@@ -1362,7 +1363,7 @@ class Viz:
 
         # calculates the figure height based on the image details
         fig_height = rows * (embedding_image_size +
-                             inter_gap) + voltage_plot_height + .33 + inter_gap*(comp_number -1)
+                             inter_gap) + voltage_plot_height + .33 + inter_gap*(comp_number - 1)
 
         # defines a scalar to convert inches to relative coordinates
         fig_scalar = FigDimConverter((fig_width, fig_height))
@@ -1386,7 +1387,7 @@ class Viz:
         pos_inch[3] = embedding_image_size
 
         # This makes the figures
-        for k, SHO_ in enumerate(SHO_):
+        for k, _SHO in enumerate(SHO_):
             # adds the embedding plots
             for i in range(number_of_steps):
 
@@ -1425,13 +1426,11 @@ class Viz:
 
         # gets the index of the voltage steps to plot
         inds = np.linspace(0, len(voltage)-1, number_of_steps, dtype=int)
-        
+
         # plots the voltage
         ax[0].plot(voltage, "k")
         ax[0].set_ylabel("Voltage (V)")
         ax[0].set_xlabel("Step")
-        
-        print("yes")
 
         # Plot the data with different markers
         for i, ind in enumerate(inds):
@@ -1447,73 +1446,82 @@ class Viz:
             ax[0].text(ind, voltage[ind] - vshift,
                        str(i+1), color="k", fontsize=12)
 
-    for k, SHO_ in enumerate(SHO_):
-        # converts the data to a numpy array
-        if isinstance(SHO_, torch.Tensor):
-            SHO_ = SHO_.detach().numpy()
+        for k, _SHO in enumerate(SHO_):
+            # converts the data to a numpy array
+            if isinstance(_SHO, torch.Tensor):
+                _SHO = _SHO.detach().numpy()
 
-        SHO_ = SHO_.reshape(self.dataset.num_pix,
-                            self.dataset.voltage_steps, 4)
+            print(_SHO.shape)
+            _SHO = _SHO.reshape(self.dataset.num_pix,
+                                self.dataset.voltage_steps, 4)
 
-        # get the selected measurement cycle
-        SHO_ = self.dataset.get_measurement_cycle(SHO_, axis=1)
+            # get the selected measurement cycle
+            _SHO = self.dataset.get_measurement_cycle(_SHO, axis=1)
 
-        names = ["A", "\u03C9", "Q", "\u03C6"]
+            names = ["A", "\u03C9", "Q", "\u03C6"]
 
-        for i, ind in enumerate(inds):
-            
-            axis_start = int(i % cols*4 + 1 + (i) // cols * len(SHO_) * cols * 4 + k*(cols * 4)) 
+            for i, ind in enumerate(inds):
 
-        # loops around the amp, resonant frequency, and Q, Phase
-        for j in range(4):
-            imagemap(ax[i*4+j+1], SHO_[:, ind, j],
-                        colorbars=False, cmap="viridis",)
+                axis_start = int((i % cols)*4 + ((i) // cols) *
+                                 (comp_number * cols * 4) + k*(cols * 4) + 1)
 
-            if i // rows == 0:
-                labelfigs(ax[axis_start+j+1], string_add=names[j],
-                            loc="cb", size=5, inset_fraction=(.2, .2))
+                # loops around the amp, resonant frequency, and Q, Phase
+                for j in range(4):
 
-            ax[axis_start+j+1].images[0].set_clim(clims[j])
-            # labelfigs(ax[1::4][i], string_add=str(i+1),
-            #           size=5, loc="bl", inset_fraction=(.2, .2))
+                    imagemap(ax[axis_start+j], _SHO[:, ind, j],
+                             colorbars=False, cmap="viridis",)
 
-        # # if add colorbars
-        # if colorbars:
+                    if i // rows == 0 and k == 0:
+                        labelfigs(ax[axis_start+j], string_add=names[j],
+                                  loc="cb", size=5, inset_fraction=(.2, .2))
 
-        #     # builds a list to store the colorbar axis objects
-        #     bar_ax = []
+                    ax[axis_start+j].images[0].set_clim(clims[j])
 
-        #     # gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
-        #     voltage_ax_pos = fig_scalar.to_inches(
-        #         np.array(ax[0].get_position()).flatten())
+                    if k == 0:
+                        labelfigs(ax[axis_start+j], string_add=str(i+1),
+                                  size=5, loc="bl", inset_fraction=(.2, .2))
+                        
+                    if (axis_start + j) % (4 * cols) == 1:
+                        ax[axis_start+j].set_ylabel(labels[k])
 
-        #     # loops around the 4 axis
-        #     for i in range(4):
+        # if add colorbars
+        if colorbars:
 
-        #         # calculates the height and width of the colorbars
-        #         cbar_h = (voltage_ax_pos[1] -
-        #                   inter_gap - 2 * intra_gap - .33)/2
-        #         cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
+            # builds a list to store the colorbar axis objects
+            bar_ax = []
 
-        #         # sets the position of the axis in inches
-        #         pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap,
-        #                     voltage_ax_pos[1] - (i//2) *
-        #                     (inter_gap + cbar_h) - .33 - cbar_h,
-        #                     cbar_w,
-        #                     cbar_h]
+            # gets the voltage axis position in ([xmin, ymin, xmax, ymax]])
+            voltage_ax_pos = fig_scalar.to_inches(
+                np.array(ax[0].get_position()).flatten())
 
-        #         # adds the plot to the figure
-        #         bar_ax.append(fig.add_axes(fig_scalar.to_relative(pos_inch)))
+            # loops around the 4 axis
+            for i in range(4):
 
-        #         # adds the colorbars to the plots
-        #         cbar = plt.colorbar(ax[i+1].images[0],
-        #                             cax=bar_ax[i], format='%.1e')
-        #         cbar.set_label(names[i])  # Add a label to the colorbar
+                # calculates the height and width of the colorbars
+                cbar_h = (voltage_ax_pos[1] -
+                            inter_gap - 2 * intra_gap - .33)/2
+                cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
 
-        # # prints the figure
-        # if self.Printer is not None and filename is not None:
-        #     self.Printer.savefig(
-        #         fig, filename, size=6, loc='tl', inset_fraction=(.2, .2))
+                # sets the position of the axis in inches
+                pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap,
+                            voltage_ax_pos[1] - (i//2) *
+                            (inter_gap + cbar_h) - .33 - cbar_h,
+                            cbar_w,
+                            cbar_h]
+
+                # adds the plot to the figure
+                bar_ax.append(fig.add_axes(
+                    fig_scalar.to_relative(pos_inch)))
+
+                # adds the colorbars to the plots
+                cbar = plt.colorbar(ax[i+1].images[0],
+                                    cax=bar_ax[i], format='%.1e')
+                cbar.set_label(names[i])  # Add a label to the colorbar
+
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(
+                fig, filename, size=6, loc='tl', inset_fraction=(.2, .2))
 
         fig.show()
 
