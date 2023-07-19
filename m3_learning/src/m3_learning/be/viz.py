@@ -1776,7 +1776,7 @@ class Viz:
 
         return model
 
-    def get_SHO_data(self, noise, model):
+    def get_SHO_data(self, noise, model, phase_shift=None):
         # sets the noise state
         self.dataset.noise = noise
 
@@ -1784,13 +1784,13 @@ class Viz:
         self.dataset.measurement_state = "on"
 
         # gets the fit results
-        on_data = self.dataset.SHO_fit_results(model=model)
+        on_data = self.dataset.SHO_fit_results(model=model, phase_shift=phase_shift)
 
         # sets the state to the off state to get the data
         self.dataset.measurement_state = "off"
 
         # gets the off state of the data
-        off_data = self.dataset.SHO_fit_results(model=model)
+        off_data = self.dataset.SHO_fit_results(model=model, phase_shift=phase_shift)
 
         return on_data, off_data
 

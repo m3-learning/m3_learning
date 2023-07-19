@@ -670,7 +670,7 @@ class BE_Dataset:
                         voltage_step=None,
                         state=None,
                         model=None,
-                        phase_shift = None):
+                        phase_shift=None):
 
         # if a neural network model is not provided use the LSQF
         if model is None:
@@ -726,7 +726,7 @@ class BE_Dataset:
             if self.scaled:
                 data = self.SHO_scaler.transform(
                     data.reshape(-1, 4)).reshape(self.num_pix, voltage_step, 4)
-                
+
             if phase_shift is not None:
                 self.shift_phase(data[:, :, 3], phase_shift)
 
