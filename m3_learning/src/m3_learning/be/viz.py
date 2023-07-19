@@ -212,23 +212,32 @@ class Viz:
             SHO_data (numpy): SHO fit results
             filename (str, optional): filename where to save the results. Defaults to "".
         """
-        SHO_data = SHO_data.reshape(-1, 4)
+
+        if type(SHO_data) is not list:
+            SHO_data = [SHO_data]
 
         # check distributions of each parameter before and after scaling
-        fig, axs = layout_fig(4, 4, figsize=(5.25, 1.25))
+        fig, axs = layout_fig(4*len(SHO_data), 4,
+                              figsize=(5.25, 1.25*len(SHO_data)))
 
-        for i, (ax, label) in enumerate(zip(axs.flat, self.SHO_labels)):
-            ax.hist(SHO_data[:, i].flatten(), 100)
-            if i == 0:
-                ax.set(ylabel="counts")
-            ax.set(xlabel=label['y_label'])
-            ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
-            ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+        for k, SHO_data_ in enumerate(SHO_data):
 
-            ax.set_box_aspect(1)
+            axs_ = axs[k*4:(k+1)*4]
 
-        if self.verbose:
-            self.dataset.extraction_state
+            SHO_data_ = SHO_data_.reshape(-1, 4)
+
+            for i, (ax, label) in enumerate(zip(axs_.flat, self.SHO_labels)):
+                ax.hist(SHO_data_[:, i].flatten(), 100)
+                if i == 0:
+                    ax.set(ylabel="counts")
+                ax.set(xlabel=label['y_label'])
+                ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
+                ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+
+                ax.set_box_aspect(1)
+
+            if self.verbose:
+                self.dataset.extraction_state
 
         # prints the figure
         if self.Printer is not None and filename is not None:
@@ -1339,7 +1348,7 @@ class Viz:
                                 cbar_gap=.5,  # gap between the graphs of colorbars
                                 cbar_space=1.3,  # space on the right where the cbar is not
                                 filename=None,
-                                labels = None,
+                                labels=None,
                                 ):
 
         if type(SHO_) is not list:
@@ -1480,7 +1489,7 @@ class Viz:
                     if k == 0:
                         labelfigs(ax[axis_start+j], string_add=str(i+1),
                                   size=5, loc="bl", inset_fraction=(.2, .2))
-                        
+
                     if (axis_start + j) % (4 * cols) == 1:
                         ax[axis_start+j].set_ylabel(labels[k])
 
@@ -1499,7 +1508,7 @@ class Viz:
 
                 # calculates the height and width of the colorbars
                 cbar_h = (voltage_ax_pos[1] -
-                            inter_gap - 2 * intra_gap - .33)/2
+                          inter_gap - 2 * intra_gap - .33)/2
                 cbar_w = (cbar_space - inter_gap - 2 * cbar_gap)/2
 
                 # sets the position of the axis in inches
