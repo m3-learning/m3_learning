@@ -369,7 +369,7 @@ def scalebar(axes, image_size, scale_size, units="nm", loc="br"):
     # gets the size of the image
     x_lim, y_lim = axes.get_xlim(), axes.get_ylim()
     x_size, y_size = np.abs(int(np.floor(x_lim[1] - x_lim[0]))), np.abs(
-        np.int(np.floor(y_lim[1] - y_lim[0]))
+        int(np.floor(y_lim[1] - y_lim[0]))
     )
     # computes the fraction of the image for the scalebar
     fract = scale_size / image_size
