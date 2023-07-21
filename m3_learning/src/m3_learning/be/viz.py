@@ -1794,6 +1794,7 @@ class Viz:
 
         return on_data, off_data
 
+    @static_state_decorator
     def SHO_fit_movie_images(self,
                              noise=0,
                              model_path=None,
@@ -1810,7 +1811,13 @@ class Viz:
                              filename=None,
                              basepath=None,
                              labels=None,
+                             phase_shift=None,
                              ):
+        
+        output_state = {"output_shape": "pixels", "scaled": False}
+        
+        # makes sure the output state is in pixels
+        self.dataset.set_attributes(**output_state)
 
         # TODO - This needs to be moved in
         # builds the basepath for the images of the movie
@@ -1839,9 +1846,9 @@ class Viz:
             noise_labels = []
 
             # loops around the different models for models
-            for model_ in models:
+            for model_, phase_shift_ in zip(models, phase_shift):
                 on_models, off_models = self.get_SHO_data(
-                    noise, model_)
+                    noise, model_, phase_shift=phase_shift_)
                 on_data.append(on_models)
                 off_data.append(off_models)
                 noise_labels.append(noise)

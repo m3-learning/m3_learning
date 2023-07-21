@@ -627,13 +627,15 @@ class BE_Dataset:
             phase_ += np.pi
             phase_[phase_ <= shift] += 2 *\
                 np.pi  # shift phase values greater than pi
-            return phase_ - shift - np.pi
+            phase__ = phase_ - shift - np.pi
         else:
             phase_ = phase
             phase_ -= np.pi
             phase_[phase_ >= shift] -= 2 *\
                 np.pi  # shift phase values greater than pi
-            return phase_ - shift + np.pi
+            phase__ = phase_ - shift + np.pi
+
+        return phase__
 
     def raw_data_resampled(self, pixel=None, voltage_step=None):
         """Resampled real part of the complex data resampled"""
@@ -661,16 +663,21 @@ class BE_Dataset:
             elif self.measurement_state == 'off':
                 voltage_step = np.arange(0, self.voltage_steps)[
                     ::2][voltage_step]
-
         return voltage_step
 
-    @static_state_decorator
     def SHO_fit_results(self,
                         pixel=None,
                         voltage_step=None,
                         state=None,
                         model=None,
-                        phase_shift=None):
+                        phase_shift=None,
+                        X_data = None):
+        
+        if voltage_step is None:
+            if self.measurement_state == 'all':
+                    voltage_step = self.voltage_steps
+            else:
+                voltage_step = int(self.voltage_steps/2)
 
         # if a neural network model is not provided use the LSQF
         if model is None:
@@ -682,59 +689,41 @@ class BE_Dataset:
                 if state is not None:
                     self.set_attributes(**state)
 
-                # determines the pixel value based on the measurement state
-                voltage_step = self.measurement_state_voltage(voltage_step)
-
                 data = eval(f"self.SHO_{self.fitter}(pixel, voltage_step)")
 
                 data_shape = data.shape
 
                 data = data.reshape(-1, 4)
 
-                if eval(f"self.{self.fitter}_phase_shift") is not None:
+                if eval(f"self.{self.fitter}_phase_shift") is not None and phase_shift is None:
                     data[:, 3] = eval(
                         f"self.shift_phase(data[:, 3], self.{self.fitter}_phase_shift)")
 
                 data = data.reshape(data_shape)
 
-                # # does not sample if just a pixel is returned
-                # if pixel is None or voltage_step is None:
-                #     data = self.get_voltage_state(data)
-
                 if self.scaled:
                     data = self.SHO_scaler.transform(
                         data.reshape(-1, 4)).reshape(data_shape)
 
-                # reshapes the data to be (index, SHO_params)
-                if self.output_shape == "index":
-                    return data.reshape(-1, 4)
+        elif model is not None:
 
-        if model is not None:
-
-            X_data, Y_data = self.NN_data()
+            if X_data is None:
+                X_data, Y_data = self.NN_data()
 
             # you can view the test and training dataset by replacing X_data with X_test or X_train
             pred_data, scaled_param, data = model.predict(X_data)
 
-            if self.measurement_state == 'all':
-                voltage_step = self.voltage_steps
-            else:
-                voltage_step = int(self.voltage_steps/2)
-
-            data = data.reshape(self.num_pix, voltage_step, 4)
-
             if self.scaled:
-                data = self.SHO_scaler.transform(
-                    data.reshape(-1, 4)).reshape(self.num_pix, voltage_step, 4)
+                data = scaled_param
 
-            if phase_shift is not None:
-                self.shift_phase(data[:, :, 3], phase_shift)
+        if phase_shift is not None:
+            data[:,3] = self.shift_phase(data[:, 3], phase_shift)
 
-            # reshapes the data to be (index, SHO_params)
-            if self.output_shape == "index":
-                return data.reshape(-1, 4)
-
-        return data
+        # reshapes the data to be (index, SHO_params)
+        if self.output_shape == "index":
+            return data.reshape(-1, 4)
+        else:
+            return data.reshape(self.num_pix, voltage_step, 4)
 
     def get_voltage_state(self, data):
         """function to get the voltage state of the data
