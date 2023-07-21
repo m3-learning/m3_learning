@@ -59,7 +59,12 @@ class Viz:
         plt.close('all')
 
 
-    def view_window(self,img_name,x,y):
+    def view_window(self,img_name,x,y,
+                    cropped_scalebar=None,
+                    windows_group = 'windows',
+                    dset_name = 'windows_data',
+                    logset_name = 'windows_logdata',
+                    view_windows = 'windows_logdata'):
         '''
         Plot the filtered image, transform, and window
         
@@ -72,6 +77,7 @@ class Viz:
         '''
         h = self.dset.open_combined_h5()
         image = h['All_filtered']
+        raw = self.dset.get_raw_img(img_name[0],img_name[1])
 
         for t,temp in enumerate(self.dset.temps):
             if f'{img_name[0]}/{img_name[1]}' in temp: break
@@ -85,7 +91,10 @@ class Viz:
         axs.append( fig.add_subplot(gs[0,2]) )   # small subplot (1st row, 3rd column)
         axs.append(fig.add_subplot(gs[1,2]))
 
-        idx,bbox = self.dset.get_window_index(t,x,y)
+        idx,bbox = self.dset.get_window_index(t,x,y,
+                                              windows_group=windows_group,
+                                              dset_name=dset_name,
+                                              logset_name=logset_name)
         # print(idx,bbox)
         
         # plot the full image
@@ -94,9 +103,14 @@ class Viz:
         axs[0].set_title('Full Image')
         axs[0].add_patch(rect)
         imagemap(axs[0],image[t],colorbars=True)
+        if cropped_scalebar is not None:
+            # adds a scalebar to the figure
+            cropped_scalebar = self.scalebar_
+            cropped_scalebar["width"]*=(image[0].shape[0]/raw.shape[0])
+            add_scalebar(axs, cropped_scalebar)
 
         axs[1].set_title('FFT tile')
-        imagemap(axs[1],h['windows']['windows_logdata'][idx],colorbars=True)
+        imagemap(axs[1],h[windows_group][view_windows][idx],colorbars=True)
 
         axs[2].set_title('Image tile')
         imagemap(axs[2],image[t,bbox[2]:bbox[3],bbox[0]:bbox[1]],colorbars=True)
@@ -305,9 +319,9 @@ class Viz:
                             # combined,f,date,temps):
 
         xyscaling, rotations, translations = self.real_space_affine(rotation, translation, scaling)
-        elim = embedding.max()*0.05,embedding.min()*0.95
+        elim = embedding.min()*1.05,embedding.max()*0.95
         if elim[0]==elim[1]: elim = (0,1)
-        folder = make_folder(f'{save_folder}/embedding_affine_maps')
+        folder = make_folder(f'{save_folder}')
         h = self.dset.open_combined_h5()
         n = int((embedding.shape[0]/self.dset.t_len)**0.5)
 
@@ -336,7 +350,7 @@ class Viz:
                 channels = range(embedding.shape[1])
             fig, axs = layout_fig(len(channels), mod=2, **kwargs)
             for i,c in enumerate(channels):
-                imagemap(axs[i], embedding[idx[0]:idx[1], c].reshape((n,n)), 
+                imagemap(axs[i], embedding[idx[0]:idx[1], c].reshape((n,n)).T, 
                             divider_=False, 
                             # colorbars=False,
                             clim = elim, 
@@ -352,14 +366,14 @@ class Viz:
                        translation[idx[0]:idx[1],0,2].T, translation[idx[0]:idx[1],1,2].T]
             for i,data in enumerate(to_plot):
                 if i==3: 
-                    imagemap(axs[i], data.reshape((n,n)),divider_=False, 
+                    imagemap(axs[i], data.reshape((n,n)).T,divider_=False, 
                              colorbars=True, cmap_='twilight',clim = (-np.pi,np.pi))
-                else: imagemap(axs[i], data.reshape((n,n)),divider_=False, 
+                else: imagemap(axs[i], data.reshape((n,n)).T,divider_=False, 
                                colorbars=True)
             self.plot_into_graph(axsg[2],fig)
 
             figg.tight_layout();
-            figg.savefig(f'{folder}/{t:02d}.png',facecolor='white'); 
+            figg.savefig(f'{folder}/{t:02d}.png',facecolor='white',dpi=20); 
             plt.close('all')
 
         h.close()
@@ -382,6 +396,9 @@ class Viz:
     
 
     def make_mask(self,embedding, t, c, d=None, 
+                  windows_group = 'windows',
+                  dset_name = 'windows_data',
+                  logset_name = 'windows_logdata',
                   plot_=True, save_folder=None,err_std=0,eps=2):
         """makes figure with image, warp, histogram, and mask (if specified).
 
@@ -398,12 +415,14 @@ class Viz:
         """
         length = 4
         h = self.dset.open_combined_h5()
-        logdata = h['windows']['windows_logdata']
+        logdata = h[windows_group][logset_name]
+        # print(logdata.shape)
         n = int((logdata.shape[0]/self.dset.t_len)**0.5)
         # step2 = int((embedding.shape[0]/self.dset.t_len))
         orig_images = h['All_filtered']
 
         im = embedding[t*n*n:(t+1)*n*n,c]
+        # print(im.shape)
         image=im
         if image.max==0:
             mask = image
@@ -448,7 +467,7 @@ class Viz:
             imagemap(axes[0],orig_images[t])
 
             axes[1].set_title(f'Embedding channel {c}')
-            imagemap(axes[1],im.T)
+            imagemap(axes[1],im.reshape((n,n)).T)
 
             axes[2].set_title(f'Histogram for Embedding')
             axes[2].hist(image.flatten(),bins=50);
@@ -486,16 +505,20 @@ class Viz:
             return mask
 
     
-    def graph_relative_area(self,embedding,channels=range(8),masked=False,clean_div=None,smoothing=None,
+    def graph_relative_area(self,embedding,
+                            windows_group = 'windows',
+                            dset_name = 'windows_data',
+                            logset_name = 'windows_logdata',
+                            channels=range(8),masked=False,clean_div=None,smoothing=None,
                             legends=None,plot=True,err_std=0,save_folder=None):
         '''
         Makes a graph of the average intensity of selected embeddings channels across temperature range.
         Returns dictionary of domain structure and smooth values
 
-        channels: (list) default is all channels. Othewise, specify indices
-        masked: (Bool) Whether to calculate average area with only mask or with original embedding intensities
+        channels (list): default is all channels. Othewise, specify indices
+        masked: (bool) Whether to calculate average area with only mask or with original embedding intensities
         clean_div: (list) Channels that can be used to eliminate stray signal in selected embedding channels
-        smoothing: (int) convolution (smoothing) factor. Must be odd for odd length dataset, and even for even length dataset.
+        smoothing: (int) convolution (smoothing) factor. Must be odd for odd number of temps, and even for even length.
         legends: (list) Domain labels
         '''
         rel_areas_emb = np.zeros((len(channels),self.dset.t_len))
@@ -519,11 +542,23 @@ class Viz:
                         im = im/(div+1)
 
                     if clean_div==None: 
-                        mask = self.make_mask(embedding,t,c,plot_=False,err_std=err_std)
+                        mask = self.make_mask(embedding,t,c,
+                                              windows_group = windows_group,
+                                              dset_name = dset_name,
+                                              logset_name = logset_name,
+                                              plot_=False,err_std=err_std)
                     elif clean_div=='All': 
-                        mask = self.make_mask(embedding,t,c,d='All',plot_=False,err_std=err_std)
+                        mask = self.make_mask(embedding,t,c,d='All',
+                                              windows_group = windows_group,
+                                              dset_name = dset_name,
+                                              logset_name = logset_name,
+                                              plot_=False,err_std=err_std)
                     else: 
-                        mask = self.make_mask(embedding,t,c,d=clean_div[i],plot_=False,err_std=err_std)
+                        mask = self.make_mask(embedding,t,c,d=clean_div[i],
+                                              windows_group = windows_group,
+                                              dset_name = dset_name,
+                                              logset_name = logset_name,
+                                              plot_=False,err_std=err_std)
                 
                 if masked:
                     if err_std==0: rel_areas_emb[i][t] = mask.mean()
@@ -590,19 +625,25 @@ class Viz:
             plt.suptitle(f'Relative Areas of {self.dset.combined_name}')
             
             for i,r in enumerate(smooth_list): 
-                plt.plot(x,r,'-o',linewidth=3);
+                plt.plot(x,r,'-o',linewidth=3,markersize=4);
                 if err_std>0: # fill error bars
                     plt.fill_between(x,smooth_err[0][i],smooth_err[1][i],
                                      alpha=0.25,label='_nolegend_')
                 plt.ylim(0,1)
                 
             plt.axvline(int(t_half), color='k', ls='--')
-            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-            # if legends!=None: plt.legend(legends)
+            plt.tight_layout()
+            if legends!=None: 
+                lgd = plt.legend(legends,frameon=1)
+                frame = lgd.get_frame()
+                frame.set_alpha(0.5)
+                frame.set_facecolor('white')
+
 
         if save_folder!=None: 
             folder=make_folder(save_folder)
             plt.savefig(save_folder+f'/relative_area_{self.dset.combined_name}.png',facecolor='white');
+        
         plt.show();
         plt.close('all')
         # print('line2 changed')

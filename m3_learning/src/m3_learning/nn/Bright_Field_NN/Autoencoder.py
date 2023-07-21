@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
 import datetime
+import h5py
 
 
 class ConvAutoencoder():
@@ -46,6 +47,7 @@ class ConvAutoencoder():
         self.conv_size = conv_size
         self.device = device
         self.learning_rate = learning_rate
+        self.checkpt = ''
 
         # complies the network
         self.compile_model()
@@ -263,6 +265,7 @@ class ConvAutoencoder():
         self.decoder.load_state_dict(checkpoint['decoder'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.start_epoch = checkpoint['epoch']
+        self.checkpt = path_checkpoint.split('/')[-1].split('.')[1]
 
     def get_embedding(self, data, batch_size_=32):
         """extracts embeddings from the data
@@ -308,6 +311,39 @@ class ConvAutoencoder():
         # self.embeddings = (embedding_, rotation_, translation_, scaling_)
 
         return (embedding_, rotation_, translation_, scaling_)
+
+    def save_embedding(self,h5_name,embedding,rotation,translation,scaling,
+                        group_label='embeddings_',dset_label='_',overwrite=False):
+        if h5_name[-3:]!='.h5': h5_name+='.h5'
+
+        try: h_file = h5py.File(h5_name,'r+')
+        except: h_file = h5py.File(h5_name,'w')
+        
+        if group_label+self.checkpt not in h_file:
+            h_file.create_group(group_label+self.checkpt)
+        subgroup = h_file[group_label+self.checkpt]
+
+        if overwrite:
+            labels = [dset_label+'embedding',
+                     dset_label+'rotation',
+                     dset_label+'translation',
+                     dset_label+'scaling']
+            for label in labels:
+                try:
+                    del subgroup[label]     
+                except:
+                    continue
+
+        if dset_label+'embedding' not in subgroup:
+            subgroup.create_dataset(dset_label+'embedding',data=embedding,dtype='f4')
+        if dset_label+'rotation' not in subgroup:
+            subgroup.create_dataset(dset_label+'rotation',data=rotation,dtype='f4')
+        if dset_label+'translation' not in subgroup:
+            subgroup.create_dataset(dset_label+'translation',data=translation,dtype='f4')
+        if dset_label+'scaling' not in subgroup:
+            subgroup.create_dataset(dset_label+'scaling',data=scaling,dtype='f4')
+
+        h_file.close()
 
     def generate_spectra(self, embedding):
         """generates spectra from embeddings
