@@ -3,3 +3,4 @@ from . import random
 from . import STEM_AE
 from . import Regularization
 from . import benchmarks
+from . import Fitter1D

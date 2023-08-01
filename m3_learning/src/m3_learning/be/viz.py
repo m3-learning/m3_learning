@@ -205,7 +205,7 @@ class Viz:
         if self.Printer is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style='b')
 
-    def SHO_hist(self, SHO_data, filename=None):
+    def SHO_hist(self, SHO_data, filename=None, SHO_ranges=None):
         """Plots the SHO hysterisis parameters
 
         Args:
@@ -227,12 +227,22 @@ class Viz:
             SHO_data_ = SHO_data_.reshape(-1, 4)
 
             for i, (ax, label) in enumerate(zip(axs_.flat, self.SHO_labels)):
-                ax.hist(SHO_data_[:, i].flatten(), 100)
+
+                ax.hist(SHO_data_[:, i].flatten(), 100,
+                        range=SHO_ranges[i] if SHO_ranges else None)
+
+                # if SHO_ranges is not None:
+                #     ax.hist(SHO_data_[:, i].flatten(), 100, range = SHO_ranges[i])
+                # else:
+                #     ax.hist(SHO_data_[:, i].flatten(), 100)
+
                 if i == 0:
                     ax.set(ylabel="counts")
                 ax.set(xlabel=label['y_label'])
                 ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
                 ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+
+                ax.xaxis.labelpad = 10
 
                 ax.set_box_aspect(1)
 
@@ -690,7 +700,20 @@ class Viz:
                               n=1,
                               SHO_results=False,
                               index=None,
+                              compare_state=None,
                               **kwargs):
+
+        def data_converter(data):
+            # converts to a standard form which is a list
+            data = self.dataset.to_real_imag(data)
+
+            try:
+                # converts to numpy from tensor
+                data = [data.numpy() for data in data]
+            except:
+                pass
+
+            return data
 
         if type(true_state) is dict:
 
@@ -704,14 +727,16 @@ class Viz:
         # condition if x_data is passed
         else:
 
-            # converts to a standard form which is a list
-            true = self.dataset.to_real_imag(true_state)
+            # # converts to a standard form which is a list
+            # true = self.dataset.to_real_imag(true_state)
 
-            try:
-                # converts to numpy from tensor
-                true = [data.numpy() for data in true]
-            except:
-                pass
+            # try:
+            #     # converts to numpy from tensor
+            #     true = [data.numpy() for data in true]
+            # except:
+            #     pass
+
+            true = data_converter(true_state)
 
             # gets the frequency values
             if true[0].ndim == 2:
@@ -765,8 +790,17 @@ class Viz:
             prediction = [prediction[0][index], prediction[1][index]]
             # params = params[index]
 
-        # this must take the scaled data
-        index1, mse1, d1, d2 = SHO_Model.get_rankings(true, prediction, n=n)
+        if compare_state is not None:
+
+            compare_state = data_converter(compare_state)
+
+            # this must take the scaled data
+            index1, mse1, d1, d2 = SHO_Model.get_rankings(
+                compare_state, prediction, n=n)
+        else:
+            # this must take the scaled data
+            index1, mse1, d1, d2 = SHO_Model.get_rankings(
+                true, prediction, n=n)
 
         d1, labels = self.out_state(d1, out_state)
         d2, labels = self.out_state(d2, out_state)
@@ -1091,6 +1125,7 @@ class Viz:
                gaps=(.8, .33),
                size=(1.25, 1.25),
                filename=None,
+               compare_state=None,
                **kwargs):
 
         d1, d2, x1, x2, label, index1, mse1 = self.get_best_median_worst(
@@ -1099,6 +1134,7 @@ class Viz:
             model=model,
             out_state=out_state,
             n=n,
+            compare_state=compare_state,
             **kwargs)
 
         fig, ax = subfigures(1, 3, gaps=gaps, size=size)
@@ -1515,8 +1551,8 @@ class Viz:
                 pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap,
                             voltage_ax_pos[1] - (i//2) *
                             (inter_gap + cbar_h) - .33 - cbar_h,
-                            cbar_w,
-                            cbar_h]
+                            cbar_w -.02,
+                            cbar_h -.1]
 
                 # adds the plot to the figure
                 bar_ax.append(fig.add_axes(
@@ -1784,13 +1820,15 @@ class Viz:
         self.dataset.measurement_state = "on"
 
         # gets the fit results
-        on_data = self.dataset.SHO_fit_results(model=model, phase_shift=phase_shift)
+        on_data = self.dataset.SHO_fit_results(
+            model=model, phase_shift=phase_shift)
 
         # sets the state to the off state to get the data
         self.dataset.measurement_state = "off"
 
         # gets the off state of the data
-        off_data = self.dataset.SHO_fit_results(model=model, phase_shift=phase_shift)
+        off_data = self.dataset.SHO_fit_results(
+            model=model, phase_shift=phase_shift)
 
         return on_data, off_data
 
@@ -1813,9 +1851,9 @@ class Viz:
                              labels=None,
                              phase_shift=None,
                              ):
-        
+
         output_state = {"output_shape": "pixels", "scaled": False}
-        
+
         # makes sure the output state is in pixels
         self.dataset.set_attributes(**output_state)
 

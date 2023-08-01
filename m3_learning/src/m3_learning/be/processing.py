@@ -216,6 +216,7 @@ def fit_loop_function(h5_file, h5_sho_fit, loop_success = False, h5_loop_group =
             f_open_mode = 'r+'
         h5_loop_file = h5py.File(h5_loop_file_path, mode=f_open_mode)
         h5_loop_group = h5_loop_file
+    
     loop_fitter = belib.analysis.BELoopFitter(h5_sho_fit, expt_type, vs_mode, vs_cycle_frac,
                                            cores=max_cores, h5_target_group=h5_loop_group, 
                                            verbose=False)
@@ -375,6 +376,7 @@ def loop_fitting_function_torch(type, V, y):
 
         loop_eval = torch.transpose(torch.cat((f1, f2), axis=0), 1, 0)
         return loop_eval
+    
     elif(type == '13 parameters'):
         a1 = y[:, 0].type(torch.float64)
         a2 = y[:, 1].type(torch.float64)
