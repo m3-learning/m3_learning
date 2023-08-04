@@ -745,7 +745,8 @@ class Viz:
         # holds the raw state
         current_state = self.dataset.get_state
 
-        if isinstance(prediction, m3_learning.be.nn.SHO_Model):
+        # if isinstance(prediction, m3_learning.be.nn.SHO_Model):
+        if isinstance(prediction, nn.Module):
 
             fitter = "NN"
 
@@ -1551,8 +1552,8 @@ class Viz:
                 pos_inch = [voltage_ax_pos[2] - (2 - i % 2)*(cbar_gap + cbar_w) + inter_gap,
                             voltage_ax_pos[1] - (i//2) *
                             (inter_gap + cbar_h) - .33 - cbar_h,
-                            cbar_w -.02,
-                            cbar_h -.1]
+                            cbar_w - .02,
+                            cbar_h - .1]
 
                 # adds the plot to the figure
                 bar_ax.append(fig.add_axes(

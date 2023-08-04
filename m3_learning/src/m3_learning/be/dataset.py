@@ -23,6 +23,10 @@ from m3_learning.be.processing import convert_amp_phase
 from sklearn.model_selection import train_test_split
 from m3_learning.be.nn import SHO_fit_func_nn
 import m3_learning
+from m3_learning.be.USID_data import USIDataset
+from sidpy.hdf.hdf_utils import get_attr
+from pyUSID.io.hdf_utils import check_if_main, create_results_group, write_reduced_anc_dsets, link_as_main, \
+    get_dimensionality, get_sort_order, get_unit_values, reshape_to_n_dims, write_main_dataset, reshape_from_n_dims
 
 
 def static_state_decorator(func):
@@ -76,7 +80,7 @@ class BE_Dataset:
                  noise=0,
                  basegroup='/Measurement_000/Channel_000',
                  SHO_fit_func_LSQF=SHO_fit_func_nn,
-                 hysteresis_function = None, 
+                 hysteresis_function=None,
                  **kwargs):
 
         self.file = file_
@@ -354,61 +358,80 @@ class BE_Dataset:
             h5_sho_guess = sho_fitter.do_guess(override=sho_override)
             sho_fitter.set_up_fit()
             h5_sho_fit = sho_fitter.do_fit(override=sho_override)
-            parms_dict = parms_dict = sidpy.hdf_utils.get_attributes(
+            parms_dict = sidpy.hdf_utils.get_attributes(
                 h5_main.parent.parent)
 
             print(
                 f"LSQF method took {time.time() - start_time_lsqf} seconds to compute parameters")
 
-    def fit_loop_function(h5_file, h5_sho_fit, loop_success = False, h5_loop_group = None,\
-                      results_to_new_file = False, max_mem=1024*8, max_cores = None):
-        """_summary_
+            return sho_fitter
 
-        Args:
-            h5_file (_type_): _description_
-            h5_sho_fit (_type_): _description_
-            loop_success (bool, optional): _description_. Defaults to False.
-            h5_loop_group (_type_, optional): _description_. Defaults to None.
-            max_mem (_type_, optional): _description_. Defaults to 1024*8.
-            max_cores (_type_, optional): _description_. Defaults to None.
+    def measure_group(self):
+        if self.noise == 0:
+            return "Raw_Data_SHO_Fit"
+        else:
+            return f"Noisy_Data_{self.noise}"
 
-        Returns:
-            _type_: _description_
-        """    
-        
-        expt_type = sidpy.hdf.hdf_utils.get_attr(h5_file, 'data_type')
-        h5_meas_grp = h5_sho_fit.parent.parent.parent
-        vs_mode = sidpy.hdf.hdf_utils.get_attr(h5_meas_grp, 'VS_mode')
-        try:
-            vs_cycle_frac = sidpy.hdf.hdf_utils.get_attr(h5_meas_grp, 'VS_cycle_fraction')
-        except KeyError:
-            print('VS cycle fraction could not be found. Setting to default value')
-            vs_cycle_frac = 'full'
-        if results_to_new_file:
-            h5_loop_file_path = os.path.join(folder_path, 
-                                            h5_raw_file_name.replace('.h5', '_loop_fit.h5'))
-            print('\n\nLoop Fits will be written to:\n' + h5_loop_file_path + '\n\n')
-            f_open_mode = 'w'
-            if os.path.exists(h5_loop_file_path):
-                f_open_mode = 'r+'
-            h5_loop_file = h5py.File(h5_loop_file_path, mode=f_open_mode)
-            h5_loop_group = h5_loop_file
-        
-        loop_fitter = belib.analysis.BELoopFitter(h5_sho_fit, expt_type, vs_mode, vs_cycle_frac,
-                                            cores=max_cores, h5_target_group=h5_loop_group, 
-                                            verbose=False)
-        loop_fitter.set_up_guess()
-        h5_loop_guess = loop_fitter.do_guess(override=False)
-        
-        # Calling explicitly here since Fitter won't do it automatically
-        h5_guess_loop_parms = loop_fitter.extract_loop_parameters(h5_loop_guess)
-        loop_fitter.set_up_fit()
-        h5_loop_fit = loop_fitter.do_fit(override=False)
-        h5_loop_group = h5_loop_fit.parent
-        loop_success = True
+    def LSQF_Loop_Fit(self, main_dataset=None, h5_target_group=None,
+                      results_to_new_file=False,
+                      max_cores=None):
+
+        with h5py.File(self.file, "r+") as h5_file:
+
+            expt_type = sidpy.hdf.hdf_utils.get_attr(h5_file, 'data_type')
+
+            h5_meas_grp = usid.hdf_utils.find_dataset(
+                h5_file, self.measure_group())
+
+            vs_mode = sidpy.hdf.hdf_utils.get_attr(
+                h5_file["/Measurement_000"], 'VS_mode')
+
+            try:
+                vs_cycle_frac = sidpy.hdf.hdf_utils.get_attr(
+                    h5_file["/Measurement_000"], 'VS_cycle_fraction')
+
+            except KeyError:
+                print('VS cycle fraction could not be found. Setting to default value')
+                vs_cycle_frac = 'full'
+
+            # main_dataset = USIDataset(
+            #     h5_file["/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit"])
+
+            # main_dataset.__orig_pos_dim_labels = get_attr(main_dataset.h5_pos_inds, 'labels')
+            # main_dataset.__orig_spec_dim_labels = get_attr(main_dataset.h5_spec_inds, 'labels')
+
+            # # The size of each dimension
+            # main_dataset.__orig_pos_dim_sizes = np.array(get_dimensionality(np.transpose(main_dataset.h5_pos_inds)))
+            # main_dataset.__orig_spec_dim_sizes = np.array(get_dimensionality(np.atleast_2d(main_dataset.h5_spec_inds)))
+
+            if results_to_new_file:
+                h5_loop_file_path = os.path.join(folder_path,
+                                                 h5_raw_file_name.replace('.h5', '_loop_fit.h5'))
+                print('\n\nLoop Fits will be written to:\n' +
+                      h5_loop_file_path + '\n\n')
+                f_open_mode = 'w'
+                if os.path.exists(h5_loop_file_path):
+                    f_open_mode = 'r+'
+                h5_loop_file = h5py.File(h5_loop_file_path, mode=f_open_mode)
+                h5_loop_group = h5_loop_file
+
+            loop_fitter = belib.analysis.BELoopFitter(main_dataset,
+                                                      expt_type, vs_mode, vs_cycle_frac,
+                                                      h5_target_group=h5_target_group,
+                                                      cores=max_cores,
+                                                      verbose=False)
+            loop_fitter.set_up_guess()
+            h5_loop_guess = loop_fitter.do_guess(override=False)
+
+            # Calling explicitly here since Fitter won't do it automatically
+            h5_guess_loop_parms = loop_fitter.extract_loop_parameters(
+                h5_loop_guess)
+            loop_fitter.set_up_fit()
+            h5_loop_fit = loop_fitter.do_fit(override=False)
+            h5_loop_group = h5_loop_fit.parent
+
         return h5_loop_fit, h5_loop_group
-    
-    
+
     @property
     def noise(self):
         """Noise value"""
@@ -722,11 +745,11 @@ class BE_Dataset:
                         state=None,
                         model=None,
                         phase_shift=None,
-                        X_data = None):
-        
+                        X_data=None):
+
         if voltage_step is None:
             if self.measurement_state == 'all':
-                    voltage_step = self.voltage_steps
+                voltage_step = self.voltage_steps
             else:
                 voltage_step = int(self.voltage_steps/2)
 
@@ -768,7 +791,7 @@ class BE_Dataset:
                 data = scaled_param
 
         if phase_shift is not None:
-            data[:,3] = self.shift_phase(data[:, 3], phase_shift)
+            data[:, 3] = self.shift_phase(data[:, 3], phase_shift)
 
         # reshapes the data to be (index, SHO_params)
         if self.output_shape == "index":

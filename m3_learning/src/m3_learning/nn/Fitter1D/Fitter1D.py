@@ -69,50 +69,31 @@ def write_csv(write_CSV,
         append_to_csv(f"{path}/{write_CSV}", data, headers)
 
 
-
-# def SHO_fit_func_nn(params,
-#                     wvec_freq,
-#                     device='cpu'):
-#     """_summary_
-
-#     Returns:
-#         _type_: _description_
-#     """
-
-#     Amp = params[:, 0].type(torch.complex128)
-#     w_0 = params[:, 1].type(torch.complex128)
-#     Q = params[:, 2].type(torch.complex128)
-#     phi = params[:, 3].type(torch.complex128)
-#     wvec_freq = torch.tensor(wvec_freq)
-
-#     Amp = torch.unsqueeze(Amp, 1)
-#     w_0 = torch.unsqueeze(w_0, 1)
-#     phi = torch.unsqueeze(phi, 1)
-#     Q = torch.unsqueeze(Q, 1)
-
-#     wvec_freq = wvec_freq.to(device)
-
-#     numer = Amp * torch.exp((1.j) * phi) * torch.square(w_0)
-#     den_1 = torch.square(wvec_freq)
-#     den_2 = (1.j) * wvec_freq.to(device) * w_0 / Q
-#     den_3 = torch.square(w_0)
-
-#     den = den_1 - den_2 - den_3
-
-#     func = numer / den
-
-#     return func
-
-
 class Multiscale1DFitter(nn.Module):
     
-    def __init__(self, device, x_data, function, scaler=None, post_processing = None, **kwargs):
+    def __init__(self, 
+                function, # function to fit
+                 x_data, # x_data to generate
+                 input_channels, # number of input channels
+                 num_params, # number of parameters to fit
+                 scaler=None, # scaler object
+                 post_processing = None, 
+                 device = "cuda",
+                 **kwargs):
+        
+        self.input_channels = input_channels
+        self.scaler = scaler
+        self.function = function
+        self.x_data = x_data
+        self.post_processing = post_processing
+        self.device = device
+        self.num_params = num_params
 
         super().__init__()
 
         # Input block of 1d convolution
         self.hidden_x1 = nn.Sequential(
-            nn.Conv1d(in_channels=2, out_channels=8, kernel_size=7),
+            nn.Conv1d(in_channels=self.input_channels, out_channels=8, kernel_size=7),
             nn.SELU(),
             nn.Conv1d(in_channels=8, out_channels=6, kernel_size=7),
             nn.SELU(),
@@ -162,7 +143,7 @@ class Multiscale1DFitter(nn.Module):
             nn.SELU(),
             nn.Linear(16, 8),
             nn.SELU(),
-            nn.Linear(8, 4),
+            nn.Linear(8, self.num_params),
         )
 
     def forward(self, x, n=-1):
@@ -199,7 +180,7 @@ class Multiscale1DFitter(nn.Module):
         
         # Does the post processing if required
         if self.post_processing is not None:
-            out = self.post_processing(fits)
+            out = self.post_processing.compute(fits)
         else:
             out = fits
 
@@ -207,24 +188,29 @@ class Multiscale1DFitter(nn.Module):
             return out, unscaled_param
         if self.training == False:
             # this is a scaling that includes the corrections for shifts in the data
-            embeddings = (unscaled_param.cuda() - torch.tensor(self.dataset.SHO_scaler.mean_).cuda()
-                          )/torch.tensor(self.dataset.SHO_scaler.var_ ** 0.5).cuda()
+            embeddings = (unscaled_param.cuda() - torch.tensor(self.scaler.mean_).cuda()
+                          )/torch.tensor(self.scaler.var_ ** 0.5).cuda()
             return out, embeddings, unscaled_param
 
 
-def ComplexPostProcessor(self, fits):
-    # extract and return real and imaginary
-    real = torch.real(fits)
-    real_scaled = (real - torch.tensor(self.dataset.raw_data_scaler.real_scaler.mean).cuda()) / torch.tensor(
-        self.dataset.raw_data_scaler.real_scaler.std
-    ).cuda()
-    imag = torch.imag(fits)
-    imag_scaled = (imag - torch.tensor(self.dataset.raw_data_scaler.imag_scaler.mean).cuda()) / torch.tensor(
-        self.dataset.raw_data_scaler.imag_scaler.std
-    ).cuda()
-    out = torch.stack((real_scaled, imag_scaled), 2)
+class ComplexPostProcessor:
     
-    return out
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    def compute(self, fits):
+        # extract and return real and imaginary
+        real = torch.real(fits)
+        real_scaled = (real - torch.tensor(self.dataset.raw_data_scaler.real_scaler.mean).cuda()) / torch.tensor(
+            self.dataset.raw_data_scaler.real_scaler.std
+        ).cuda()
+        imag = torch.imag(fits)
+        imag_scaled = (imag - torch.tensor(self.dataset.raw_data_scaler.imag_scaler.mean).cuda()) / torch.tensor(
+            self.dataset.raw_data_scaler.imag_scaler.std
+        ).cuda()
+        out = torch.stack((real_scaled, imag_scaled), 2)
+        
+        return out
     
 
 class Model(nn.Module):
@@ -248,7 +234,7 @@ class Model(nn.Module):
                 self.device = "cpu"
                 print("Using CPU")
 
-        self.model = model(self.device)
+        self.model = model
         self.model.dataset = dataset
         self.model.training = True
         self.model_name = model_basename
