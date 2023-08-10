@@ -27,6 +27,7 @@ from m3_learning.be.USID_data import USIDataset
 from sidpy.hdf.hdf_utils import get_attr
 from pyUSID.io.hdf_utils import check_if_main, create_results_group, write_reduced_anc_dsets, link_as_main, \
     get_dimensionality, get_sort_order, get_unit_values, reshape_to_n_dims, write_main_dataset, reshape_from_n_dims
+from pyUSID.io.hdf_utils import reshape_to_n_dims, get_auxiliary_datasets
 
 
 def static_state_decorator(func):
@@ -149,7 +150,7 @@ class BE_Dataset:
                                                   'V',  # units
                                                   None,  # position dimensions
                                                   None,  # spectroscopic dimensions
-                                                  h5_pos_inds=h5_main.h5_pos_inds,
+                                                  pos_ind=h5_main.pos_ind,
                                                   h5_pos_vals=h5_main.h5_pos_vals,
                                                   h5_spec_inds=h5_main.h5_spec_inds,
                                                   h5_spec_vals=h5_main.h5_spec_vals,
@@ -292,7 +293,7 @@ class BE_Dataset:
             h5_main = usid.hdf_utils.find_dataset(h5_file, dataset)[0]
 
             # grabs some useful parameters from the dataset
-            h5_pos_inds = h5_main.h5_pos_inds
+            pos_ind = h5_main.pos_ind
             pos_dims = h5_main.pos_dim_sizes
             pos_labels = h5_main.pos_dim_labels
             print(pos_labels, pos_dims)
@@ -372,8 +373,7 @@ class BE_Dataset:
         else:
             return f"Noisy_Data_{self.noise}"
 
-    def LSQF_Loop_Fit(self, main_dataset=None, h5_target_group=None,
-                      results_to_new_file=False,
+    def LSQF_Loop_Fit(self, main_dataset='/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit', h5_target_group=None,
                       max_cores=None):
 
         with h5py.File(self.file, "r+") as h5_file:
@@ -394,26 +394,13 @@ class BE_Dataset:
                 print('VS cycle fraction could not be found. Setting to default value')
                 vs_cycle_frac = 'full'
 
-            # main_dataset = USIDataset(
-            #     h5_file["/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit"])
-
-            # main_dataset.__orig_pos_dim_labels = get_attr(main_dataset.h5_pos_inds, 'labels')
-            # main_dataset.__orig_spec_dim_labels = get_attr(main_dataset.h5_spec_inds, 'labels')
-
-            # # The size of each dimension
-            # main_dataset.__orig_pos_dim_sizes = np.array(get_dimensionality(np.transpose(main_dataset.h5_pos_inds)))
-            # main_dataset.__orig_spec_dim_sizes = np.array(get_dimensionality(np.atleast_2d(main_dataset.h5_spec_inds)))
-
-            if results_to_new_file:
-                h5_loop_file_path = os.path.join(folder_path,
-                                                 h5_raw_file_name.replace('.h5', '_loop_fit.h5'))
-                print('\n\nLoop Fits will be written to:\n' +
-                      h5_loop_file_path + '\n\n')
-                f_open_mode = 'w'
-                if os.path.exists(h5_loop_file_path):
-                    f_open_mode = 'r+'
-                h5_loop_file = h5py.File(h5_loop_file_path, mode=f_open_mode)
-                h5_loop_group = h5_loop_file
+            if isinstance(main_dataset, str):
+                main_dataset = USIDataset(h5_file[main_dataset])
+            elif isinstance(main_dataset, USIDataset):
+                pass
+            else:
+                raise TypeError(
+                    'main_dataset should be a string or USIDataset object')
 
             loop_fitter = belib.analysis.BELoopFitter(main_dataset,
                                                       expt_type, vs_mode, vs_cycle_frac,
@@ -575,6 +562,10 @@ class BE_Dataset:
                     '/')[-1]] = dataset[:].reshape(self.num_pix, self.voltage_steps, self.num_bins)
 
                 self.raw_datasets.extend([dataset.name.split('/')[-1]])
+
+    def LSQF_hysteresis_params(self, dataset=None):
+        with h5py.File(self.file, "r+") as h5_f:
+            return h5_f[f"/{self.dataset}_SHO_Fit/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit_Loop_Parameters"][:]
 
     @static_state_decorator
     def SHO_Scaler(self,
@@ -1205,3 +1196,68 @@ class BE_Dataset:
             imag = self.imag_scaler.inverse_transform(imag)
 
             return real + 1j*imag
+
+    def get_hysteresis(self, h5_path="Measurement_000/Channel_000/Raw_Data-SHO_Fit_000/Guess-Loop_Fit_000", plotting_values=False):
+
+        with h5py.File(self.file, "r+") as h5_f:
+
+            h5_projected_loops = h5_f[h5_path + '/Projected_Loops']
+
+            # Prepare some variables for plotting loops fits and guesses
+            # Plot the Loop Guess and Fit Results
+            proj_nd, _ = reshape_to_n_dims(h5_projected_loops)
+
+            spec_ind = get_auxiliary_datasets(h5_projected_loops,
+                                              aux_dset_name='Spectroscopic_Indices')[-1]
+            spec_values = get_auxiliary_datasets(h5_projected_loops,
+                                                 aux_dset_name='Spectroscopic_Values')[-1]
+            pos_ind = get_auxiliary_datasets(h5_projected_loops,
+                                             aux_dset_name='Position_Indices')[-1]
+
+            pos_nd, _ = reshape_to_n_dims(pos_ind, h5_pos=pos_ind)
+            pos_dims = list(pos_nd.shape[:pos_ind.shape[1]])
+
+            # reshape the vdc_vec into DC_step by Loop
+            spec_nd, _ = reshape_to_n_dims(spec_values, h5_spec=spec_ind)
+            loop_spec_dims = np.array(spec_nd.shape[1:])
+            loop_spec_labels = get_attr(spec_values, 'labels')
+
+            spec_step_dim_ind = np.where(loop_spec_labels == 'DC_Offset')[0][0]
+
+            # Also reshape the projected loops to Positions-DC_Step-Loop
+            final_loop_shape = pos_dims + \
+                [loop_spec_dims[spec_step_dim_ind]] + [-1]
+            proj_nd2 = np.moveaxis(
+                proj_nd, spec_step_dim_ind + len(pos_dims), len(pos_dims))
+            proj_nd_3 = np.reshape(proj_nd2, final_loop_shape)
+
+            # Get the bias vector:
+            spec_nd2 = np.moveaxis(
+                spec_nd[spec_step_dim_ind], spec_step_dim_ind, 0)
+            bias_vec = np.reshape(spec_nd2, final_loop_shape[len(pos_dims):])
+
+            if plotting_values:
+                proj_nd_3, bias_vec = self.roll_hysteresis(proj_nd_3, bias_vec)
+
+            proj_nd_shifted_transposed = np.transpose(proj_nd_3, (1, 0, 2, 3))
+
+        return proj_nd_shifted_transposed, bias_vec
+
+    def roll_hysteresis(self, hysteresis, bias_vector, shift=4):
+
+        # Shift the bias vector and the loops by a quarter cycle
+        shift_ind = int(-1 * bias_vector.shape[0] / 4)
+        proj_nd_shifted = np.roll(hysteresis, shift_ind, axis=2)
+        bias_vector = np.roll(bias_vector, shift_ind, axis=0)
+
+        return proj_nd_shifted, bias_vector
+
+    @property
+    def BE_superposition_state(self):
+        with h5py.File(self.file, "r+") as h5_f:
+            BE_superposition_state_ = h5_f["Measurement_000"].attrs['VS_measure_in_field_loops']
+        return BE_superposition_state_
+
+#     VS_measure_in_field_loops : in and out-of-field
+# VS_mode : DC modulation mode
+# VS_number_of_cycles : 2

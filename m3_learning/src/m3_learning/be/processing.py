@@ -235,9 +235,9 @@ def loop_lsqf(h5_f):
     step_chan='DC_Offset'
     cmap=None
 
-    h5_projected_loops = h5_f['Measurement_000']['Channel_000']['Raw_Data-SHO_Fit_000']['Guess-Loop_Fit_000']['Projected_Loops']
-    h5_loop_guess = h5_f['Measurement_000']['Channel_000']['Raw_Data-SHO_Fit_000']['Guess-Loop_Fit_000']['Guess']
-    h5_loop_fit = h5_f['Measurement_000']['Channel_000']['Raw_Data-SHO_Fit_000']['Guess-Loop_Fit_000']['Fit']
+    h5_projected_loops = h5_f["Raw_Data_SHO_Fit"]['Raw_Data-SHO_Fit_000']["Fit-Loop_Fit_000"]['Projected_Loops']
+    h5_loop_guess = h5_f["Raw_Data_SHO_Fit"]['Raw_Data-SHO_Fit_000']["Fit-Loop_Fit_000"]['Guess']
+    h5_loop_fit = h5_f["Raw_Data_SHO_Fit"]['Raw_Data-SHO_Fit_000']["Fit-Loop_Fit_000"]['Fit']
 
     # Prepare some variables for plotting loops fits and guesses
     # Plot the Loop Guess and Fit Results
