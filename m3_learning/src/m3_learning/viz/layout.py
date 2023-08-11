@@ -219,7 +219,7 @@ def embedding_maps(data, image, colorbar_shown=True, c_lim=None, mod=None, title
     fig.tight_layout()
 
 
-def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_format="%.1e", **kwargs):
+def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_format="%.1e", cmap_ = 'viridis', **kwargs):
     """pretty way to plot image maps with standard formats
 
     Args:
@@ -235,12 +235,12 @@ def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_for
                 int), np.sqrt(data.shape[0]).astype(int)
         )
 
-    cmap = plt.get_cmap("viridis")
+    cmap = plt.get_cmap(cmap_)
 
     if clim is None:
         im = ax.imshow(data, cmap=cmap)
     else:
-        im = ax.imshow(data, clim=clim, cmap=cmap)
+        im = ax.imshow(data, vmin=clim[0], vmax=clim[1], clim=clim, cmap=cmap)
 
     ax.set_yticklabels("")
     ax.set_xticklabels("")
@@ -368,8 +368,8 @@ def scalebar(axes, image_size, scale_size, units="nm", loc="br"):
 
     # gets the size of the image
     x_lim, y_lim = axes.get_xlim(), axes.get_ylim()
-    x_size, y_size = np.abs(np.int(np.floor(x_lim[1] - x_lim[0]))), np.abs(
-        np.int(np.floor(y_lim[1] - y_lim[0]))
+    x_size, y_size = np.abs(int(np.floor(x_lim[1] - x_lim[0]))), np.abs(
+        int(np.floor(y_lim[1] - y_lim[0]))
     )
     # computes the fraction of the image for the scalebar
     fract = scale_size / image_size
