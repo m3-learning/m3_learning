@@ -3,6 +3,10 @@ import os
 import numpy as np
 import random
 import re
+import fnmatch
+
+def in_list(list_, pattern):
+    return len(fnmatch.filter(list_, pattern)) != 0
 
 def rand_tensor(min=0, max=1, size=(1)):
     """ Function that generates random tensor between a range of an arbitrary size

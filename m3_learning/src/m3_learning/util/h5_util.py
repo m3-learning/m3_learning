@@ -16,6 +16,15 @@ def print_tree(parent):
     if isinstance(parent, h5py.Group):
         for child in parent:
             print_tree(parent[child])
+            
+def get_tree(parent):
+    tree = []
+    tree.append(parent.name)
+    if isinstance(parent, h5py.Group):
+        for child in parent:
+            tree.extend(get_tree(parent[child]))
+            
+    return tree
 
 
 def make_group(base, group):

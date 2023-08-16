@@ -21,8 +21,8 @@ def clean_interpolate(data, fit_type='spline'):
     data[~np.isfinite(data)] = np.nan
     # function to interpolate missing points
     data = interpolate_missing_points(data, fit_type)
-    # reshapes data to a consistent size
-    data = data.reshape(-1, data.shape[2])
+    # # reshapes data to a consistent size
+    # data = data.reshape(-1, data.shape[2])
     return data
 
 
