@@ -1344,13 +1344,20 @@ class BE_Dataset:
 
             if plotting_values:
                 proj_nd_3, bias_vec = self.roll_hysteresis(proj_nd_3, bias_vec)
+                
+            hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
+            
+            if self.cleaned:
+                hysteresis_data = clean_interpolate(hysteresis_data)
+                
+            if self.scaled:
+                #TODO Add scale
 
             if self.output_shape == "index":
-                hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
                 hysteresis_data = proj_nd_3.reshape(
                     self.num_cycles*self.num_pix, self.voltage_steps//self.num_cycles)
             elif self.output_shape == "pixels":
-                hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
+                pass
 
         # output shape (x,y, cycle, voltage_steps)
         return hysteresis_data, bias_vec
