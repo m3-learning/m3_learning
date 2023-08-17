@@ -84,6 +84,7 @@ class BE_Dataset:
                  basegroup='/Measurement_000/Channel_000',
                  SHO_fit_func_LSQF=SHO_fit_func_nn,
                  hysteresis_function=None,
+                 loop_interpolated=False,
                  **kwargs):
 
         self.file = file_
@@ -95,6 +96,7 @@ class BE_Dataset:
         self.measurement_state = measurement_state
         self.basegroup = basegroup
         self.hysteresis_function = hysteresis_function
+        self.loop_interplotated = loop_interpolated
         self.tree = self.get_tree()
 
         # if None assigns it to the length of the original data
@@ -175,25 +177,33 @@ class BE_Dataset:
             self.dataset = f"Noisy_Data_{noise}"
 
     def set_preprocessing(self):
-        
+
         if in_list(self.tree, "*SHO_Fit*"):
             self.SHO_preprocessing()
         else:
             Warning("No SHO fit found")
-        
+
         if in_list(self.tree, "*Fit-Loop_Fit*"):
             self.loop_fit_preprocessing()
-            
+
     def loop_fit_preprocessing(self):
-        pass
+
+        hysteresis, bias = self.get_hysteresis(
+            plotting_values=True, output_shape="index")
         
+        cleaned_hysteresis = clean_interpolate(hysteresis)
+        self.hystersis_scaler = global_scaler()
+        self.hystersis_scaler.fit_transform(cleaned_hysteresis)
+        
+        
+
         # real_loops = clean_interpolate(proj_nd_shifted_transposed[:, :, :, 3].reshape(num_pix,-1)).astype(np.float64)
         # real_loops_scaler = global_scaler()
         # real_scaled_loops = real_loops_scaler.fit_transform(real_loops).astype(np.float64)
 
         # real_parms_scaler = StandardScaler()
         # real_parms_scaled = real_parms_scaler.fit_transform(params)
-        
+
     def SHO_preprocessing(self):
         # extract the raw data and reshapes is
         self.set_raw_data()
@@ -222,9 +232,9 @@ class BE_Dataset:
                           "NN_phase_shift": None, }
 
         self.set_attributes(**default_state_)
-        
+
     def get_tree(self):
-        
+
         with h5py.File(self.file, "r+") as h5_f:
             return get_tree(h5_f)
 
@@ -446,13 +456,13 @@ class BE_Dataset:
             h5_loop_group = h5_loop_fit.parent
 
         return h5_loop_fit, h5_loop_group
-    
+
     @property
     def num_cols(self):
         """Number of columns in the data"""
         with h5py.File(self.file, "r+") as h5_f:
             return h5_f['Measurement_000'].attrs["grid_num_cols"]
-        
+
     @property
     def num_rows(self):
         """Number of rows in the data"""
@@ -503,10 +513,10 @@ class BE_Dataset:
     def num_cycles(self):
         with h5py.File(self.file, "r+") as h5_f:
             cycles = h5_f["Measurement_000"].attrs["VS_number_of_cycles"]
-            
+
             if h5_f["Measurement_000"].attrs["VS_measure_in_field_loops"] == 'in and out-of-field':
                 cycles *= 2
-                
+
             return cycles
 
     @property
@@ -608,10 +618,29 @@ class BE_Dataset:
 
                 self.raw_datasets.extend([dataset.name.split('/')[-1]])
 
-    def LSQF_hysteresis_params(self, dataset=None):
+    @static_state_decorator
+    def LSQF_hysteresis_params(self, dataset=None, output_shape=None, scaled = None):
+        
+        if output_shape is not None:
+            self.output_shape = output_shape
+            
+        if scaled is not None:
+            self.scaled = scaled
+        
         with h5py.File(self.file, "r+") as h5_f:
-            hysteresis = h5_f[f"/{self.dataset}_SHO_Fit/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
-            return hysteresis.reshape(self.num_rows, self.num_cols, self.num_cycles)
+            data = h5_f[f"/{self.dataset}_SHO_Fit/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
+            data = data.reshape(self.num_rows, self.num_cols, self.num_cycles)
+            data = np.array([data['a_0'], data['a_1'], data['a_2'], data['a_3'], data['a_4'],
+                            data['b_0'], data['b_1'], data['b_2'], data['b_3']]).transpose((1, 2, 3, 0))
+            
+            if self.scaled:
+                #TODO add the scaling here
+                pass
+            
+            if self.output_shape == "index":
+                data = data.reshape(self.num_pix, self.num_cycles, data.shape[-1])
+                
+            return data
 
     @static_state_decorator
     def SHO_Scaler(self,
@@ -921,7 +950,6 @@ class BE_Dataset:
         if noise is not None:
             self.noise = noise
 
-
         # sets the state if it is provided
         if state is not None:
             self.set_attributes(**state)
@@ -1120,6 +1148,7 @@ class BE_Dataset:
     LSQF Phase Shift = {self.LSQF_phase_shift}
     NN Phase Shift = {self.NN_phase_shift}
     Noise Level = {self.noise}
+    loop interpolated = {self.loop_interplotated}
                   ''')
 
     @property
@@ -1134,7 +1163,8 @@ class BE_Dataset:
                 'resampled_bins': self.resampled_bins,
                 'LSQF_phase_shift': self.LSQF_phase_shift,
                 'NN_phase_shift': self.NN_phase_shift,
-                "noise": self.noise}
+                "noise": self.noise,
+                "loop_interploated" : self.loop_interplotated}
 
     @static_state_decorator
     def NN_data(self, resampled=True, scaled=True):
@@ -1243,7 +1273,7 @@ class BE_Dataset:
             imag = self.imag_scaler.inverse_transform(imag)
 
             return real + 1j*imag
-        
+
     def get_loop_path(self):
         if self.noise == 0 or self.noise is None:
             prefix = 'Raw_Data'
@@ -1251,25 +1281,30 @@ class BE_Dataset:
         else:
             prefix = f"Noisy_Data_{self.noise}"
             return f"/Noisy_Data_{self.noise}_SHO_Fit/Noisy_Data_{self.noise}-SHO_Fit_000/Guess-Loop_Fit_000"
-        
 
     @static_state_decorator
-    def get_hysteresis(self, 
-                       noise = None, 
+    def get_hysteresis(self,
+                       noise=None,
                        plotting_values=False,
                        output_shape=None,
+                       scaled = None,
+                       loop_interplotated = None,
                        ):
 
         with h5py.File(self.file, "r+") as h5_f:
-            
+
             if noise is None:
                 self.noise = noise
-            
-                        
+
             if output_shape is not None:
-                self.output_shape = output_shape    
+                self.output_shape = output_shape
                 
+            if scaled is not None:
+                self.scaled = scaled
                 
+            if loop_interplotated is not None:
+                self.loop_interplotated = loop_interplotated
+
             h5_path = self.get_loop_path()
 
             h5_projected_loops = h5_f[h5_path + '/Projected_Loops']
@@ -1311,12 +1346,14 @@ class BE_Dataset:
                 proj_nd_3, bias_vec = self.roll_hysteresis(proj_nd_3, bias_vec)
 
             if self.output_shape == "index":
-                hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2)) 
-                hysteresis_data = proj_nd_3.reshape(self.num_cycles*self.num_pix,self.voltage_steps//self.num_cycles)
+                hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
+                hysteresis_data = proj_nd_3.reshape(
+                    self.num_cycles*self.num_pix, self.voltage_steps//self.num_cycles)
             elif self.output_shape == "pixels":
-                hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))  
+                hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
 
-        return hysteresis_data, bias_vec # output shape (x,y, cycle, voltage_steps)
+        # output shape (x,y, cycle, voltage_steps)
+        return hysteresis_data, bias_vec
 
     def roll_hysteresis(self, hysteresis, bias_vector, shift=4):
 
@@ -1332,19 +1369,21 @@ class BE_Dataset:
         with h5py.File(self.file, "r+") as h5_f:
             BE_superposition_state_ = h5_f["Measurement_000"].attrs['VS_measure_in_field_loops']
         return BE_superposition_state_
-    
-    def loop_shaper(self, data, shape = "pixels"):
-        
+
+    def loop_shaper(self, data, shape="pixels"):
+
         if shape == "pixels":
             try:
                 return data.reshape(self.rows, self.cols, self.voltage_steps, self.num_cycles)
             except:
-                raise ValueError("The data shape is not compatible with the number of rows and columns")
+                raise ValueError(
+                    "The data shape is not compatible with the number of rows and columns")
         if shape == "index":
             try:
                 return data.reshape(self.num_pix_1d, self.voltage_steps, self.num_cycles)
             except:
-                raise ValueError("The data shape is not compatible with the number of rows and columns")
+                raise ValueError(
+                    "The data shape is not compatible with the number of rows and columns")
 
 #     VS_measure_in_field_loops : in and out-of-field
 # VS_mode : DC modulation mode
