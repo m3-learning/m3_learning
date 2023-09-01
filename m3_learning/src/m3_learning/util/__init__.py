@@ -4,3 +4,4 @@ from . import rand_util
 from . import h5_util
 from . import nn
 from . import code
+from . import download
