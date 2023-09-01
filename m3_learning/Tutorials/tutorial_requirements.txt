@@ -28,8 +28,10 @@ pyNSID
 
 pycroscopy
 
-sidpy
+sidpy==0.11.1
 
 torchsummary
 
 wget
+
+xlrd
