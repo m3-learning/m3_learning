@@ -81,6 +81,7 @@ class BE_Dataset:
                  NN_phase_shift=None,
                  verbose=False,
                  noise=0,
+                 cleaned = False,
                  basegroup='/Measurement_000/Channel_000',
                  SHO_fit_func_LSQF=SHO_fit_func_nn,
                  hysteresis_function=None,
@@ -96,8 +97,9 @@ class BE_Dataset:
         self.measurement_state = measurement_state
         self.basegroup = basegroup
         self.hysteresis_function = hysteresis_function
-        self.loop_interplotated = loop_interpolated
+        self.loop_interpolated = loop_interpolated
         self.tree = self.get_tree()
+        self.cleaned = cleaned
 
         # if None assigns it to the length of the original data
         if resampled_bins is None:
@@ -195,14 +197,6 @@ class BE_Dataset:
         self.hystersis_scaler = global_scaler()
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
         
-        
-
-        # real_loops = clean_interpolate(proj_nd_shifted_transposed[:, :, :, 3].reshape(num_pix,-1)).astype(np.float64)
-        # real_loops_scaler = global_scaler()
-        # real_scaled_loops = real_loops_scaler.fit_transform(real_loops).astype(np.float64)
-
-        # real_parms_scaler = StandardScaler()
-        # real_parms_scaled = real_parms_scaler.fit_transform(params)
 
     def SHO_preprocessing(self):
         # extract the raw data and reshapes is
@@ -1148,7 +1142,7 @@ class BE_Dataset:
     LSQF Phase Shift = {self.LSQF_phase_shift}
     NN Phase Shift = {self.NN_phase_shift}
     Noise Level = {self.noise}
-    loop interpolated = {self.loop_interplotated}
+    loop interpolated = {self.loop_interpolated}
                   ''')
 
     @property
@@ -1164,7 +1158,7 @@ class BE_Dataset:
                 'LSQF_phase_shift': self.LSQF_phase_shift,
                 'NN_phase_shift': self.NN_phase_shift,
                 "noise": self.noise,
-                "loop_interploated" : self.loop_interplotated}
+                "loop_interpolated" : self.loop_interpolated}
 
     @static_state_decorator
     def NN_data(self, resampled=True, scaled=True):
@@ -1288,7 +1282,7 @@ class BE_Dataset:
                        plotting_values=False,
                        output_shape=None,
                        scaled = None,
-                       loop_interplotated = None,
+                       loop_interpolated = None,
                        ):
 
         with h5py.File(self.file, "r+") as h5_f:
@@ -1302,8 +1296,8 @@ class BE_Dataset:
             if scaled is not None:
                 self.scaled = scaled
                 
-            if loop_interplotated is not None:
-                self.loop_interplotated = loop_interplotated
+            if loop_interpolated is not None:
+                self.loop_interpolated = loop_interpolated
 
             h5_path = self.get_loop_path()
 
@@ -1347,11 +1341,11 @@ class BE_Dataset:
                 
             hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
             
-            if self.cleaned:
+            if self.loop_interpolated:
                 hysteresis_data = clean_interpolate(hysteresis_data)
                 
             if self.scaled:
-                #TODO Add scale
+                hysteresis_data =  self.hystersis_scaler.transform(hysteresis_data)
 
             if self.output_shape == "index":
                 hysteresis_data = proj_nd_3.reshape(
