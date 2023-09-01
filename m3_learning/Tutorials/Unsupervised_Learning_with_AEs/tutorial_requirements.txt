@@ -16,3 +16,18 @@ opencv-python
 
 hyperspy
 
+ipywidgets
+
+msgpack
+
+zict
+
+sortedcontainers
+
+pyNSID
+
+pycroscopy
+
+sidpy
+
+torchsummary
