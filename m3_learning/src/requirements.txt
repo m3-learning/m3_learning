@@ -1,9 +1,9 @@
-autopep8==2.0.0
-BGlib==0.0.3
+autopep8
+BGlib
 gdown==4.5.3
 h5py==3.7.0
 imageio==2.22.3
-jupyter==1.0.0
+jupyter
 matplotlib==3.6.2
 numpy
 Pillow
