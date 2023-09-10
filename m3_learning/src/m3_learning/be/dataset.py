@@ -39,15 +39,32 @@ def static_state_decorator(func):
         func (method): any method
     """
     def wrapper(*args, **kwargs):
+        # saves the current state
         current_state = args[0].get_state
+        
+        # runs the function
         out = func(*args, **kwargs)
+        
+        # resets the state
         args[0].set_attributes(**current_state)
+        # returns the output
         return out
+    
+    # returns the wrapper
     return wrapper
 
 
 def resample(y, num_points, axis=0):
-   # Get the shape of the input array
+    """
+    resample function to resample the data
+
+    Args:
+        y (np.array): data to resample
+        num_points (int): number of points to resample
+        axis (int, optional): axis to apply resampling. Defaults to 0.
+    """ 
+    
+    # Get the shape of the input array
     shape = y.shape
 
     # Swap the selected axis with the first axis
@@ -81,7 +98,7 @@ class BE_Dataset:
                  NN_phase_shift=None,
                  verbose=False,
                  noise=0,
-                 cleaned = False,
+                 cleaned=False,
                  basegroup='/Measurement_000/Channel_000',
                  SHO_fit_func_LSQF=SHO_fit_func_nn,
                  hysteresis_function=None,
@@ -119,6 +136,7 @@ class BE_Dataset:
 
         # make only run if SHO exist
         self.set_preprocessing()
+        self.set_raw_data()
 
     def generate_noisy_data_records(self, noise_levels,
                                     basegroup='/Measurement_000/Channel_000',
@@ -192,11 +210,10 @@ class BE_Dataset:
 
         hysteresis, bias = self.get_hysteresis(
             plotting_values=True, output_shape="index")
-        
+
         cleaned_hysteresis = clean_interpolate(hysteresis)
         self.hystersis_scaler = global_scaler()
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
-        
 
     def SHO_preprocessing(self):
         # extract the raw data and reshapes is
@@ -298,9 +315,6 @@ class BE_Dataset:
 
         # something strange with the fitter
         with h5py.File(self.file, "r+") as h5_file:
-            # TODO fix delete
-            # if force:
-            #     self.delete(None)
 
             # the start time of the fit
             start_time_lsqf = time.time()
@@ -325,7 +339,7 @@ class BE_Dataset:
             h5_main = usid.hdf_utils.find_dataset(h5_file, dataset)[0]
 
             # grabs some useful parameters from the dataset
-            pos_ind = h5_main.pos_ind
+            pos_ind = h5_main.h5_pos_inds
             pos_dims = h5_main.pos_dim_sizes
             pos_labels = h5_main.pos_dim_labels
             print(pos_labels, pos_dims)
@@ -613,27 +627,28 @@ class BE_Dataset:
                 self.raw_datasets.extend([dataset.name.split('/')[-1]])
 
     @static_state_decorator
-    def LSQF_hysteresis_params(self, dataset=None, output_shape=None, scaled = None):
-        
+    def LSQF_hysteresis_params(self, dataset=None, output_shape=None, scaled=None):
+
         if output_shape is not None:
             self.output_shape = output_shape
-            
+
         if scaled is not None:
             self.scaled = scaled
-        
+
         with h5py.File(self.file, "r+") as h5_f:
             data = h5_f[f"/{self.dataset}_SHO_Fit/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
             data = data.reshape(self.num_rows, self.num_cols, self.num_cycles)
             data = np.array([data['a_0'], data['a_1'], data['a_2'], data['a_3'], data['a_4'],
                             data['b_0'], data['b_1'], data['b_2'], data['b_3']]).transpose((1, 2, 3, 0))
-            
+
             if self.scaled:
-                #TODO add the scaling here
+                # TODO add the scaling here
                 pass
-            
+
             if self.output_shape == "index":
-                data = data.reshape(self.num_pix, self.num_cycles, data.shape[-1])
-                
+                data = data.reshape(
+                    self.num_pix, self.num_cycles, data.shape[-1])
+
             return data
 
     @static_state_decorator
@@ -1158,7 +1173,7 @@ class BE_Dataset:
                 'LSQF_phase_shift': self.LSQF_phase_shift,
                 'NN_phase_shift': self.NN_phase_shift,
                 "noise": self.noise,
-                "loop_interpolated" : self.loop_interpolated}
+                "loop_interpolated": self.loop_interpolated}
 
     @static_state_decorator
     def NN_data(self, resampled=True, scaled=True):
@@ -1281,8 +1296,8 @@ class BE_Dataset:
                        noise=None,
                        plotting_values=False,
                        output_shape=None,
-                       scaled = None,
-                       loop_interpolated = None,
+                       scaled=None,
+                       loop_interpolated=None,
                        ):
 
         with h5py.File(self.file, "r+") as h5_f:
@@ -1292,10 +1307,10 @@ class BE_Dataset:
 
             if output_shape is not None:
                 self.output_shape = output_shape
-                
+
             if scaled is not None:
                 self.scaled = scaled
-                
+
             if loop_interpolated is not None:
                 self.loop_interpolated = loop_interpolated
 
@@ -1338,14 +1353,15 @@ class BE_Dataset:
 
             if plotting_values:
                 proj_nd_3, bias_vec = self.roll_hysteresis(proj_nd_3, bias_vec)
-                
+
             hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
-            
+
             if self.loop_interpolated:
                 hysteresis_data = clean_interpolate(hysteresis_data)
-                
+
             if self.scaled:
-                hysteresis_data =  self.hystersis_scaler.transform(hysteresis_data)
+                hysteresis_data = self.hystersis_scaler.transform(
+                    hysteresis_data)
 
             if self.output_shape == "index":
                 hysteresis_data = proj_nd_3.reshape(

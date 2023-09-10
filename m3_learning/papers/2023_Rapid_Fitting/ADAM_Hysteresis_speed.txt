@@ -1,2 +1,0 @@
-MANUAL SEED: 1
-Traning with batch size = 64
