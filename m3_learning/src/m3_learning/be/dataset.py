@@ -225,11 +225,8 @@ class BE_Dataset:
         # computes the scalar on the raw data
         self.raw_data_scaler = self.Raw_Data_Scaler(self.raw_data())
 
-        try:
-            self.set_SHO_LSQF()
-            self.SHO_Scaler()
-        except:
-            pass
+        self.set_SHO_LSQF()
+        self.SHO_Scaler()
 
     def default_state(self):
         default_state_ = {'raw_format': "complex",
@@ -593,7 +590,7 @@ class BE_Dataset:
 
         Returns:
             np.array: BE data as a complex number
-        """        
+        """
         with h5py.File(self.file, "r+") as h5_f:
             if self.dataset == 'Raw_Data':
                 return h5_f["Measurement_000"]["Channel_000"]["Raw_Data"][:]
@@ -626,8 +623,8 @@ class BE_Dataset:
     def set_raw_data(self):
         """
         set_raw_data Function that parses the datafile and extracts the raw data names
-        """        
-        
+        """
+
         with h5py.File(self.file, "r+") as h5_f:
             # initializes the dictionary
             self.raw_data_reshaped = {}
@@ -660,7 +657,7 @@ class BE_Dataset:
 
         Returns:
             np.array: hysteresis loop parameters from LSQF
-        """        
+        """
 
         if output_shape is not None:
             self.output_shape = output_shape
@@ -687,7 +684,6 @@ class BE_Dataset:
 
     @static_state_decorator
     def SHO_Scaler(self,
-                   save_loc='SHO_LSQF_scaled',
                    noise=0):
 
         # set the noise and the dataset
@@ -847,23 +843,22 @@ class BE_Dataset:
                 voltage_step = np.arange(0, self.voltage_steps)[
                     ::2][voltage_step]
         return voltage_step
-    
+
     def state_num_voltage_steps(self):
-        
+
         if self.measurement_state == 'all':
             voltage_step = self.voltage_steps
         else:
             voltage_step = int(self.voltage_steps/2)
-        
+
         return voltage_step
-        
 
     def SHO_fit_results(self,
                         state=None,
                         model=None,
                         phase_shift=None,
                         X_data=None):
-        
+
         # Note removed pixel and voltage step indexing here
 
         # if a neural network model is not provided use the LSQF
