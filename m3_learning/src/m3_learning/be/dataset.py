@@ -41,15 +41,15 @@ def static_state_decorator(func):
     def wrapper(*args, **kwargs):
         # saves the current state
         current_state = args[0].get_state
-        
+
         # runs the function
         out = func(*args, **kwargs)
-        
+
         # resets the state
         args[0].set_attributes(**current_state)
         # returns the output
         return out
-    
+
     # returns the wrapper
     return wrapper
 
@@ -62,8 +62,8 @@ def resample(y, num_points, axis=0):
         y (np.array): data to resample
         num_points (int): number of points to resample
         axis (int, optional): axis to apply resampling. Defaults to 0.
-    """ 
-    
+    """
+
     # Get the shape of the input array
     shape = y.shape
 
@@ -813,6 +813,17 @@ class BE_Dataset:
                 voltage_step = np.arange(0, self.voltage_steps)[
                     ::2][voltage_step]
         return voltage_step
+    
+    def state_num_voltage_steps(self, voltage_step=None):
+        
+        if voltage_step is None:
+            if self.measurement_state == 'all':
+                voltage_step = self.voltage_steps
+            else:
+                voltage_step = int(self.voltage_steps/2)
+        
+        return voltage_step
+        
 
     def SHO_fit_results(self,
                         pixel=None,
@@ -822,11 +833,8 @@ class BE_Dataset:
                         phase_shift=None,
                         X_data=None):
 
-        if voltage_step is None:
-            if self.measurement_state == 'all':
-                voltage_step = self.voltage_steps
-            else:
-                voltage_step = int(self.voltage_steps/2)
+        voltage_step = self.state_num_voltage_steps(voltage_step)
+        
 
         # if a neural network model is not provided use the LSQF
         if model is None:
