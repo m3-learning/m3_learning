@@ -135,6 +135,10 @@ class BE_Dataset:
     """
 
     def __post_init__(self):
+        """
+        __post_init__ post initialization function that sets the attributes of the class
+        """        
+        
         self.tree = self.get_tree()
         
         # Initialize resampled_bins if it's None
@@ -153,7 +157,17 @@ class BE_Dataset:
                                     basegroup='/Measurement_000/Channel_000',
                                     verbose=False,
                                     noise_STD=None):
+        """
+        generate_noisy_data_records Function to generate noisy data records
 
+        Args:
+            noise_levels (list): list of noise levels to generate
+            basegroup (str, optional): basegroup where the noisy data is stored. Defaults to '/Measurement_000/Channel_000'.
+            verbose (bool, optional): sets the verbosity. Defaults to False.
+            noise_STD (_type_, optional): sets the noise level to add, if None computes. Defaults to None.
+        """                
+
+        # computes the std to define the noise level if value is not given
         if noise_STD is None:
             noise_STD = np.std(self.get_original_data)
 
@@ -162,22 +176,31 @@ class BE_Dataset:
 
         with h5py.File(self.file, "r+") as h5_f:
 
+            # loops around hte noise levels
             for noise_level in noise_levels:
 
                 if verbose:
                     print(f"Adding noise level {noise_level}")
 
+                # computes the noise * noise level
                 noise_level_ = noise_STD * noise_level
 
+                # generates random noise for the real and imaginary parts
                 noise_real = np.random.uniform(-1*noise_level_,
                                                noise_level_, (3600, 63360))
                 noise_imag = np.random.uniform(-1*noise_level_,
                                                noise_level_, (3600, 63360))
+                
+                # creates the complex noise
                 noise = noise_real+noise_imag*1.0j
+                
+                # adds the noise to the original data
                 data = self.get_original_data + noise
 
+                # finds the main dataset
                 h5_main = usid.hdf_utils.find_dataset(h5_f, "Raw_Data")[0]
 
+                # writes the main dataset to the basegroup
                 usid.hdf_utils.write_main_dataset(h5_f[basegroup],  # parent group
                                                   data,  # data to be written
                                                   # Name of the main dataset
@@ -208,25 +231,45 @@ class BE_Dataset:
             self.dataset = f"Noisy_Data_{noise}"
 
     def set_preprocessing(self):
+        """
+        set_preprocessing sets the preprocessing state for the data
+        """        
 
+        # preprocesses the SHO fits
         if in_list(self.tree, "*SHO_Fit*"):
             self.SHO_preprocessing()
         else:
             Warning("No SHO fit found")
 
+        # preprocesses the loop fits
         if in_list(self.tree, "*Fit-Loop_Fit*"):
             self.loop_fit_preprocessing()
+        else:
+            Warning("No loop fits found")
 
     def loop_fit_preprocessing(self):
+        """
+        loop_fit_preprocessing Preprocess the hysteresis loop fits
+        """        
 
+        # gets the hysteresis loops
         hysteresis, bias = self.get_hysteresis(
             plotting_values=True, output_shape="index")
 
+        # interpolates missing points
         cleaned_hysteresis = clean_interpolate(hysteresis)
+        
+        # instantiates the global scaler
         self.hystersis_scaler = global_scaler()
+        
+        # computes and applies the global scaler
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
 
     def SHO_preprocessing(self):
+        """
+        SHO_preprocessing preprocessing the SHO fits
+        """        
+        
         # extract the raw data and reshapes is
         self.set_raw_data()
 
@@ -243,6 +286,11 @@ class BE_Dataset:
             pass
 
     def default_state(self):
+        """
+        default_state function returns the object to a default state
+        """
+        
+        # dictionary that defines the default state
         default_state_ = {'raw_format': "complex",
                           "fitter": 'LSQF',
                           "output_shape": "pixels",
@@ -253,9 +301,16 @@ class BE_Dataset:
                           "LSQF_phase_shift": None,
                           "NN_phase_shift": None, }
 
+        # sets the attribute state
         self.set_attributes(**default_state_)
 
     def get_tree(self):
+        """
+        get_tree gets the tree from a h5 file
+
+        Returns:
+            list: tree from an h5_file
+        """
 
         with h5py.File(self.file, "r+") as h5_f:
             return get_tree(h5_f)
@@ -294,6 +349,15 @@ class BE_Dataset:
                     key, h5_f.file["/Measurement_000"].attrs[key]))
 
     def data_writer(self, base, name, data):
+        """
+        data_writer Utility to write data to a h5 file
+
+        Args:
+            base (str): basepath where to write data
+            name (str): name of datafile to write
+            data (np.array): data to write
+        """        
+        
         with h5py.File(self.file, "r+") as h5_f:
             try:
                 make_dataset(h5_f[base],
@@ -307,6 +371,12 @@ class BE_Dataset:
 
     # delete a dataset
     def delete(self, name):
+        """
+        delete function to delete a dataset
+
+        Args:
+            name (basepath): basepath within an h5 file to delete.
+        """        
         with h5py.File(self.file, "r+") as h5_f:
             try:
                 del h5_f[name]
@@ -324,7 +394,6 @@ class BE_Dataset:
             max_mem (_type_, optional): maximum ram to use. Defaults to 1024*8.
         """
 
-        # something strange with the fitter
         with h5py.File(self.file, "r+") as h5_file:
 
             # the start time of the fit
@@ -425,6 +494,13 @@ class BE_Dataset:
             return sho_fitter
 
     def measure_group(self):
+        """
+        measure_group gets the measurement group name
+
+        Returns:
+            str: string defines the measurement group name
+        """        
+        
         if self.noise == 0:
             return "Raw_Data_SHO_Fit"
         else:
@@ -432,46 +508,78 @@ class BE_Dataset:
 
     def LSQF_Loop_Fit(self, main_dataset='/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit', h5_target_group=None,
                       max_cores=None):
+        """
+        LSQF_Loop_Fit function for computing the loop fits
+
+        Args:
+            main_dataset (str, optional): pointer to a main dataset. Defaults to '/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit'.
+            h5_target_group (str, optional): target group where to save the results. Defaults to None.
+            max_cores (int, optional): Number of cores. If set to -1 uses all cores. Defaults to None.
+
+        Raises:
+            TypeError: invalid type for main_dataset
+
+        Returns:
+            np.array: loopfit results
+            h5.group: group where the results are saved
+        """        
+        
 
         with h5py.File(self.file, "r+") as h5_file:
-
+            
+            # Retrieve the 'data_type' attribute from the HDF5 file
             expt_type = sidpy.hdf.hdf_utils.get_attr(h5_file, 'data_type')
 
+            # Locate the measurement group within the HDF5 file
             h5_meas_grp = usid.hdf_utils.find_dataset(
-                h5_file, self.measure_group())
+                h5_file, self.measure_group()
+            )
 
+            # Retrieve the 'VS_mode' attribute for the given measurement
             vs_mode = sidpy.hdf.hdf_utils.get_attr(
-                h5_file["/Measurement_000"], 'VS_mode')
-
+                h5_file["/Measurement_000"], 'VS_mode'
+            )
+            
+            # Try to get the 'VS_cycle_fraction' attribute; handle exception if not found
             try:
                 vs_cycle_frac = sidpy.hdf.hdf_utils.get_attr(
-                    h5_file["/Measurement_000"], 'VS_cycle_fraction')
-
+                    h5_file["/Measurement_000"], 'VS_cycle_fraction'
+                )
             except KeyError:
                 print('VS cycle fraction could not be found. Setting to default value')
                 vs_cycle_frac = 'full'
 
+            # Validate the type of main_dataset
             if isinstance(main_dataset, str):
                 main_dataset = USIDataset(h5_file[main_dataset])
             elif isinstance(main_dataset, USIDataset):
                 pass
             else:
                 raise TypeError(
-                    'main_dataset should be a string or USIDataset object')
-
-            loop_fitter = belib.analysis.BELoopFitter(main_dataset,
-                                                      expt_type, vs_mode, vs_cycle_frac,
-                                                      h5_target_group=h5_target_group,
-                                                      cores=max_cores,
-                                                      verbose=False)
+                    'main_dataset should be a string or USIDataset object'
+                )
+            
+            # Initialize the BELoopFitter object for curve fitting
+            loop_fitter = belib.analysis.BELoopFitter(
+                main_dataset, expt_type, vs_mode, vs_cycle_frac,
+                h5_target_group=h5_target_group, cores=max_cores,
+                verbose=False
+            )
+            
+            # Set up initial guesses for curve fitting
             loop_fitter.set_up_guess()
             h5_loop_guess = loop_fitter.do_guess(override=False)
-
-            # Calling explicitly here since Fitter won't do it automatically
+            
+            # Explicitly extract loop parameters as Fitter won't do it automatically
             h5_guess_loop_parms = loop_fitter.extract_loop_parameters(
-                h5_loop_guess)
+                h5_loop_guess
+            )
+            
+            # Perform the curve fitting
             loop_fitter.set_up_fit()
             h5_loop_fit = loop_fitter.do_fit(override=False)
+            
+            # Retrieve the parent group of the fit dataset
             h5_loop_group = h5_loop_fit.parent
 
         return h5_loop_fit, h5_loop_group
@@ -519,6 +627,7 @@ class BE_Dataset:
 
     @property
     def dc_voltage(self):
+        """DC voltage vector"""
         with h5py.File(self.file, "r+") as h5_f:
             return h5_f[f"Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
 
@@ -530,6 +639,9 @@ class BE_Dataset:
 
     @property
     def num_cycles(self):
+        """
+        num_cycles gets the number of cycles in the data
+        """
         with h5py.File(self.file, "r+") as h5_f:
             cycles = h5_f["Measurement_000"].attrs["VS_number_of_cycles"]
 
