@@ -257,9 +257,7 @@ class Viz:
 
         if data is None:
             pixel = np.random.randint(0, self.dataset.num_pix)
-            
-            # voltage_step = np.random.randint(0, self.dataset.voltage_steps)
-            data = self.dataset.SHO_fit_results(pixel)
+            data = self.dataset.SHO_fit_results()[[pixel], :, :]
 
         # plots the SHO fit results for the selected pixel
         fig, axs = layout_fig(4, 4, figsize=(5.5, 1.1))

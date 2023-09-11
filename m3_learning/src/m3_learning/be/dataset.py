@@ -509,7 +509,7 @@ class BE_Dataset:
     @property
     def dc_voltage(self):
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f[f"Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
+            return h5_f[f"Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
 
     @property
     def num_pix(self):
@@ -876,7 +876,7 @@ class BE_Dataset:
         if self.output_shape == "index":
             return data.reshape(-1, 4)
         else:
-            return data.reshape(self.num_pix, voltage_step, 4)
+            return data.reshape(self.num_pix, self.state_num_voltage_steps(), 4)
 
     def get_voltage_state(self, data):
         """function to get the voltage state of the data
