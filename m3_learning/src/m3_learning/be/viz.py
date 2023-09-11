@@ -57,6 +57,8 @@ class Viz:
     def __init__(self, dataset, Printer=None, verbose=False, labelfigs_=True,
                  SHO_ranges=None,
                  image_scalebar=None,):
+        
+        
         self.Printer = Printer
         self.dataset = dataset
         self.verbose = verbose
@@ -205,7 +207,7 @@ class Viz:
         if self.Printer is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style='b')
 
-    def SHO_hist(self, SHO_data, filename=None, SHO_ranges=None):
+    def SHO_hist(self, SHO_data, filename=None):
         """Plots the SHO hysterisis parameters
 
         Args:
@@ -229,12 +231,7 @@ class Viz:
             for i, (ax, label) in enumerate(zip(axs_.flat, self.SHO_labels)):
 
                 ax.hist(SHO_data_[:, i].flatten(), 100,
-                        range=SHO_ranges[i] if SHO_ranges else None)
-
-                # if SHO_ranges is not None:
-                #     ax.hist(SHO_data_[:, i].flatten(), 100, range = SHO_ranges[i])
-                # else:
-                #     ax.hist(SHO_data_[:, i].flatten(), 100)
+                        range=self.SHO_ranges[i] if self.SHO_ranges else None)
 
                 if i == 0:
                     ax.set(ylabel="counts")

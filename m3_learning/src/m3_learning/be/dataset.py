@@ -508,6 +508,7 @@ class BE_Dataset:
 
     @property
     def dc_voltage(self):
+        """Gets the DC voltage vector"""
         with h5py.File(self.file, "r+") as h5_f:
             return h5_f[f"Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
 
@@ -519,6 +520,7 @@ class BE_Dataset:
 
     @property
     def num_cycles(self):
+        '''Gets the number of cycles in the data'''
         with h5py.File(self.file, "r+") as h5_f:
             cycles = h5_f["Measurement_000"].attrs["VS_number_of_cycles"]
 
@@ -571,6 +573,7 @@ class BE_Dataset:
 
     @property
     def hysteresis_waveform(self, loop_number=2):
+        """Gets the hysteresis waveform"""
         with h5py.File(self.file, "r+") as h5_f:
             return (
                 self.spectroscopic_values[1, ::len(self.frequency_bin)][int(self.voltage_steps/loop_number):] *
@@ -580,11 +583,17 @@ class BE_Dataset:
 
     @property
     def resampled_freq(self):
+        """Gets the resampled frequency"""
         return resample(self.frequency_bin, self.resampled_bins)
 
-    # raw_be_data as complex
     @property
     def get_original_data(self):
+        """
+        get_original_data gets the raw BE data as a complex value
+
+        Returns:
+            np.array: BE data as a complex number
+        """        
         with h5py.File(self.file, "r+") as h5_f:
             if self.dataset == 'Raw_Data':
                 return h5_f["Measurement_000"]["Channel_000"]["Raw_Data"][:]
@@ -595,7 +604,17 @@ class BE_Dataset:
                 return h5_f["Measurement_000"]["Channel_000"][name][:]
 
     def raw_data(self, pixel=None, voltage_step=None, noise=None):
-        """Raw data"""
+        """
+        raw_data function that extracts the raw data with consideration of the noise. Will return the resampled data
+
+        Args:
+            pixel (int, optional): pixel position to get data. Defaults to None.
+            voltage_step (int, optional): voltage position to get data. Defaults to None.
+            noise (int, optional): Noise value. Defaults to None.
+
+        Returns:
+            np.array: BE data as a complex number
+        """
         if pixel is not None and voltage_step is not None:
             with h5py.File(self.file, "r+") as h5_f:
                 return self.raw_data_reshaped[self.dataset][[pixel], :, :][:, [voltage_step], :]
@@ -605,6 +624,10 @@ class BE_Dataset:
 
     @static_state_decorator
     def set_raw_data(self):
+        """
+        set_raw_data Function that parses the datafile and extracts the raw data names
+        """        
+        
         with h5py.File(self.file, "r+") as h5_f:
             # initializes the dictionary
             self.raw_data_reshaped = {}
@@ -627,7 +650,17 @@ class BE_Dataset:
                 self.raw_datasets.extend([dataset.name.split('/')[-1]])
 
     @static_state_decorator
-    def LSQF_hysteresis_params(self, dataset=None, output_shape=None, scaled=None):
+    def LSQF_hysteresis_params(self, output_shape=None, scaled=None):
+        """
+        LSQF_hysteresis_params Gets the LSQF hysteresis parameters
+
+        Args:
+            output_shape (str, optional): pixel or list. Defaults to None.
+            scaled (bool, optional): selects if to scale the data. Defaults to None.
+
+        Returns:
+            np.array: hysteresis loop parameters from LSQF
+        """        
 
         if output_shape is not None:
             self.output_shape = output_shape
@@ -642,7 +675,8 @@ class BE_Dataset:
                             data['b_0'], data['b_1'], data['b_2'], data['b_3']]).transpose((1, 2, 3, 0))
 
             if self.scaled:
-                # TODO add the scaling here
+                # TODO: add the scaling here
+                Warning("Scaling not implemented yet")
                 pass
 
             if self.output_shape == "index":
