@@ -30,6 +30,8 @@ from pyUSID.io.hdf_utils import check_if_main, create_results_group, write_reduc
     get_dimensionality, get_sort_order, get_unit_values, reshape_to_n_dims, write_main_dataset, reshape_from_n_dims
 from pyUSID.io.hdf_utils import reshape_to_n_dims, get_auxiliary_datasets
 from m3_learning.be.filters import clean_interpolate
+from dataclasses import dataclass, field, InitVar
+from typing import Any, Callable, Dict, Optional, Union
 
 
 def static_state_decorator(func):
@@ -84,57 +86,66 @@ def resample(y, num_points, axis=0):
     return new_y
 
 
+@dataclass
 class BE_Dataset:
+    file_: str
+    scaled: bool = False
+    raw_format: str = "complex"
+    fitter: str = 'LSQF'
+    output_shape: str = 'pixels'
+    measurement_state: str = 'all'
+    resampled: bool = False
+    resampled_bins: Optional[int] = field(default=None, init=False)
+    LSQF_phase_shift: Optional[float] = None
+    NN_phase_shift: Optional[float] = None
+    verbose: bool = False
+    noise: int = 0
+    cleaned: bool = False
+    basegroup: str = '/Measurement_000/Channel_000'
+    SHO_fit_func_LSQF: Callable = field(default=SHO_fit_func_nn)
+    hysteresis_function: Optional[Callable] = None
+    loop_interpolated: bool = False
+    tree: Any = field(init=False)
+    resampled_data: Dict[str, Any] = field(default_factory=dict, init=False)
+    kwargs: Dict[str, Any] = field(default_factory=dict)
 
-    def __init__(self, file_,
-                 scaled=False,
-                 raw_format="complex",
-                 fitter='LSQF',
-                 output_shape='pixels',
-                 measurement_state='all',
-                 resampled=False,
-                 resampled_bins=None,
-                 LSQF_phase_shift=None,
-                 NN_phase_shift=None,
-                 verbose=False,
-                 noise=0,
-                 cleaned=False,
-                 basegroup='/Measurement_000/Channel_000',
-                 SHO_fit_func_LSQF=SHO_fit_func_nn,
-                 hysteresis_function=None,
-                 loop_interpolated=False,
-                 **kwargs):
+    
+    """A class to represent a Band Excitation (BE) dataset.
 
-        self.file = file_
-        self.resampled = resampled
-        self.scaled = scaled
-        self.raw_format = raw_format
-        self.fitter = fitter
-        self.output_shape = output_shape
-        self.measurement_state = measurement_state
-        self.basegroup = basegroup
-        self.hysteresis_function = hysteresis_function
-        self.loop_interpolated = loop_interpolated
+    Attributes:
+        file_ (str): The file path of the dataset.
+        scaled (bool, optional): Whether the data is scaled. Defaults to False.
+        raw_format (str, optional): The raw data format. Defaults to "complex".
+        fitter (str, optional): The fitter to be used. Defaults to 'LSQF'.
+        output_shape (str, optional): The output shape of the dataset. pixels is 2d, index is 1d Defaults to 'pixels'.
+        measurement_state (str, optional): The state of the measurement. Defaults to 'all'.
+        resampled (bool, optional): Whether the data is resampled. Defaults to False.
+        resampled_bins (int, optional): The number of bins for resampling. Automatically set if None.
+        LSQF_phase_shift (float, optional): The phase shift for LSQF.
+        NN_phase_shift (float, optional): The phase shift for Neural Network.
+        verbose (bool, optional): Whether to print detailed information. Defaults to False.
+        noise (int, optional): Noise level. Defaults to 0.
+        cleaned (bool, optional): Whether the data is cleaned. Defaults to False.
+        basegroup (str, optional): The base group in the HDF5 file. Defaults to '/Measurement_000/Channel_000'.
+        SHO_fit_func_LSQF (Callable, optional): The fitting function for SHO in LSQF.
+        hysteresis_function (Callable, optional): The hysteresis function for processing. 
+        loop_interpolated (bool, optional): Whether the loop data is interpolated. Defaults to False.
+        resampled_data (Dict[str, Any]): Holds resampled data. Initialized post object creation.
+        kwargs (Dict[str, Any], optional): Additional keyword arguments.
+    """
+
+    def __post_init__(self):
         self.tree = self.get_tree()
-        self.cleaned = cleaned
-
-        # if None assigns it to the length of the original data
-        if resampled_bins is None:
-            resampled_bins = self.num_bins
-
-        self.resampled_bins = resampled_bins
-
-        self.LSQF_phase_shift = LSQF_phase_shift
-        self.NN_phase_shift = NN_phase_shift
-        self.verbose = verbose
-        self.SHO_fit_func_LSQF = SHO_fit_func_LSQF
-        self.resampled_data = {}
-        self.noise = noise
-
-        for key, value in kwargs.items():
+        
+        # Initialize resampled_bins if it's None
+        if self.resampled_bins is None:
+            self.resampled_bins = self.num_bins
+        
+        # Set additional attributes from kwargs
+        for key, value in self.kwargs.items():
             setattr(self, key, value)
-
-        # make only run if SHO exist
+        
+        # Preprocessing and raw data
         self.set_preprocessing()
         self.set_raw_data()
 
