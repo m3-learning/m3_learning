@@ -814,27 +814,23 @@ class BE_Dataset:
                     ::2][voltage_step]
         return voltage_step
     
-    def state_num_voltage_steps(self, voltage_step=None):
+    def state_num_voltage_steps(self):
         
-        if voltage_step is None:
-            if self.measurement_state == 'all':
-                voltage_step = self.voltage_steps
-            else:
-                voltage_step = int(self.voltage_steps/2)
+        if self.measurement_state == 'all':
+            voltage_step = self.voltage_steps
+        else:
+            voltage_step = int(self.voltage_steps/2)
         
         return voltage_step
         
 
     def SHO_fit_results(self,
-                        pixel=None,
-                        voltage_step=None,
                         state=None,
                         model=None,
                         phase_shift=None,
                         X_data=None):
-
-        voltage_step = self.state_num_voltage_steps(voltage_step)
         
+        # Note removed pixel and voltage step indexing here
 
         # if a neural network model is not provided use the LSQF
         if model is None:
@@ -846,7 +842,7 @@ class BE_Dataset:
                 if state is not None:
                     self.set_attributes(**state)
 
-                data = eval(f"self.SHO_{self.fitter}(pixel, voltage_step)")
+                data = eval(f"self.SHO_{self.fitter}()")
 
                 data_shape = data.shape
 
