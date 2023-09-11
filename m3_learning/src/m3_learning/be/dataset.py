@@ -43,15 +43,15 @@ def static_state_decorator(func):
     def wrapper(*args, **kwargs):
         # saves the current state
         current_state = args[0].get_state
-        
+
         # runs the function
         out = func(*args, **kwargs)
-        
+
         # resets the state
         args[0].set_attributes(**current_state)
         # returns the output
         return out
-    
+
     # returns the wrapper
     return wrapper
 
@@ -64,8 +64,8 @@ def resample(y, num_points, axis=0):
         y (np.array): data to resample
         num_points (int): number of points to resample
         axis (int, optional): axis to apply resampling. Defaults to 0.
-    """ 
-    
+    """
+
     # Get the shape of the input array
     shape = y.shape
 
@@ -88,7 +88,7 @@ def resample(y, num_points, axis=0):
 
 @dataclass
 class BE_Dataset:
-    file_: str
+    file: str
     scaled: bool = False
     raw_format: str = "complex"
     fitter: str = 'LSQF'
@@ -99,21 +99,18 @@ class BE_Dataset:
     LSQF_phase_shift: Optional[float] = None
     NN_phase_shift: Optional[float] = None
     verbose: bool = False
-    noise: int = 0
     cleaned: bool = False
     basegroup: str = '/Measurement_000/Channel_000'
     SHO_fit_func_LSQF: Callable = field(default=SHO_fit_func_nn)
     hysteresis_function: Optional[Callable] = None
     loop_interpolated: bool = False
-    tree: Any = field(init=False)
-    resampled_data: Dict[str, Any] = field(default_factory=dict, init=False)
+    noise_: int = 0
     kwargs: Dict[str, Any] = field(default_factory=dict)
 
-    
     """A class to represent a Band Excitation (BE) dataset.
 
     Attributes:
-        file_ (str): The file path of the dataset.
+        file (str): The file path of the dataset.
         scaled (bool, optional): Whether the data is scaled. Defaults to False.
         raw_format (str, optional): The raw data format. Defaults to "complex".
         fitter (str, optional): The fitter to be used. Defaults to 'LSQF'.
@@ -137,18 +134,20 @@ class BE_Dataset:
     def __post_init__(self):
         """
         __post_init__ post initialization function that sets the attributes of the class
-        """        
-        
+        """
+
+        self.noise = self.noise_
+
         self.tree = self.get_tree()
-        
+
         # Initialize resampled_bins if it's None
         if self.resampled_bins is None:
             self.resampled_bins = self.num_bins
-        
+
         # Set additional attributes from kwargs
         for key, value in self.kwargs.items():
             setattr(self, key, value)
-        
+
         # Preprocessing and raw data
         self.set_preprocessing()
         self.set_raw_data()
@@ -165,7 +164,7 @@ class BE_Dataset:
             basegroup (str, optional): basegroup where the noisy data is stored. Defaults to '/Measurement_000/Channel_000'.
             verbose (bool, optional): sets the verbosity. Defaults to False.
             noise_STD (_type_, optional): sets the noise level to add, if None computes. Defaults to None.
-        """                
+        """
 
         # computes the std to define the noise level if value is not given
         if noise_STD is None:
@@ -190,10 +189,10 @@ class BE_Dataset:
                                                noise_level_, (3600, 63360))
                 noise_imag = np.random.uniform(-1*noise_level_,
                                                noise_level_, (3600, 63360))
-                
+
                 # creates the complex noise
                 noise = noise_real+noise_imag*1.0j
-                
+
                 # adds the noise to the original data
                 data = self.get_original_data + noise
 
@@ -233,7 +232,7 @@ class BE_Dataset:
     def set_preprocessing(self):
         """
         set_preprocessing sets the preprocessing state for the data
-        """        
+        """
 
         # preprocesses the SHO fits
         if in_list(self.tree, "*SHO_Fit*"):
@@ -250,7 +249,7 @@ class BE_Dataset:
     def loop_fit_preprocessing(self):
         """
         loop_fit_preprocessing Preprocess the hysteresis loop fits
-        """        
+        """
 
         # gets the hysteresis loops
         hysteresis, bias = self.get_hysteresis(
@@ -258,18 +257,18 @@ class BE_Dataset:
 
         # interpolates missing points
         cleaned_hysteresis = clean_interpolate(hysteresis)
-        
+
         # instantiates the global scaler
         self.hystersis_scaler = global_scaler()
-        
+
         # computes and applies the global scaler
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
 
     def SHO_preprocessing(self):
         """
         SHO_preprocessing preprocessing the SHO fits
-        """        
-        
+        """
+
         # extract the raw data and reshapes is
         self.set_raw_data()
 
@@ -289,7 +288,7 @@ class BE_Dataset:
         """
         default_state function returns the object to a default state
         """
-        
+
         # dictionary that defines the default state
         default_state_ = {'raw_format': "complex",
                           "fitter": 'LSQF',
@@ -356,8 +355,8 @@ class BE_Dataset:
             base (str): basepath where to write data
             name (str): name of datafile to write
             data (np.array): data to write
-        """        
-        
+        """
+
         with h5py.File(self.file, "r+") as h5_f:
             try:
                 make_dataset(h5_f[base],
@@ -376,7 +375,7 @@ class BE_Dataset:
 
         Args:
             name (basepath): basepath within an h5 file to delete.
-        """        
+        """
         with h5py.File(self.file, "r+") as h5_f:
             try:
                 del h5_f[name]
@@ -499,8 +498,8 @@ class BE_Dataset:
 
         Returns:
             str: string defines the measurement group name
-        """        
-        
+        """
+
         if self.noise == 0:
             return "Raw_Data_SHO_Fit"
         else:
@@ -522,11 +521,10 @@ class BE_Dataset:
         Returns:
             np.array: loopfit results
             h5.group: group where the results are saved
-        """        
-        
+        """
 
         with h5py.File(self.file, "r+") as h5_file:
-            
+
             # Retrieve the 'data_type' attribute from the HDF5 file
             expt_type = sidpy.hdf.hdf_utils.get_attr(h5_file, 'data_type')
 
@@ -539,7 +537,7 @@ class BE_Dataset:
             vs_mode = sidpy.hdf.hdf_utils.get_attr(
                 h5_file["/Measurement_000"], 'VS_mode'
             )
-            
+
             # Try to get the 'VS_cycle_fraction' attribute; handle exception if not found
             try:
                 vs_cycle_frac = sidpy.hdf.hdf_utils.get_attr(
@@ -558,27 +556,27 @@ class BE_Dataset:
                 raise TypeError(
                     'main_dataset should be a string or USIDataset object'
                 )
-            
+
             # Initialize the BELoopFitter object for curve fitting
             loop_fitter = belib.analysis.BELoopFitter(
                 main_dataset, expt_type, vs_mode, vs_cycle_frac,
                 h5_target_group=h5_target_group, cores=max_cores,
                 verbose=False
             )
-            
+
             # Set up initial guesses for curve fitting
             loop_fitter.set_up_guess()
             h5_loop_guess = loop_fitter.do_guess(override=False)
-            
+
             # Explicitly extract loop parameters as Fitter won't do it automatically
             h5_guess_loop_parms = loop_fitter.extract_loop_parameters(
                 h5_loop_guess
             )
-            
+
             # Perform the curve fitting
             loop_fitter.set_up_fit()
             h5_loop_fit = loop_fitter.do_fit(override=False)
-            
+
             # Retrieve the parent group of the fit dataset
             h5_loop_group = h5_loop_fit.parent
 
@@ -694,6 +692,7 @@ class BE_Dataset:
 
     @property
     def hysteresis_waveform(self, loop_number=2):
+        '''Extracts the hysterisis waveform from the data'''
         with h5py.File(self.file, "r+") as h5_f:
             return (
                 self.spectroscopic_values[1, ::len(self.frequency_bin)][int(self.voltage_steps/loop_number):] *
@@ -703,11 +702,18 @@ class BE_Dataset:
 
     @property
     def resampled_freq(self):
+        '''Resampled frequency vector'''
         return resample(self.frequency_bin, self.resampled_bins)
 
     # raw_be_data as complex
     @property
     def get_original_data(self):
+        """
+        get_original_data gets the original data
+
+        Returns:
+            np.array: the original raw data complex
+        """
         with h5py.File(self.file, "r+") as h5_f:
             if self.dataset == 'Raw_Data':
                 return h5_f["Measurement_000"]["Channel_000"]["Raw_Data"][:]
@@ -718,7 +724,17 @@ class BE_Dataset:
                 return h5_f["Measurement_000"]["Channel_000"][name][:]
 
     def raw_data(self, pixel=None, voltage_step=None, noise=None):
-        """Raw data"""
+        """
+        raw_data extracts the raw data
+
+        Args:
+            pixel (int, optional): selects just a pixel to extract. Defaults to None.
+            voltage_step (int, optional): selects just a voltage step to select. Defaults to None.
+            noise (int, optional): selects the noise level to extract. Defaults to None.
+
+        Returns:
+            np.array: raw data extracted
+        """
         if pixel is not None and voltage_step is not None:
             with h5py.File(self.file, "r+") as h5_f:
                 return self.raw_data_reshaped[self.dataset][[pixel], :, :][:, [voltage_step], :]
@@ -728,6 +744,10 @@ class BE_Dataset:
 
     @static_state_decorator
     def set_raw_data(self):
+        """
+        set_raw_data sets the noise level to get the raw data
+        """
+
         with h5py.File(self.file, "r+") as h5_f:
             # initializes the dictionary
             self.raw_data_reshaped = {}
@@ -751,33 +771,60 @@ class BE_Dataset:
 
     @static_state_decorator
     def LSQF_hysteresis_params(self, dataset=None, output_shape=None, scaled=None):
+        """
+        LSQF_hysteresis_params _summary_
 
+        Args:
+            dataset (str, optional): dataset to look at. Defaults to None.
+            output_shape (str, optional): shape of the data to export. Defaults to None.
+            scaled (bool, optional): scaled or unscaled data. Defaults to None.
+
+        Returns:
+            np.array: hysteresis parameters
+        """
+
+        # Check if an output shape has been explicitly defined; if so, set it
         if output_shape is not None:
             self.output_shape = output_shape
 
+        # Check if the scaled parameter has been explicitly set; if so, set it
         if scaled is not None:
             self.scaled = scaled
 
+        # Open the HDF5 file to read the dataset
         with h5py.File(self.file, "r+") as h5_f:
+            # Retrieve and reshape the 'Fit' data from the specific path within the HDF5 file
             data = h5_f[f"/{self.dataset}_SHO_Fit/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
             data = data.reshape(self.num_rows, self.num_cols, self.num_cycles)
+
+            # Reorganize data into an array by parameters (a_0 to b_3)
             data = np.array([data['a_0'], data['a_1'], data['a_2'], data['a_3'], data['a_4'],
                             data['b_0'], data['b_1'], data['b_2'], data['b_3']]).transpose((1, 2, 3, 0))
 
+            # Check if data should be scaled (not yet implemented)
             if self.scaled:
-                # TODO add the scaling here
+                # TODO: Implement scaling logic here
+                Warning("Scaling not implemented yet")
                 pass
 
+            # If the desired output shape is 'index', reshape the data accordingly
             if self.output_shape == "index":
                 data = data.reshape(
                     self.num_pix, self.num_cycles, data.shape[-1])
 
-            return data
+        return data
 
     @static_state_decorator
     def SHO_Scaler(self,
                    save_loc='SHO_LSQF_scaled',
                    noise=0):
+        """
+        SHO_Scaler function to scale the SHO data
+
+        Args:
+            save_loc (str, optional): sets location where data is saved. Defaults to 'SHO_LSQF_scaled'.
+            noise (int, optional): sets the noise level. Defaults to 0.
+        """
 
         # set the noise and the dataset
         self.noise = noise
@@ -793,6 +840,17 @@ class BE_Dataset:
         self.SHO_scaler.scale_[3] = 1
 
     def SHO_LSQF(self, pixel=None, voltage_step=None):
+        """
+        SHO_LSQF Gets tje SHO fits computed by LSQF
+
+        Args:
+            pixel (int, optional): pixel to extract. Defaults to None.
+            voltage_step (int, optional): voltage step to extract. Defaults to None.
+
+        Returns:
+            np.array: SHO LSQF fits
+        """
+
         with h5py.File(self.file, "r+") as h5_f:
 
             dataset_ = self.SHO_LSQF_data[f"{self.dataset}-SHO_Fit_000"].copy()
@@ -806,6 +864,15 @@ class BE_Dataset:
 
     @staticmethod
     def is_complex(data):
+        """
+        is_complex checks the data type and converts it to a standard complex format
+
+        Args:
+            data (any): data to check
+
+        Returns:
+            np.array: complex data returned
+        """
         data = data[0]
 
         if type(data) == torch.Tensor:
