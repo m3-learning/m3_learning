@@ -442,28 +442,28 @@ def scalebar(axes, image_size, scale_size, units="nm", loc="br"):
 
     # gets the size of the image
     x_lim, y_lim = axes.get_xlim(), axes.get_ylim()
-    x_size, y_size = np.abs(np.int(np.floor(x_lim[1] - x_lim[0]))), np.abs(
-        np.int(np.floor(y_lim[1] - y_lim[0]))
+    x_size, y_size = np.abs(np.int64(np.floor(x_lim[1] - x_lim[0]))), np.abs(
+        np.int64(np.floor(y_lim[1] - y_lim[0]))
     )
     # computes the fraction of the image for the scalebar
     fract = scale_size / image_size
 
-    x_point = np.linspace(x_lim[0], x_lim[1], np.int(np.floor(image_size)))
-    y_point = np.linspace(y_lim[0], y_lim[1], np.int(np.floor(image_size)))
+    x_point = np.linspace(x_lim[0], x_lim[1], np.int64(np.floor(image_size)))
+    y_point = np.linspace(y_lim[0], y_lim[1], np.int64(np.floor(image_size)))
 
     # sets the location of the scalebar
     if loc == "br":
-        x_start = x_point[np.int(0.9 * image_size // 1)]
-        x_end = x_point[np.int((0.9 - fract) * image_size // 1)]
-        y_start = y_point[np.int(0.1 * image_size // 1)]
-        y_end = y_point[np.int((0.1 + 0.025) * image_size // 1)]
-        y_label_height = y_point[np.int((0.1 + 0.075) * image_size // 1)]
+        x_start = x_point[np.int64(0.9 * image_size // 1)]
+        x_end = x_point[np.int64((0.9 - fract) * image_size // 1)]
+        y_start = y_point[np.int64(0.1 * image_size // 1)]
+        y_end = y_point[np.int64((0.1 + 0.025) * image_size // 1)]
+        y_label_height = y_point[np.int64((0.1 + 0.075) * image_size // 1)]
     elif loc == "tr":
-        x_start = x_point[np.int(0.9 * image_size // 1)]
-        x_end = x_point[np.int((0.9 - fract) * image_size // 1)]
-        y_start = y_point[np.int(0.9 * image_size // 1)]
-        y_end = y_point[np.int((0.9 - 0.025) * image_size // 1)]
-        y_label_height = y_point[np.int((0.9 - 0.075) * image_size // 1)]
+        x_start = x_point[np.int64(0.9 * image_size // 1)]
+        x_end = x_point[np.int64((0.9 - fract) * image_size // 1)]
+        y_start = y_point[np.int64(0.9 * image_size // 1)]
+        y_end = y_point[np.int64((0.9 - 0.025) * image_size // 1)]
+        y_label_height = y_point[np.int64((0.9 - 0.075) * image_size // 1)]
 
     # makes the path for the scalebar
     path_maker(axes, [x_start, x_end, y_start, y_end], "w", "k", "-", .25)
