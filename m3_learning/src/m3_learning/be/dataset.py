@@ -225,8 +225,11 @@ class BE_Dataset:
         # computes the scalar on the raw data
         self.raw_data_scaler = self.Raw_Data_Scaler(self.raw_data())
 
-        self.set_SHO_LSQF()
-        self.SHO_Scaler()
+        try:
+            self.set_SHO_LSQF()
+            self.SHO_Scaler()
+        except:
+            pass
 
     def default_state(self):
         default_state_ = {'raw_format': "complex",
