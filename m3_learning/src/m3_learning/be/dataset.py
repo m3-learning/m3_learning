@@ -1246,11 +1246,23 @@ class BE_Dataset:
                     pixel=None,
                     voltage_step=None,
                     fit_results=None,
-                    type_="numpy",
                     frequency=False,
                     noise=None,
                     state=None):
-        """Raw spectra"""
+        """
+        raw_spectra _summary_
+
+        Args:
+            pixel (int, optional): pixel value to get. Defaults to None.
+            voltage_step (int, optional): voltage step to get. Defaults to None.
+            fit_results (_type_, optional): _description_. Defaults to None.
+            frequency (bool, optional): _description_. Defaults to False.
+            noise (_type_, optional): _description_. Defaults to None.
+            state (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: _description_
+        """        """Raw spectra"""
 
         # set the noise
         if noise is not None:
