@@ -1523,6 +1523,12 @@ class BE_Dataset:
 
     @property
     def get_state(self):
+        """
+        get_state function that return the dictionary of the current state
+
+        Returns:
+            dict: dictionary of the current state
+        """
         return {'resampled': self.resampled,
                 'raw_format': self.raw_format,
                 'fitter': self.fitter,
@@ -1537,27 +1543,54 @@ class BE_Dataset:
                 "loop_interpolated": self.loop_interpolated}
 
     @static_state_decorator
-    def NN_data(self, resampled=True, scaled=True):
+    def NN_data(self, resampled=None, scaled=True):
+        """
+        NN_data utility function that gets the neural network data
+
+        Args:
+            resampled (bool, optional): sets if you should use the resampled data. Defaults to None.
+            scaled (bool, optional): sets if you should use the scaled data. Defaults to True.
+
+        Returns:
+            torch.tensor: neural network input, SHO LSQF fit parameters (scaled)
+        """
+ 
         print(self.extraction_state)
-        # makes sure you are using the resampled data
-        self.resampled = resampled
+        
+        if resample is not None:
+            
+            # makes sure you are using the resampled data
+            self.resampled = resampled
 
         # makes sure you are using the scaled data
+        # this is a requirement of training a neural network
         self.scaled = scaled
 
         # gets the raw spectra
         data = self.raw_spectra()
 
+        # converts data to the form for a neural network
         x_data = self.to_nn(data)
 
         # gets the SHO fit results these values are scaled
+        # this is from the LSQF used for evaluation
         y_data = self.SHO_fit_results().reshape(-1, 4)
 
+        # converts the LSQF into a tensor for comparison
         y_data = torch.tensor(y_data, dtype=torch.float32)
 
         return x_data, y_data
 
     def to_nn(self, data):
+        """
+        to_nn utility function that converts band excitation data into a form suitable for training a neural network
+
+        Args:
+            data (any): band excitation data
+
+        Returns:
+            torch.tensor: tensor of the scaled real and imaginary data for training
+        """
 
         if type(data) == torch.Tensor:
             return data
@@ -1575,34 +1608,69 @@ class BE_Dataset:
 
         # stacks the real and imaginary components
         x_data = np.stack((real, imag), axis=2)
-
         x_data = torch.tensor(x_data, dtype=torch.float32)
 
         return x_data
 
-    def test_train_split_(self, test_size=0.2, random_state=42, resampled=True, scaled=True, shuffle=False):
+    def test_train_split_(self, test_size=0.2, random_state=42, resampled=None, scaled=True, shuffle=True):
+        """
+        test_train_split_ Utility function that does the test train split for the neural network data
 
+        Args:
+            test_size (float, optional): fraction for the test size. Defaults to 0.2.
+            random_state (int, optional): fixed seed for the random state. Defaults to 42.
+            resampled (bool, optional): selects if should use resampled data. Defaults to True.
+            scaled (bool, optional): selects if you should use the scaled data. Defaults to True.
+            shuffle (bool, optional): selects if the data should be shuffled. Defaults to True.
+
+        Returns:
+            torch.tensor: X_train, X_test, y_train, y_test
+        """
+
+        # gets the neural network data
         x_data, y_data = self.NN_data(resampled, scaled)
 
+        # does the test train split
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x_data, y_data,
                                                                                 test_size=test_size,
                                                                                 random_state=random_state,
                                                                                 shuffle=shuffle)
 
+        # prints the extraction state
         if self.verbose:
             self.extraction_state
 
         return self.X_train, self.X_test, self.y_train, self.y_test
 
     class Raw_Data_Scaler():
-
+        """
+        Raw_Data_Scaler class that defines the scaler for band excitation data
+        
+        """             
         def __init__(self, raw_data):
+            """
+            __init__ Initialization function
+
+            Args:
+                raw_data (np.array): raw band excitation data to scale
+            """
+            
             self.raw_data = raw_data
+            
+            # conduct the fit on initialization
             self.fit()
 
         @staticmethod
         def data_type_converter(data):
+            """
+            data_type_converter converter that converts the dataset to complex
 
+            Args:
+                data (_type_): _description_
+
+            Returns:
+                _type_: _description_
+            """
             if BE_Dataset.is_complex(data):
                 return data
             else:
