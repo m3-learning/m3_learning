@@ -846,7 +846,7 @@ class BE_Dataset:
         Returns:
             np.array: SHO LSQF results
         """
-        
+
         with h5py.File(self.file, "r+") as h5_f:
 
             dataset_ = self.SHO_LSQF_data[f"{self.dataset}-SHO_Fit_000"].copy()
@@ -868,8 +868,8 @@ class BE_Dataset:
 
         Returns:
             any: array or tensor as a complex number
-        """        
-        
+        """
+
         data = data[0]
 
         if type(data) == torch.Tensor:
@@ -921,12 +921,12 @@ class BE_Dataset:
         Returns:
             np.array: complex array of the BE response
         """
-        
+
         # converts to an array
         if type(data) == list:
             data = np.array(data)
 
-        # if the data is already in complex form return 
+        # if the data is already in complex form return
         if BE_Dataset.is_complex(data):
             return data
 
@@ -939,7 +939,7 @@ class BE_Dataset:
     def set_SHO_LSQF(self):
         """
         set_SHO_LSQF Sets the SHO Scaler data to make accessible
-        """        
+        """
 
         # initializes the dictionary
         self.SHO_LSQF_data = {}
@@ -966,7 +966,7 @@ class BE_Dataset:
 
                 data_ = np.array(SHO_LSQF_list).reshape(
                     -1, 5)
-                
+
                 # saves the SHO LSQF data as an attribute of the dataset object
                 self.SHO_LSQF_data[name] = data_.reshape(
                     self.num_pix, self.voltage_steps, 5)[:, :, :-1]
@@ -982,7 +982,7 @@ class BE_Dataset:
 
         Returns:
             np.array: phase shifted data
-        """        
+        """
 
         if shift_ is None or shift_ == 0:
             return phase
@@ -1014,7 +1014,7 @@ class BE_Dataset:
 
         Returns:
             np.array: resampled data
-        """        
+        """
 
         if pixel is not None and voltage_step is not None:
             return self.resampled_data[self.dataset][[pixel], :, :][:, [voltage_step], :]
@@ -1031,7 +1031,7 @@ class BE_Dataset:
 
         Returns:
             np.array: voltage vector
-        """        
+        """
 
         if voltage_step is not None:
 
@@ -1051,7 +1051,7 @@ class BE_Dataset:
         Returns:
             int: number of voltage steps
         """
-        
+
         if self.measurement_state == 'all':
             voltage_step = self.voltage_steps
         else:
@@ -1135,8 +1135,8 @@ class BE_Dataset:
 
         Returns:
             np.array: BE data considering the voltage state
-        """        
-        
+        """
+
         # only does this if getting the full dataset, will reduce to off and on state
         if self.measurement_state == 'all':
             data = data
@@ -1192,7 +1192,7 @@ class BE_Dataset:
             tuple: output results from LSQF reconstruction, SHO parameters
         """
 
-        # sets the attribute state based on the dictionary 
+        # sets the attribute state based on the dictionary
         self.set_attributes(**model)
 
         # sets to get the unscaled parameters
@@ -1233,7 +1233,7 @@ class BE_Dataset:
     def set_attributes(self, **kwargs):
         """
         set_attributes sets attributes of the object from a dictionary
-        """        
+        """
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -1262,7 +1262,7 @@ class BE_Dataset:
 
         Returns:
             np.array: band excitation data (if frequency == True will return the frequency bins)
-        """ 
+        """
 
         # set the noise
         if noise is not None:
@@ -1384,7 +1384,7 @@ class BE_Dataset:
 
         Returns:
             np.array: frequency bins for the data
-        """        
+        """
 
         try:
             data = data.flatten()
@@ -1407,9 +1407,9 @@ class BE_Dataset:
                 "original data must be the same length as the frequency bins or the resampled frequency bins")
         return x
 
-    def shaper(self, 
-               data, 
-               pixel=None, 
+    def shaper(self,
+               data,
+               pixel=None,
                voltage_steps=None):
         """
         shaper Utility to help reshape band excitation data based on the current measurement state
@@ -1424,7 +1424,7 @@ class BE_Dataset:
 
         Returns:
             np.array: reshaped BE data
-        """        
+        """
 
         # reshapes if you just grab a pixel.
         if pixel is not None:
@@ -1447,8 +1447,7 @@ class BE_Dataset:
             if self.measurement_state in ["on", "off"]:
                 voltage_steps /= 2
                 voltage_steps = int(voltage_steps)
-                
-                
+
         # reshapes the data to be the correct output shape
         if self.output_shape == "pixels":
             data = data.reshape(num_pix, voltage_steps, -1)
@@ -1554,11 +1553,11 @@ class BE_Dataset:
         Returns:
             torch.tensor: neural network input, SHO LSQF fit parameters (scaled)
         """
- 
+
         print(self.extraction_state)
-        
+
         if resample is not None:
-            
+
             # makes sure you are using the resampled data
             self.resampled = resampled
 
@@ -1645,8 +1644,9 @@ class BE_Dataset:
     class Raw_Data_Scaler():
         """
         Raw_Data_Scaler class that defines the scaler for band excitation data
-        
-        """             
+
+        """
+
         def __init__(self, raw_data):
             """
             __init__ Initialization function
@@ -1654,9 +1654,9 @@ class BE_Dataset:
             Args:
                 raw_data (np.array): raw band excitation data to scale
             """
-            
+
             self.raw_data = raw_data
-            
+
             # conduct the fit on initialization
             self.fit()
 
@@ -1680,7 +1680,7 @@ class BE_Dataset:
             """
             fit function to fit the scaler
             """
-            
+
             # gets the raw data
             data = self.raw_data
             data = self.complex_data_converter(data)
@@ -1688,7 +1688,7 @@ class BE_Dataset:
             # extracts the real and imaginary components
             real = np.real(data)
             imag = np.imag(data)
-            
+
             # does a global scaler on the data
             self.real_scaler = global_scaler()
             self.imag_scaler = global_scaler()
@@ -1707,28 +1707,53 @@ class BE_Dataset:
             Returns:
                 np.array: scaled band excitation data_
             """
+
+            # converts the data to a complex number
             data = self.complex_data_converter(data)
 
+            # extracts the real and imaginary components
             real = np.real(data)
             imag = np.imag(data)
 
+            # computes the transform
             real = self.real_scaler.transform(real)
             imag = self.imag_scaler.transform(imag)
 
+            # returns the complex number
             return real + 1j*imag
 
         def inverse_transform(self, data):
+            """
+            inverse_transform Computes the inverse transform
+
+            Args:
+                data (np.array): band excitation data
+
+            Returns:
+                np.array: unscaled band excitation data
+            """
+
+            # converts the data to complex
             data = self.complex_data_converter(data)
 
+            # extracts the real and imaginary componets
             real = np.real(data)
             imag = np.imag(data)
 
+            # computes the inverse transform
             real = self.real_scaler.inverse_transform(real)
             imag = self.imag_scaler.inverse_transform(imag)
 
             return real + 1j*imag
 
     def get_loop_path(self):
+        """
+        get_loop_path gets the path where the hysteresis loops are located
+
+        Returns:
+            str: string pointing to the path where the hysteresis loops are located
+        """
+
         if self.noise == 0 or self.noise is None:
             prefix = 'Raw_Data'
             return f"/{prefix}_SHO_Fit/{prefix}-SHO_Fit_000/Fit-Loop_Fit_000"
@@ -1744,23 +1769,42 @@ class BE_Dataset:
                        scaled=None,
                        loop_interpolated=None,
                        ):
+        """
+        get_hysteresis function to get the hysteresis loops
+
+        Args:
+            noise (int, optional): sets the noise value. Defaults to None.
+            plotting_values (bool, optional): sets if you get the data shaped for computation or plotting. Defaults to False.
+            output_shape (str, optional): sets the shape of the output. Defaults to None.
+            scaled (any, optional): selects if the output is scaled or unscaled. Defaults to None.
+            loop_interpolated (any, optional): sets if you should get the interpolated loops. Defaults to None.
+
+        Returns:
+            np.array: output hysteresis data, bias vector for the hystersis loop
+        """
 
         with h5py.File(self.file, "r+") as h5_f:
 
+            # sets the noise value
             if noise is None:
                 self.noise = noise
 
+            # sets the output shape
             if output_shape is not None:
                 self.output_shape = output_shape
 
+            # selects if the scaled data is returned
             if scaled is not None:
                 self.scaled = scaled
 
+            # selects if interpolated hysteresis loops are returned
             if loop_interpolated is not None:
                 self.loop_interpolated = loop_interpolated
 
+            # gets the path where the hysteresis loops are located
             h5_path = self.get_loop_path()
 
+            # gets the projected loops
             h5_projected_loops = h5_f[h5_path + '/Projected_Loops']
 
             # Prepare some variables for plotting loops fits and guesses
@@ -1801,13 +1845,16 @@ class BE_Dataset:
 
             hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
 
+            # interpolates the data
             if self.loop_interpolated:
                 hysteresis_data = clean_interpolate(hysteresis_data)
 
+            # transforms the data with the scaler if necessary.
             if self.scaled:
                 hysteresis_data = self.hystersis_scaler.transform(
                     hysteresis_data)
 
+            # sets the data to the correct output shape
             if self.output_shape == "index":
                 hysteresis_data = proj_nd_3.reshape(
                     self.num_cycles*self.num_pix, self.voltage_steps//self.num_cycles)
@@ -1817,10 +1864,24 @@ class BE_Dataset:
         # output shape (x,y, cycle, voltage_steps)
         return hysteresis_data, bias_vec
 
-    def roll_hysteresis(self, hysteresis, bias_vector, shift=4):
+    def roll_hysteresis(self, hysteresis, bias_vector,
+                        shift=4):
+        """
+        roll_hysteresis function to shift the biase vector and the hysteresis loop by a quarter cycle. This is to compensate for the difference in how the data is stored.
+
+        Args:
+            hysteresis (np.array): array for the hysteresis loop
+            bias_vector (np.array): array for the bias vector
+            shift (int, optional): fraction to roll the hysteresis loop by. Defaults to 4.
+
+        Returns:
+            _type_: _description_
+        """
+
+        # TODO: long term this is likely the wrong way to do this, should get this from the USID file spectroscopic index
 
         # Shift the bias vector and the loops by a quarter cycle
-        shift_ind = int(-1 * bias_vector.shape[0] / 4)
+        shift_ind = int(-1 * bias_vector.shape[0] / shift)
         proj_nd_shifted = np.roll(hysteresis, shift_ind, axis=2)
         bias_vector = np.roll(bias_vector, shift_ind, axis=0)
 
@@ -1828,11 +1889,31 @@ class BE_Dataset:
 
     @property
     def BE_superposition_state(self):
+        """
+        BE_superposition_state get the BE superposition state
+
+        Returns:
+            str: gets the superposition state
+        """
         with h5py.File(self.file, "r+") as h5_f:
             BE_superposition_state_ = h5_f["Measurement_000"].attrs['VS_measure_in_field_loops']
         return BE_superposition_state_
 
     def loop_shaper(self, data, shape="pixels"):
+        """
+        loop_shaper Tool to reshape the piezoelectric hystersis loops based on the desired shape
+
+        Args:
+            data (np.array): hysteresis loops to reshape
+            shape (str, optional): pixel or index as a string to reshpae. Defaults to "pixels".
+
+        Raises:
+            ValueError: The data shape is not compatible with the number of rows and columns
+            ValueError: The data shape is not compatible with the number of rows and columns
+
+        Returns:
+            np.array: reshaped piezoelectric hysteresis loops.
+        """
 
         if shape == "pixels":
             try:
