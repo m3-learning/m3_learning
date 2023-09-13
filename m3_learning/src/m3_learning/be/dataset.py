@@ -852,11 +852,11 @@ class BE_Dataset:
             dataset_ = self.SHO_LSQF_data[f"{self.dataset}-SHO_Fit_000"].copy()
 
             if pixel is not None and voltage_step is not None:
-                return self.get_voltage_state(dataset_[[pixel], :, :])[:, [voltage_step], :]
+                return self.get_data_w_voltage_state(dataset_[[pixel], :, :])[:, [voltage_step], :]
             elif pixel is not None:
-                return self.get_voltage_state(dataset_[[pixel], :, :])
+                return self.get_data_w_voltage_state(dataset_[[pixel], :, :])
             else:
-                return self.get_voltage_state(dataset_[:])
+                return self.get_data_w_voltage_state(dataset_[:])
 
     @staticmethod
     def is_complex(data):
@@ -1126,15 +1126,17 @@ class BE_Dataset:
         else:
             return data.reshape(self.num_pix, self.state_num_voltage_steps(), 4)
 
-    def get_voltage_state(self, data):
-        """function to get the voltage state of the data
+    def get_data_w_voltage_state(self, data):
+        """
+        get_data_w_voltage_state function to extract data given a voltage state
 
         Args:
-            data (any): BE data
+            data (np.array): BE data
 
         Returns:
-            any: data with just the selected voltage state
-        """
+            np.array: BE data considering the voltage state
+        """        
+        
         # only does this if getting the full dataset, will reduce to off and on state
         if self.measurement_state == 'all':
             data = data
@@ -1153,7 +1155,7 @@ class BE_Dataset:
     def get_measurement_cycle(self, data, cycle=None, axis=1):
         if cycle is not None:
             self.cycle = cycle
-        data = self.get_voltage_state(data)
+        data = self.get_data_w_voltage_state(data)
         return self.get_cycle(data, axis=axis)
 
     @static_state_decorator
@@ -1283,7 +1285,7 @@ class BE_Dataset:
             if shaper_:
                 # does not sample if just a pixel is returned
                 if pixel is None or voltage_step is None:
-                    data = self.get_voltage_state(data)
+                    data = self.get_data_w_voltage_state(data)
 
             if self.raw_format == 'complex':
                 # computes the scaler on the raw data
