@@ -1059,6 +1059,7 @@ class BE_Dataset:
 
         return voltage_step
 
+    @static_state_decorator
     def SHO_fit_results(self,
                         state=None,
                         model=None,
