@@ -1250,19 +1250,19 @@ class BE_Dataset:
                     noise=None,
                     state=None):
         """
-        raw_spectra _summary_
+        raw_spectra Function that simplifies getting the raw band excitation data
 
         Args:
             pixel (int, optional): pixel value to get. Defaults to None.
             voltage_step (int, optional): voltage step to get. Defaults to None.
-            fit_results (_type_, optional): _description_. Defaults to None.
-            frequency (bool, optional): _description_. Defaults to False.
-            noise (_type_, optional): _description_. Defaults to None.
-            state (_type_, optional): _description_. Defaults to None.
+            fit_results (np.array, optional): provided fit results to get raw spectra with. Defaults to None.
+            frequency (bool, optional): option to return the frequency bins. Defaults to False.
+            noise (int, optional): noise level to extract . Defaults to None.
+            state (dict, optional): dictionary that defines what data is extracted. Defaults to None.
 
         Returns:
-            _type_: _description_
-        """        """Raw spectra"""
+            np.array: band excitation data (if frequency == True will return the frequency bins)
+        """ 
 
         # set the noise
         if noise is not None:
@@ -1373,6 +1373,18 @@ class BE_Dataset:
                 return data
 
     def get_freq_values(self, data):
+        """
+        get_freq_values Function that gets the frequency bins
+
+        Args:
+            data (np.array): BE data
+
+        Raises:
+            ValueError: original data and frequency bin mismatch
+
+        Returns:
+            np.array: frequency bins for the data
+        """        
 
         try:
             data = data.flatten()
@@ -1384,6 +1396,7 @@ class BE_Dataset:
         else:
             length = len(data)
 
+        # checks if the length of the data is the raw length, or the resampled length
         if length == self.num_bins:
             x = self.frequency_bin
         elif length == self.resampled_bins:
@@ -1394,7 +1407,24 @@ class BE_Dataset:
                 "original data must be the same length as the frequency bins or the resampled frequency bins")
         return x
 
-    def shaper(self, data, pixel=None, voltage_steps=None, length=None):
+    def shaper(self, 
+               data, 
+               pixel=None, 
+               voltage_steps=None):
+        """
+        shaper Utility to help reshape band excitation data based on the current measurement state
+
+        Args:
+            data (np.array): band excitation data
+            pixel (int, optional): _description_. Defaults to None.
+            voltage_steps (int, optional): _description_. Defaults to None.
+
+        Raises:
+            ValueError: Invalid output shape is provided
+
+        Returns:
+            np.array: reshaped BE data
+        """        
 
         # reshapes if you just grab a pixel.
         if pixel is not None:
@@ -1411,13 +1441,15 @@ class BE_Dataset:
             except:
                 voltage_steps = 1
         else:
+            # computes the number of voltage steps in the data
             voltage_steps = int(self.voltage_steps.copy())
 
             if self.measurement_state in ["on", "off"]:
                 voltage_steps /= 2
                 voltage_steps = int(voltage_steps)
-
-        """Reshapes the data to the correct output shape"""
+                
+                
+        # reshapes the data to be the correct output shape
         if self.output_shape == "pixels":
             data = data.reshape(num_pix, voltage_steps, -1)
         elif self.output_shape == "index":
@@ -1429,9 +1461,16 @@ class BE_Dataset:
     def set_raw_data_resampler(self,
                                save_loc='raw_data_resampled',
                                **kwargs):
+        """
+        set_raw_data_resampler function to compute the resampled raw data and save it to the USID file. 
+
+        Args:
+            save_loc (str, optional): filepath where the resampled data should be saved. Defaults to 'raw_data_resampled'.
+        """
         with h5py.File(self.file, "r+") as h5_f:
             if self.resampled_bins != self.num_bins:
                 for data in self.raw_datasets:
+                    # resamples the data
                     resampled_ = self.resampler(
                         self.raw_data_reshaped[data].reshape(-1, self.num_bins), axis=2)
                     self.resampled_data[data] = resampled_.reshape(
@@ -1439,11 +1478,21 @@ class BE_Dataset:
             else:
                 self.resampled_data = self.raw_data_reshaped
 
+            # writes the data within the basepath
             if kwargs.get("basepath"):
                 self.data_writer(kwargs.get("basepath"), save_loc, resampled_)
 
     def resampler(self, data, axis=2):
-        """Resample the data to a given number of bins"""
+        """
+        resampler Resamples the data to a given number of bins
+
+        Args:
+            data (np.array): BE dataset
+            axis (int, optional): axis which to resample along. Defaults to 2.
+
+        Returns:
+            np.array: resampled band excitation data
+        """
         with h5py.File(self.file, "r+") as h5_f:
             try:
                 return resample(data.reshape(self.num_pix, -1, self.num_bins),
@@ -1453,21 +1502,24 @@ class BE_Dataset:
 
     @property
     def extraction_state(self):
+        """
+        extraction_state Function that prints the current extraction state
+        """
         print(f'''
-    Dataset = {self.dataset}
-    Resample = {self.resampled}
-    Raw Format = {self.raw_format}
-    fitter = {self.fitter}
-    scaled = {self.scaled}
-    Output Shape = {self.output_shape}
-    Measurement State = {self.measurement_state}
-    Resample Resampled = {self.resampled}
-    Resample Bins = {self.resampled_bins}
-    LSQF Phase Shift = {self.LSQF_phase_shift}
-    NN Phase Shift = {self.NN_phase_shift}
-    Noise Level = {self.noise}
-    loop interpolated = {self.loop_interpolated}
-                  ''')
+        Dataset = {self.dataset}
+        Resample = {self.resampled}
+        Raw Format = {self.raw_format}
+        fitter = {self.fitter}
+        scaled = {self.scaled}
+        Output Shape = {self.output_shape}
+        Measurement State = {self.measurement_state}
+        Resample Resampled = {self.resampled}
+        Resample Bins = {self.resampled_bins}
+        LSQF Phase Shift = {self.LSQF_phase_shift}
+        NN Phase Shift = {self.NN_phase_shift}
+        Noise Level = {self.noise}
+        loop interpolated = {self.loop_interpolated}
+                    ''')
 
     @property
     def get_state(self):
