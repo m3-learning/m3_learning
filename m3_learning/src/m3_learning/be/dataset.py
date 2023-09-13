@@ -336,12 +336,25 @@ class BE_Dataset:
                     key, h5_f.file["/Measurement_000"].attrs[key]))
 
     def data_writer(self, base, name, data):
+        """
+        data_writer function to write data to an USID dataset
+
+        Args:
+            base (str): basepath where to save the data
+            name (str): name of the dataset to save
+            data (np.array): data to save
+        """        
+        
         with h5py.File(self.file, "r+") as h5_f:
+            
             try:
+                # if the dataset does not exist can write
                 make_dataset(h5_f[base],
                              name,
                              data)
+                
             except:
+                # if the dataset exists deletes the dataset and then writes
                 self.delete(f"{base}/{name}")
                 make_dataset(h5_f[base],
                              name,
@@ -349,6 +362,13 @@ class BE_Dataset:
 
     # delete a dataset
     def delete(self, name):
+        """
+        delete function to delete a dataset within a pyUSID file
+
+        Args:
+            name (str): path of dataset to delete
+        """        
+        
         with h5py.File(self.file, "r+") as h5_f:
             try:
                 del h5_f[name]
@@ -359,6 +379,8 @@ class BE_Dataset:
                    dataset="Raw_Data",
                    h5_sho_targ_grp=None):
         """Function that computes the SHO fit results
+        
+        This function is adapted from BGlib
 
         Args:
             force (bool, optional): forces the SHO results to be computed from scratch. Defaults to False.
@@ -366,7 +388,6 @@ class BE_Dataset:
             max_mem (_type_, optional): maximum ram to use. Defaults to 1024*8.
         """
 
-        # something strange with the fitter
         with h5py.File(self.file, "r+") as h5_file:
 
             # the start time of the fit
@@ -408,6 +429,7 @@ class BE_Dataset:
 
             # code for using cKPFM Data
             is_ckpfm = expt_type == "cKPFMData"
+            
             if is_ckpfm:
                 num_write_steps = parm_dict["VS_num_DC_write_steps"]
                 num_read_steps = parm_dict["VS_num_read_steps"]
