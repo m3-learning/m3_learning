@@ -173,9 +173,9 @@ class BE_Dataset:
                 noise_level_ = noise_STD * noise_level
 
                 noise_real = np.random.uniform(-1*noise_level_,
-                                               noise_level_, (self.num_pix, 63360))
+                                               noise_level_, (self.num_pix, self.spectroscopic_length))
                 noise_imag = np.random.uniform(-1*noise_level_,
-                                               noise_level_, (3600, 63360))
+                                               noise_level_, (self.num_pix, self.spectroscopic_length))
                 
                 noise = noise_real+noise_imag*1.0j
                 data = self.get_original_data + noise
@@ -600,6 +600,11 @@ class BE_Dataset:
     def resampled_freq(self):
         """Gets the resampled frequency"""
         return resample(self.frequency_bin, self.resampled_bins)
+    
+    @property
+    def spectroscopic_length(self):
+        """Gets the length of the spectroscopic vector"""
+        return self.num_bins*self.voltage_steps
 
     @property
     def get_original_data(self):
