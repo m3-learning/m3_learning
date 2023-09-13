@@ -39,7 +39,7 @@ def static_state_decorator(func):
         func (method): any method
     """
     def wrapper(*args, **kwargs):
-        
+
         # saves the current state
         current_state = args[0].get_state
 
@@ -48,7 +48,7 @@ def static_state_decorator(func):
 
         # resets the state
         args[0].set_attributes(**current_state)
-        
+
         # returns the output
         return out
 
@@ -140,7 +140,7 @@ class BE_Dataset:
         self.set_preprocessing()
         self.set_raw_data()
 
-    def generate_noisy_data_records(self, 
+    def generate_noisy_data_records(self,
                                     noise_levels,
                                     basegroup='/Measurement_000/Channel_000',
                                     verbose=False,
@@ -153,7 +153,7 @@ class BE_Dataset:
             basegroup (str, optional): basegroup where the data will be saved. Defaults to '/Measurement_000/Channel_000'.
             verbose (bool, optional): sets the verbosity of the function. Defaults to False.
             noise_STD (float, optional): manually provides a standard deviation value for the noise. Defaults to None.
-        """        
+        """
 
         # computes the noise state if a value is not provided
         if noise_STD is None:
@@ -163,14 +163,14 @@ class BE_Dataset:
             print(f"The STD of the data is: {noise_STD}")
 
         with h5py.File(self.file, "r+") as h5_f:
-            
+
             # iterates through the noise levels provided
             for noise_level in noise_levels:
 
                 if verbose:
                     print(f"Adding noise level {noise_level}")
 
-                # computes the noise level 
+                # computes the noise level
                 noise_level_ = noise_STD * noise_level
 
                 # computes the real and imaginary components of the noise
@@ -178,7 +178,7 @@ class BE_Dataset:
                                                noise_level_, (self.num_pix, self.spectroscopic_length))
                 noise_imag = np.random.uniform(-1*noise_level_,
                                                noise_level_, (self.num_pix, self.spectroscopic_length))
-                
+
                 # adds the noise to the original data
                 noise = noise_real+noise_imag*1.0j
                 data = self.get_original_data + noise
@@ -218,7 +218,7 @@ class BE_Dataset:
     def set_preprocessing(self):
         """
         set_preprocessing searches the dataset to see what preprocessing is required.
-        """        
+        """
 
         # does preprocessing for the SHO_fit results
         if in_list(self.tree, "*SHO_Fit*"):
@@ -233,7 +233,7 @@ class BE_Dataset:
     def loop_fit_preprocessing(self):
         """
         loop_fit_preprocessing preprocessing for the loop fit results
-        """        
+        """
 
         # gets the hysteresis loops
         hysteresis, bias = self.get_hysteresis(
@@ -241,12 +241,16 @@ class BE_Dataset:
 
         # interpolates any missing points in the data
         cleaned_hysteresis = clean_interpolate(hysteresis)
-        
+
         # instantiates and computes the global scaler
         self.hystersis_scaler = global_scaler()
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
 
     def SHO_preprocessing(self):
+        """
+        SHO_preprocessing conducts the preprocessing on the SHO fit results
+        """
+
         # extract the raw data and reshapes is
         self.set_raw_data()
 
@@ -257,12 +261,20 @@ class BE_Dataset:
         self.raw_data_scaler = self.Raw_Data_Scaler(self.raw_data())
 
         try:
+            # gets the LSQF results
             self.set_SHO_LSQF()
+
+            # computes the SHO scaler
             self.SHO_Scaler()
         except:
             pass
 
     def default_state(self):
+        """
+        default_state Function that returns the dataset to the default state
+        """
+
+        # dictionary of the default state
         default_state_ = {'raw_format': "complex",
                           "fitter": 'LSQF',
                           "output_shape": "pixels",
@@ -273,15 +285,24 @@ class BE_Dataset:
                           "LSQF_phase_shift": None,
                           "NN_phase_shift": None, }
 
+        # sets the atributes to the default state
         self.set_attributes(**default_state_)
 
     def get_tree(self):
+        """
+        get_tree reads the tree from the H5 file
+
+        Returns:
+            list: list of the tree from the H5 file
+        """
 
         with h5py.File(self.file, "r+") as h5_f:
             return get_tree(h5_f)
 
     def print_be_tree(self):
         """Utility file to print the Tree of a BE Dataset
+
+        Code adapted from pyUSID
 
         Args:
             path (str): path to the h5 file
@@ -309,6 +330,7 @@ class BE_Dataset:
 
             print(
                 "\nMetadata or attributes in a datagroup\n------------------------------------")
+
             for key in h5_f.file["/Measurement_000"].attrs:
                 print("{} : {}".format(
                     key, h5_f.file["/Measurement_000"].attrs[key]))
@@ -616,7 +638,7 @@ class BE_Dataset:
     def resampled_freq(self):
         """Gets the resampled frequency"""
         return resample(self.frequency_bin, self.resampled_bins)
-    
+
     @property
     def spectroscopic_length(self):
         """Gets the length of the spectroscopic vector"""
