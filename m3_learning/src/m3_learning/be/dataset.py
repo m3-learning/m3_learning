@@ -90,7 +90,7 @@ def resample(y, num_points, axis=0):
 
 @dataclass
 class BE_Dataset:
-    file_: str
+    file: str
     scaled: bool = False
     raw_format: str = "complex"
     fitter: str = 'LSQF'
@@ -101,7 +101,7 @@ class BE_Dataset:
     LSQF_phase_shift: Optional[float] = None
     NN_phase_shift: Optional[float] = None
     verbose: bool = False
-    noise: int = 0
+    noise_state: int = 0
     cleaned: bool = False
     basegroup: str = '/Measurement_000/Channel_000'
     SHO_fit_func_LSQF: Callable = field(default=SHO_fit_func_nn)
@@ -114,7 +114,7 @@ class BE_Dataset:
     """A class to represent a Band Excitation (BE) dataset.
 
     Attributes:
-        file_ (str): The file path of the dataset.
+        file (str): The file path of the dataset.
         scaled (bool, optional): Whether the data is scaled. Defaults to False.
         raw_format (str, optional): The raw data format. Defaults to "complex".
         fitter (str, optional): The fitter to be used. Defaults to 'LSQF'.
@@ -125,7 +125,7 @@ class BE_Dataset:
         LSQF_phase_shift (float, optional): The phase shift for LSQF.
         NN_phase_shift (float, optional): The phase shift for Neural Network.
         verbose (bool, optional): Whether to print detailed information. Defaults to False.
-        noise (int, optional): Noise level. Defaults to 0.
+        noise_state (int, optional): Noise level. Defaults to 0.
         cleaned (bool, optional): Whether the data is cleaned. Defaults to False.
         basegroup (str, optional): The base group in the HDF5 file. Defaults to '/Measurement_000/Channel_000'.
         SHO_fit_func_LSQF (Callable, optional): The fitting function for SHO in LSQF.
@@ -136,6 +136,7 @@ class BE_Dataset:
     """
 
     def __post_init__(self):
+        self.noise = self.noise_state
         self.tree = self.get_tree()
 
         # Initialize resampled_bins if it's None
