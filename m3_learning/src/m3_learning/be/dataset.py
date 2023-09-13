@@ -1148,11 +1148,32 @@ class BE_Dataset:
         return data
 
     def get_cycle(self, data, axis=0,  **kwargs):
+        """
+        get_cycle gets data for a specific cycle of the hysteresis loop
+
+        Args:
+            data (np.array): band excitation data to extract cycle from
+            axis (int, optional): axis to cut the data cycles. Defaults to 0.
+
+        Returns:
+            np.array: data for a specific cycle
+        """
         data = np.array_split(data, self.num_cycles, axis=axis, **kwargs)
         data = data[self.cycle - 1]
         return data
 
     def get_measurement_cycle(self, data, cycle=None, axis=1):
+        """
+        get_measurement_cycle function to get the cycle of a measurement
+
+        Args:
+            data (np.array): band excitation data to extract cycle from
+            cycle (int, optional): cycle to extract. Defaults to None.
+            axis (int, optional): axis where the cycle dimension is located. Defaults to 1.
+
+        Returns:
+            _type_: _description_
+        """
         if cycle is not None:
             self.cycle = cycle
         data = self.get_data_w_voltage_state(data)
@@ -1160,29 +1181,47 @@ class BE_Dataset:
 
     @static_state_decorator
     def get_raw_data_from_LSQF_SHO(self, model, index=None):
+        """
+        get_raw_data_from_LSQF_SHO Extracts the raw data from LSQF SHO fits
 
+        Args:
+            model (dict): dictionary that defines the state to extract
+            index (int, optional): index to extract. Defaults to None.
+
+        Returns:
+            tuple: output results from LSQF reconstruction, SHO parameters
+        """
+
+        # sets the attribute state based on the dictionary 
         self.set_attributes(**model)
 
+        # sets to get the unscaled parameters
+        # this is required so the reconstructions are correct
         self.scaled = False
 
+        # gets the SHO results
         params_shifted = self.SHO_fit_results()
 
+        # sets the phase shift for the current fitter = 0
+        # this is a requirement so the computed results are not phase shifted
         exec(f"self.{model['fitter']}_phase_shift=0")
 
+        # gets the SHO fit parameters
         params = self.SHO_fit_results()
 
+        # changes the state back to scaled
         self.scaled = True
 
+        # gets the raw spectra computed based on the parameters
+        # the output is the scaled values
         pred_data = self.raw_spectra(
             fit_results=params)
 
-        # output (channels, samples, voltage steps)
+        # builds an array of the amplitude and phase
         pred_data = np.array([pred_data[0], pred_data[1]])
 
-        # output (samples, channels, voltage steps)
+        # reshapes the data to be consistent with the rest of the package
         pred_data = np.swapaxes(pred_data, 0, 1)
-
-        # output (samples, voltage steps, channels)
         pred_data = np.swapaxes(pred_data, 1, 2)
 
         if index is not None:
@@ -1192,9 +1231,13 @@ class BE_Dataset:
         return pred_data, params
 
     def set_attributes(self, **kwargs):
+        """
+        set_attributes sets attributes of the object from a dictionary
+        """        
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+        # if noise is included this calls the setter function
         if kwargs.get("noise"):
             self.noise = kwargs.get("noise")
 
