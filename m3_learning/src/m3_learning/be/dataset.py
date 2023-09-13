@@ -170,18 +170,22 @@ class BE_Dataset:
                 if verbose:
                     print(f"Adding noise level {noise_level}")
 
+                # computes the noise level 
                 noise_level_ = noise_STD * noise_level
 
+                # computes the real and imaginary components of the noise
                 noise_real = np.random.uniform(-1*noise_level_,
                                                noise_level_, (self.num_pix, self.spectroscopic_length))
                 noise_imag = np.random.uniform(-1*noise_level_,
                                                noise_level_, (self.num_pix, self.spectroscopic_length))
                 
+                # adds the noise to the original data
                 noise = noise_real+noise_imag*1.0j
                 data = self.get_original_data + noise
 
                 h5_main = usid.hdf_utils.find_dataset(h5_f, "Raw_Data")[0]
 
+                # writes the noise record to the pyUSID file
                 usid.hdf_utils.write_main_dataset(h5_f[basegroup],  # parent group
                                                   data,  # data to be written
                                                   # Name of the main dataset
