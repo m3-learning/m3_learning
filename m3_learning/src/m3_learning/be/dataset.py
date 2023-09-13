@@ -216,21 +216,33 @@ class BE_Dataset:
             self.dataset = f"Noisy_Data_{noise}"
 
     def set_preprocessing(self):
+        """
+        set_preprocessing searches the dataset to see what preprocessing is required.
+        """        
 
+        # does preprocessing for the SHO_fit results
         if in_list(self.tree, "*SHO_Fit*"):
             self.SHO_preprocessing()
         else:
             Warning("No SHO fit found")
 
+        # does preprocessing for the loop fit results
         if in_list(self.tree, "*Fit-Loop_Fit*"):
             self.loop_fit_preprocessing()
 
     def loop_fit_preprocessing(self):
+        """
+        loop_fit_preprocessing preprocessing for the loop fit results
+        """        
 
+        # gets the hysteresis loops
         hysteresis, bias = self.get_hysteresis(
             plotting_values=True, output_shape="index")
 
+        # interpolates any missing points in the data
         cleaned_hysteresis = clean_interpolate(hysteresis)
+        
+        # instantiates and computes the global scaler
         self.hystersis_scaler = global_scaler()
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
 
