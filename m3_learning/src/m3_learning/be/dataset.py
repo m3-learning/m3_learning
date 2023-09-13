@@ -140,11 +140,22 @@ class BE_Dataset:
         self.set_preprocessing()
         self.set_raw_data()
 
-    def generate_noisy_data_records(self, noise_levels,
+    def generate_noisy_data_records(self, 
+                                    noise_levels,
                                     basegroup='/Measurement_000/Channel_000',
                                     verbose=False,
                                     noise_STD=None):
+        """
+        generate_noisy_data_records Function that generates noisy data records and saves them to the H5 file
 
+        Args:
+            noise_levels (list): list of noise levels to be applied to the dataset
+            basegroup (str, optional): basegroup where the data will be saved. Defaults to '/Measurement_000/Channel_000'.
+            verbose (bool, optional): sets the verbosity of the function. Defaults to False.
+            noise_STD (float, optional): manually provides a standard deviation value for the noise. Defaults to None.
+        """        
+
+        # computes the noise state if a value is not provided
         if noise_STD is None:
             noise_STD = np.std(self.get_original_data)
 
@@ -152,7 +163,8 @@ class BE_Dataset:
             print(f"The STD of the data is: {noise_STD}")
 
         with h5py.File(self.file, "r+") as h5_f:
-
+            
+            # iterates through the noise levels provided
             for noise_level in noise_levels:
 
                 if verbose:
@@ -161,9 +173,10 @@ class BE_Dataset:
                 noise_level_ = noise_STD * noise_level
 
                 noise_real = np.random.uniform(-1*noise_level_,
-                                               noise_level_, (3600, 63360))
+                                               noise_level_, (self.num_pix, 63360))
                 noise_imag = np.random.uniform(-1*noise_level_,
                                                noise_level_, (3600, 63360))
+                
                 noise = noise_real+noise_imag*1.0j
                 data = self.get_original_data + noise
 
