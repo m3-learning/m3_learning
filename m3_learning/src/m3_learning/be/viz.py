@@ -251,6 +251,13 @@ class Viz:
             self.Printer.savefig(fig, filename, label_figs=axs, style='b')
 
     def SHO_loops(self, data=None, filename="Figure_2_random_SHO_fit_results"):
+        """
+        Plots the SHO loop fit results
+
+        Args:
+            data (np.array, optional): dataset to use for extracting the loop fits. Defaults to None.
+            filename (str, optional): Filename to save the data. Defaults to "Figure_2_random_SHO_fit_results".
+        """        
 
         if data is None:
             pixel = np.random.randint(0, self.dataset.num_pix)

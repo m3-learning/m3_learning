@@ -39,6 +39,7 @@ def static_state_decorator(func):
         func (method): any method
     """
     def wrapper(*args, **kwargs):
+        
         # saves the current state
         current_state = args[0].get_state
 
@@ -47,6 +48,7 @@ def static_state_decorator(func):
 
         # resets the state
         args[0].set_attributes(**current_state)
+        
         # returns the output
         return out
 
