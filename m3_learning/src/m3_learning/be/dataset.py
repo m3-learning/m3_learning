@@ -1023,14 +1023,16 @@ class BE_Dataset:
                 return self.resampled_data[self.dataset][:]
 
     def measurement_state_voltage(self, voltage_step):
-        """determines the pixel value based on the measurement state
+        """
+        measurement_state_voltage determines the pixel value based on the measurement state
 
         Args:
-            voltage_step (int): voltage_step position
+            voltage_step (int): voltage step to select
 
         Returns:
-            voltage_step (int): pixel value in the correct state
-        """
+            np.array: voltage vector
+        """        
+
         if voltage_step is not None:
 
             # changes the pixel to collect the value for the on or off state
@@ -1043,7 +1045,13 @@ class BE_Dataset:
         return voltage_step
 
     def state_num_voltage_steps(self):
+        """
+        state_num_voltage_steps gets the number of voltage steps given the current measurement state
 
+        Returns:
+            int: number of voltage steps
+        """
+        
         if self.measurement_state == 'all':
             voltage_step = self.voltage_steps
         else:
@@ -1056,6 +1064,18 @@ class BE_Dataset:
                         model=None,
                         phase_shift=None,
                         X_data=None):
+        """
+        SHO_fit_results general function to get the SHO fit results from the dataset
+
+        Args:
+            state (dict, optional): a provided measurement state. Defaults to None.
+            model (nn.module, optional): model which to get the data from. Defaults to None.
+            phase_shift (float, optional): value to shift the phase. Defaults to None.
+            X_data (np.array, optional): frequency bins. Defaults to None.
+
+        Returns:
+            np.array: SHO fit parameters
+        """
 
         # Note removed pixel and voltage step indexing here
 
