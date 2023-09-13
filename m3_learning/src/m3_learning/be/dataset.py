@@ -786,12 +786,15 @@ class BE_Dataset:
             np.array: hysteresis loop parameters from LSQF
         """
 
+        # sets output shape if provided
         if output_shape is not None:
             self.output_shape = output_shape
 
+        # sets data to be scaled is provided
         if scaled is not None:
             self.scaled = scaled
 
+        # extracts the hysteresis parameters from the H5 file
         with h5py.File(self.file, "r+") as h5_f:
             data = h5_f[f"/{self.dataset}_SHO_Fit/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
             data = data.reshape(self.num_rows, self.num_cols, self.num_cycles)
@@ -812,6 +815,12 @@ class BE_Dataset:
     @static_state_decorator
     def SHO_Scaler(self,
                    noise=0):
+        """
+        SHO_Scaler SHO scaler function
+
+        Args:
+            noise (int, optional): noise level to apply the scaler. Defaults to 0.
+        """
 
         # set the noise and the dataset
         self.noise = noise
@@ -827,6 +836,17 @@ class BE_Dataset:
         self.SHO_scaler.scale_[3] = 1
 
     def SHO_LSQF(self, pixel=None, voltage_step=None):
+        """
+        SHO_LSQF Gets the least squares SHO fit results
+
+        Args:
+            pixel (int, optional): selected pixel index to extract. Defaults to None.
+            voltage_step (int, optional): selected voltage index to extract. Defaults to None.
+
+        Returns:
+            np.array: SHO LSQF results
+        """
+        
         with h5py.File(self.file, "r+") as h5_f:
 
             dataset_ = self.SHO_LSQF_data[f"{self.dataset}-SHO_Fit_000"].copy()
@@ -840,6 +860,16 @@ class BE_Dataset:
 
     @staticmethod
     def is_complex(data):
+        """
+        is_complex function to check if data is complex. If not complex makes it a complex number
+
+        Args:
+            data (any): input data
+
+        Returns:
+            any: array or tensor as a complex number
+        """        
+        
         data = data[0]
 
         if type(data) == torch.Tensor:
@@ -853,43 +883,63 @@ class BE_Dataset:
 
     @staticmethod
     def to_magnitude(data):
+        """
+        to_magnitude converts a complex number to an amplitude and phase
+
+        Args:
+            data (np.array): complex photodiode response of the cantilver
+
+        Returns:
+            list: list of np.array containing the magnitude and phase of the cantilever response
+        """
         data = BE_Dataset.to_complex(data)
         return [np.abs(data), np.angle(data)]
 
     @staticmethod
     def to_real_imag(data):
+        """
+        to_real_imag function to extract the real and imaginary data components
+
+        Args:
+            data (np.array or torch.Tensor): BE data
+
+        Returns:
+            list: a list of np.arrays representing the real and imaginary components of the BE response.
+        """
         data = BE_Dataset.to_complex(data)
         return [np.real(data), np.imag(data)]
 
     @staticmethod
     def to_complex(data, axis=None):
+        """
+        to_complex function that converts data to complex
+
+        Args:
+            data (any): data to convert
+            axis (int, optional): axis which the data is structured. Defaults to None.
+
+        Returns:
+            np.array: complex array of the BE response
+        """
+        
+        # converts to an array
         if type(data) == list:
             data = np.array(data)
 
+        # if the data is already in complex form return 
         if BE_Dataset.is_complex(data):
             return data
 
-        if type(data) == list:
-            data = np.array(data)
-
-        if axis is not None:
-            pass
-        else:
+        # if axis is not provided take the last axis
+        if axis is None:
             axis = data.ndim - 1
 
         return np.take(data, 0, axis=axis) + 1j * np.take(data, 1, axis=axis)
 
-    def set_SHO_LSQF(self,
-                     scaler="Raw_Data-SHO_Fit_000",
-                     save_loc='SHO_LSQF'):
-        """Utility function to convert the SHO fit results to an array
-
-        Args:
-            SHO_LSQF (h5 Dataset): Location of the fit results in an h5 file
-
-        Returns:
-            np.array: SHO fit results
+    def set_SHO_LSQF(self):
         """
+        set_SHO_LSQF Sets the SHO Scaler data to make accessible
+        """        
 
         # initializes the dictionary
         self.SHO_LSQF_data = {}
@@ -916,12 +966,23 @@ class BE_Dataset:
 
                 data_ = np.array(SHO_LSQF_list).reshape(
                     -1, 5)
-
+                
+                # saves the SHO LSQF data as an attribute of the dataset object
                 self.SHO_LSQF_data[name] = data_.reshape(
                     self.num_pix, self.voltage_steps, 5)[:, :, :-1]
 
     @staticmethod
     def shift_phase(phase, shift_=None):
+        """
+        shift_phase function that shifts the phase of the dataset
+
+        Args:
+            phase (np.array): phase data
+            shift_ (float, optional): phase to shift the data in radians. Defaults to None.
+
+        Returns:
+            np.array: phase shifted data
+        """        
 
         if shift_ is None or shift_ == 0:
             return phase
@@ -944,7 +1005,17 @@ class BE_Dataset:
         return phase__
 
     def raw_data_resampled(self, pixel=None, voltage_step=None):
-        """Resampled real part of the complex data resampled"""
+        """
+        raw_data_resampled Resampled real part of the complex data resampled
+
+        Args:
+            pixel (int, optional): selected pixel of data to resample. Defaults to None.
+            voltage_step (int, optional): selected voltage step of data to resample. Defaults to None.
+
+        Returns:
+            np.array: resampled data
+        """        
+
         if pixel is not None and voltage_step is not None:
             return self.resampled_data[self.dataset][[pixel], :, :][:, [voltage_step], :]
         else:
