@@ -489,21 +489,49 @@ class BE_Dataset:
             return sho_fitter
 
     def measure_group(self):
+        """
+        measure_group gets the measurement group based on a noise leve
+
+        Returns:
+            str: string for the measurment group for the data
+        """        
+        
         if self.noise == 0:
             return "Raw_Data_SHO_Fit"
         else:
             return f"Noisy_Data_{self.noise}"
 
-    def LSQF_Loop_Fit(self, main_dataset='/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit', h5_target_group=None,
+    def LSQF_Loop_Fit(self, 
+                      main_dataset='/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit', 
+                      h5_target_group=None,
                       max_cores=None):
+        """
+        LSQF_Loop_Fit Function that conducts the hysteresis loop fits based on the LSQF results. 
+        
+        This is adapted from BGlib
+
+        Args:
+            main_dataset (str, optional): main dataset where loop fits are conducted from. Defaults to '/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit'.
+            h5_target_group (str, optional): path where the data will be saved to. Defaults to None.
+            max_cores (int, optional): number of cores the fitter will use, -1 will use all cores. Defaults to None.
+
+        Raises:
+            TypeError: _description_
+
+        Returns:
+            tuple: results from the loop fit, group where the loop fit is
+        """        
 
         with h5py.File(self.file, "r+") as h5_file:
 
+            # gets the experiment type from the file
             expt_type = sidpy.hdf.hdf_utils.get_attr(h5_file, 'data_type')
 
+            # finds the dataset from the file
             h5_meas_grp = usid.hdf_utils.find_dataset(
                 h5_file, self.measure_group())
 
+            # extract the voltage mode
             vs_mode = sidpy.hdf.hdf_utils.get_attr(
                 h5_file["/Measurement_000"], 'VS_mode')
 
@@ -523,11 +551,14 @@ class BE_Dataset:
                 raise TypeError(
                     'main_dataset should be a string or USIDataset object')
 
+            # instantiates the loopfitter using belib
             loop_fitter = belib.analysis.BELoopFitter(main_dataset,
                                                       expt_type, vs_mode, vs_cycle_frac,
                                                       h5_target_group=h5_target_group,
                                                       cores=max_cores,
                                                       verbose=False)
+            
+            # computes the guess for the loop fits
             loop_fitter.set_up_guess()
             h5_loop_guess = loop_fitter.do_guess(override=False)
 
@@ -536,6 +567,8 @@ class BE_Dataset:
                 h5_loop_guess)
             loop_fitter.set_up_fit()
             h5_loop_fit = loop_fitter.do_fit(override=False)
+            
+            # save the path where the loop fit results are saved
             h5_loop_group = h5_loop_fit.parent
 
         return h5_loop_fit, h5_loop_group
