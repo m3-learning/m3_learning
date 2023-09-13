@@ -1661,15 +1661,15 @@ class BE_Dataset:
             self.fit()
 
         @staticmethod
-        def data_type_converter(data):
+        def complex_data_converter(data):
             """
-            data_type_converter converter that converts the dataset to complex
+            complex_data_converter converter that converts the dataset to complex
 
             Args:
-                data (_type_): _description_
+                data (np.array): band excitation data to convert
 
             Returns:
-                _type_: _description_
+                np.array: band excitation data as a complex number
             """
             if BE_Dataset.is_complex(data):
                 return data
@@ -1677,21 +1677,37 @@ class BE_Dataset:
                 return BE_Dataset.to_complex(data)
 
         def fit(self):
+            """
+            fit function to fit the scaler
+            """
+            
+            # gets the raw data
             data = self.raw_data
+            data = self.complex_data_converter(data)
 
-            data = self.data_type_converter(data)
-
+            # extracts the real and imaginary components
             real = np.real(data)
             imag = np.imag(data)
+            
+            # does a global scaler on the data
             self.real_scaler = global_scaler()
             self.imag_scaler = global_scaler()
 
+            # computes global scaler on the real and imaginary parts
             self.real_scaler.fit(real)
             self.imag_scaler.fit(imag)
 
         def transform(self, data):
+            """
+            transform Function to transform the data
 
-            data = self.data_type_converter(data)
+            Args:
+                data (np.array): band excitation data
+
+            Returns:
+                np.array: scaled band excitation data_
+            """
+            data = self.complex_data_converter(data)
 
             real = np.real(data)
             imag = np.imag(data)
@@ -1702,7 +1718,7 @@ class BE_Dataset:
             return real + 1j*imag
 
         def inverse_transform(self, data):
-            data = self.data_type_converter(data)
+            data = self.complex_data_converter(data)
 
             real = np.real(data)
             imag = np.imag(data)
