@@ -128,7 +128,7 @@ class BE_Dataset:
         noise_state (int, optional): Noise level. Defaults to 0.
         cleaned (bool, optional): Whether the data is cleaned. Defaults to False.
         basegroup (str, optional): The base group in the HDF5 file. Defaults to '/Measurement_000/Channel_000'.
-        SHO_fit_func_LSQF (Callable, optional): The fitting function for SHO in LSQF.
+        SHO_fit_func_LSQF (Callable, optional): The fitting function for SHO in NN.
         hysteresis_function (Callable, optional): The hysteresis function for processing. 
         loop_interpolated (bool, optional): Whether the loop data is interpolated. Defaults to False.
         resampled_data (Dict[str, Any]): Holds resampled data. Initialized post object creation.
