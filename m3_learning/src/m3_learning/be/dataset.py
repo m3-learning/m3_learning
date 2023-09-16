@@ -150,6 +150,7 @@ class BE_Dataset:
         # Preprocessing and raw data
         self.set_preprocessing()
         self.set_raw_data()
+        self.SHO_preprocessing()
 
     def generate_noisy_data_records(self,
                                     noise_levels,
