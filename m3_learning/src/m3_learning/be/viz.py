@@ -148,7 +148,7 @@ class Viz:
         """Plots the raw data and the BE waveform
 
         Args:
-            dataset (_type_): BE dataset
+            dataset (BE.dataset): BE dataset
             filename (str, optional): Name to save the file. Defaults to "Figure_1_random_cantilever_resonance_results".
         """
 
@@ -169,10 +169,11 @@ class Viz:
         # plots the resonance graph
         resonance_graph = np.fft.fft(dataset.be_waveform[: int(be_voltagesteps)])
         fftfreq = fftpack.fftfreq(int(be_voltagesteps)) * dataset.sampling_rate
+        
         ax[1].plot(
             fftfreq[: int(be_voltagesteps) // 2],
             np.abs(resonance_graph[: int(be_voltagesteps) // 2]),
-        )
+        ) 
         ax[1].axvline(
             x=dataset.be_center_frequency,
             ymax=np.max(resonance_graph[: int(be_voltagesteps) // 2]),
@@ -188,6 +189,8 @@ class Viz:
             + dataset.be_bandwidth
             + dataset.be_bandwidth * 0.25,
         )
+        
+        #TODO: Should make this generalized not hard coded
 
         # manually set the x limits
         x_start = 120
@@ -201,6 +204,7 @@ class Viz:
         ax_new.set_xlim(x_start, x_end)
         ax_new.set_ylim(0, -15)
 
+        # drows the inset connector
         inset_connector(
             fig,
             ax[2],
@@ -212,6 +216,7 @@ class Viz:
             linewidth=0.5,
         )
 
+        # adds a box on the figure
         add_box(
             ax[2],
             (x_start, 0, x_end, -15),
@@ -275,9 +280,11 @@ class Viz:
             filename (str, optional): filename where to save the results. Defaults to "".
         """
 
+        # if the scale is False will not use the scale in the viz
         if not scaled:
             self.SHO_ranges = None
 
+        # if the SHO data is not a list it will make it a list
         if type(SHO_data) is not list:
             SHO_data = [SHO_data]
 
@@ -343,6 +350,9 @@ class Viz:
             self.Printer.savefig(fig, filename, label_figs=axs, style="b")
 
     def set_attributes(self, **kwargs):
+        """
+        set_attributes utility function to set the attributes of the dataset from a dictionary
+        """        
         for key, value in kwargs.items():
             setattr(self.dataset, key, value)
 
