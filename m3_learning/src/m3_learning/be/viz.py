@@ -26,6 +26,8 @@ import seaborn as sns
 from m3_learning.util.file_IO import make_folder
 from m3_learning.viz.Movies import make_movie
 import os
+from dataclasses import dataclass, field
+from typing import List, Dict, Optional, Any, Type
 
 color_palette = {
     "LSQF_A": "#003f5c",
@@ -93,33 +95,38 @@ def get_lowest_loss_for_noise_level(path, desired_noise_level):
         
         return None
 
-
+@dataclass
 class Viz:
-    def __init__(
-        self,
-        dataset,
-        Printer=None,
-        verbose=False,
-        labelfigs_=True,
-        SHO_ranges=None,
-        image_scalebar=None,
-    ):
-        self.Printer = Printer
-        self.dataset = dataset
-        self.verbose = verbose
-        self.labelfigs = labelfigs_
-        self.image_scalebar = image_scalebar
+    """
+    A DataClass for handling various visualization settings and data.
 
-        self.SHO_labels = [
-            {"title": "Amplitude", "y_label": "Amplitude \n (Arb. U.)"},
-            {"title": "Resonance Frequency", "y_label": "Resonance Frequency \n (Hz)"},
-            {"title": "Dampening", "y_label": "Quality Factor \n (Arb. U.)"},
-            {"title": "Phase", "y_label": "Phase \n (rad)"},
-        ]
+    Attributes:
+        dataset (Any): The dataset to visualize. Replace `Any` with the specific type.
+        Printer (Optional[Type], optional): Printer for output. Defaults to None.
+        verbose (bool, optional): Verbosity flag. Defaults to False.
+        labelfigs_ (bool, optional): Flag to label figures. Defaults to True.
+        SHO_ranges (Optional[Any], optional): Ranges for SHO data. Defaults to None.
+        image_scalebar (Optional[Any], optional): Scalebar settings for images. Defaults to None.
+        SHO_labels (List[Dict[str, str]], optional): Labels for SHO data. Defaults to predefined list.
+        color_palette (Optional[Any], optional): Color palette settings. Defaults to None.
 
-        self.color_palette = color_palette
+    """
+    dataset: Any  # Specify the type based on what you expect
+    Printer: Optional[Type] = None  # You can also define the type of Printer if you know it
+    verbose: bool = False
+    labelfigs_: bool = True
+    SHO_ranges: Optional[Any] = None  # Specify the type based on what you expect
+    image_scalebar: Optional[Any] = None  # Specify the type based on what you expect
 
-        self.SHO_ranges = SHO_ranges
+    SHO_labels: List[Dict[str, str]] = field(default_factory=lambda: [
+        {"title": "Amplitude", "y_label": "Amplitude \n (Arb. U.)"},
+        {"title": "Resonance Frequency", "y_label": "Resonance Frequency \n (Hz)"},
+        {"title": "Dampening", "y_label": "Quality Factor \n (Arb. U.)"},
+        {"title": "Phase", "y_label": "Phase \n (rad)"},
+    ])
+
+    color_palette: Optional[Any] = None  # Replace Any with the expected type if known
+
 
     def static_state_decorator(func):
         """Decorator that stops the function from changing the state
