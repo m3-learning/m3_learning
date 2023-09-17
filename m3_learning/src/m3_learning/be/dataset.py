@@ -787,7 +787,7 @@ class BE_Dataset:
         Returns:
             np.array: hysteresis loop parameters from LSQF
         """
-        
+
         if measurement_state is not None:
             self.measurement_state = measurement_state
 
@@ -814,7 +814,7 @@ class BE_Dataset:
             if self.output_shape == "index":
                 data = data.reshape(
                     self.num_pix, self.num_cycles, data.shape[-1])
-                
+
             data = self.hysteresis_measurement_state(data)
 
             return data
@@ -1880,9 +1880,52 @@ class BE_Dataset:
 
         # output shape (x,y, cycle, voltage_steps)
         return hysteresis_data, bias_vec
-    
-    def get_bias_vector(self):
-        
+
+    def get_bias_vector(self, plotting_values=True):
+
+        # TODO: could look at get_hysteresis to simplify code
+
+        with h5py.File(self.file, "r+") as h5_f:
+
+            # gets the path where the hysteresis loops are located
+            h5_path = self.get_loop_path()
+
+            # gets the projected loops
+            h5_projected_loops = h5_f[h5_path + '/Projected_Loops']
+
+            spec_ind = get_auxiliary_datasets(h5_projected_loops,
+                                              aux_dset_name='Spectroscopic_Indices')[-1]
+            pos_ind = get_auxiliary_datasets(h5_projected_loops,
+                                             aux_dset_name='Position_Indices')[-1]
+            spec_values = get_auxiliary_datasets(h5_projected_loops,
+                                                 aux_dset_name='Spectroscopic_Values')[-1]
+
+            pos_nd, _ = reshape_to_n_dims(pos_ind, h5_pos=pos_ind)
+            pos_dims = list(pos_nd.shape[:pos_ind.shape[1]])
+
+            pos_dims = list(pos_nd.shape[:pos_ind.shape[1]])
+
+            # reshape the vdc_vec into DC_step by Loop
+            spec_nd, _ = reshape_to_n_dims(spec_values, h5_spec=spec_ind)
+            loop_spec_labels = get_attr(spec_values, 'labels')
+            spec_step_dim_ind = np.where(loop_spec_labels == 'DC_Offset')[0][0]
+
+            loop_spec_dims = np.array(spec_nd.shape[1:])
+
+            # Also reshape the projected loops to Positions-DC_Step-Loop
+            final_loop_shape = pos_dims + \
+                [loop_spec_dims[spec_step_dim_ind]] + [-1]
+
+            # Get the bias vector:
+            spec_nd2 = np.moveaxis(
+                spec_nd[spec_step_dim_ind], spec_step_dim_ind, 0)
+
+            bias_vec = np.reshape(spec_nd2, final_loop_shape[len(pos_dims):])
+
+            if plotting_values:
+                bias_vec = self.roll_hysteresis(bias_vec)
+                
+            return bias_vec
 
     def hysteresis_measurement_state(self, hysteresis_data):
         """utility function to extract the measurement state from the hysteresis data
@@ -1901,7 +1944,7 @@ class BE_Dataset:
         if self.measurement_state == "on":
             return hysteresis_data[:, :, 0:hysteresis_data.shape[2]//2, :]
 
-    def roll_hysteresis(self, bias_vector, hysteresis = None,
+    def roll_hysteresis(self, bias_vector, hysteresis=None,
                         shift=4):
         """
         roll_hysteresis function to shift the bias vector and the hysteresis loop by a quarter cycle. This is to compensate for the difference in how the data is stored.
