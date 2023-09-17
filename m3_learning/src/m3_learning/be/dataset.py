@@ -1937,7 +1937,7 @@ class BE_Dataset:
             np.array: hysterisis data with the measurement state extracted
         """
 
-        if self.measurement_state == "all":
+        if self.measurement_state == "all" or self.measurement_state is None:
             return hysteresis_data
         if self.measurement_state == "off":
             return hysteresis_data[:, :, hysteresis_data.shape[2]//2:hysteresis_data.shape[2], :]
