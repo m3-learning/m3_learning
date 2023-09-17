@@ -281,7 +281,7 @@ class Viz:
         """
 
         # if the scale is False will not use the scale in the viz
-        if not scaled:
+        if self.dataset.scaled:
             self.SHO_ranges = None
 
         # if the SHO data is not a list it will make it a list
