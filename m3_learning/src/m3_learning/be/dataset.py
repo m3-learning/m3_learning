@@ -775,17 +775,21 @@ class BE_Dataset:
                 self.raw_datasets.extend([dataset.name.split('/')[-1]])
 
     @static_state_decorator
-    def LSQF_hysteresis_params(self, output_shape=None, scaled=None):
+    def LSQF_hysteresis_params(self, output_shape=None, scaled=None, measurement_state=None):
         """
         LSQF_hysteresis_params Gets the LSQF hysteresis parameters
 
         Args:
             output_shape (str, optional): pixel or list. Defaults to None.
             scaled (bool, optional): selects if to scale the data. Defaults to None.
+            measurement_state (any, optional): sets the measurement state. Defaults to None.
 
         Returns:
             np.array: hysteresis loop parameters from LSQF
         """
+        
+        if measurement_state is not None:
+            self.measurement_state = measurement_state
 
         # sets output shape if provided
         if output_shape is not None:
@@ -810,6 +814,8 @@ class BE_Dataset:
             if self.output_shape == "index":
                 data = data.reshape(
                     self.num_pix, self.num_cycles, data.shape[-1])
+                
+            data = self.hysteresis_measurement_state(data)
 
             return data
 
@@ -1849,7 +1855,7 @@ class BE_Dataset:
             bias_vec = np.reshape(spec_nd2, final_loop_shape[len(pos_dims):])
 
             if plotting_values:
-                proj_nd_3, bias_vec = self.roll_hysteresis(proj_nd_3, bias_vec)
+                proj_nd_3, bias_vec = self.roll_hysteresis(bias_vec, proj_nd_3)
 
             hysteresis_data = np.transpose(proj_nd_3, (1, 0, 3, 2))
 
@@ -1874,6 +1880,9 @@ class BE_Dataset:
 
         # output shape (x,y, cycle, voltage_steps)
         return hysteresis_data, bias_vec
+    
+    def get_bias_vector(self):
+        
 
     def hysteresis_measurement_state(self, hysteresis_data):
         """utility function to extract the measurement state from the hysteresis data
@@ -1892,10 +1901,10 @@ class BE_Dataset:
         if self.measurement_state == "on":
             return hysteresis_data[:, :, 0:hysteresis_data.shape[2]//2, :]
 
-    def roll_hysteresis(self, hysteresis, bias_vector,
+    def roll_hysteresis(self, bias_vector, hysteresis = None,
                         shift=4):
         """
-        roll_hysteresis function to shift the biase vector and the hysteresis loop by a quarter cycle. This is to compensate for the difference in how the data is stored.
+        roll_hysteresis function to shift the bias vector and the hysteresis loop by a quarter cycle. This is to compensate for the difference in how the data is stored.
 
         Args:
             hysteresis (np.array): array for the hysteresis loop
@@ -1910,10 +1919,12 @@ class BE_Dataset:
 
         # Shift the bias vector and the loops by a quarter cycle
         shift_ind = int(-1 * bias_vector.shape[0] / shift)
-        proj_nd_shifted = np.roll(hysteresis, shift_ind, axis=2)
         bias_vector = np.roll(bias_vector, shift_ind, axis=0)
-
-        return proj_nd_shifted, bias_vector
+        if hysteresis is None:
+            return bias_vector
+        else:
+            proj_nd_shifted = np.roll(hysteresis, shift_ind, axis=2)
+            return proj_nd_shifted, bias_vector
 
     @property
     def BE_superposition_state(self):
