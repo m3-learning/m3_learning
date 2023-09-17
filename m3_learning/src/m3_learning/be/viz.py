@@ -57,8 +57,7 @@ class Viz:
     def __init__(self, dataset, Printer=None, verbose=False, labelfigs_=True,
                  SHO_ranges=None,
                  image_scalebar=None,):
-        
-        
+
         self.Printer = Printer
         self.dataset = dataset
         self.verbose = verbose
@@ -207,13 +206,17 @@ class Viz:
         if self.Printer is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style='b')
 
-    def SHO_hist(self, SHO_data, filename=None):
+    @static_state_decorator
+    def SHO_hist(self, SHO_data, filename=None, scaled=True):
         """Plots the SHO hysterisis parameters
 
         Args:
             SHO_data (numpy): SHO fit results
             filename (str, optional): filename where to save the results. Defaults to "".
         """
+
+        if not scaled:
+            self.SHO_ranges = None
 
         if type(SHO_data) is not list:
             SHO_data = [SHO_data]
@@ -257,7 +260,7 @@ class Viz:
         Args:
             data (np.array, optional): dataset to use for extracting the loop fits. Defaults to None.
             filename (str, optional): Filename to save the data. Defaults to "Figure_2_random_SHO_fit_results".
-        """        
+        """
 
         if data is None:
             pixel = np.random.randint(0, self.dataset.num_pix)
@@ -749,7 +752,6 @@ class Viz:
         # holds the raw state
         current_state = self.dataset.get_state
 
-        # if isinstance(prediction, m3_learning.be.nn.SHO_Model):
         if isinstance(prediction, nn.Module):
 
             fitter = "NN"
@@ -870,7 +872,7 @@ class Viz:
         # (samples, voltage steps, real/imaginary)
         data = data[[index]]
 
-        if isinstance(model, m3_learning.be.nn.SHO_Model):
+        if isinstance(model, nn.Module):
 
             # gets the predictions from the neural network
             predictions, params_scaled, params = model.predict(data)
@@ -984,7 +986,7 @@ class Viz:
                                                                         out_state=out_state)
 
                         # checks if using a neural network and saves the error
-                        if isinstance(model_comparison[step], m3_learning.be.nn.SHO_Model):
+                        if isinstance(model_comparison[step], nn.Module):
 
                             # saves the color prefix
                             color = "NN"
@@ -1068,7 +1070,7 @@ class Viz:
         pixel, voltage = np.unravel_index(
             index, (self.dataset.num_pix, self.dataset.voltage_steps))
 
-        if isinstance(model, m3_learning.be.nn.SHO_Model):
+        if isinstance(model, nn.Module):
 
             X_data, Y_data = self.dataset.NN_data()
 
@@ -2018,7 +2020,7 @@ class Viz:
 
         for pred, label in zip(predictions, labels):
 
-            if isinstance(pred, m3_learning.be.nn.SHO_Model):
+            if isinstance(pred, nn.Module):
 
                 pred_data, scaled_param, parm = pred.predict(true_data)
 
