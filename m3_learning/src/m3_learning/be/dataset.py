@@ -1769,6 +1769,7 @@ class BE_Dataset:
                        output_shape=None,
                        scaled=None,
                        loop_interpolated=None,
+                       measurement_state=None,
                        ):
         """
         get_hysteresis function to get the hysteresis loops
@@ -1779,10 +1780,16 @@ class BE_Dataset:
             output_shape (str, optional): sets the shape of the output. Defaults to None.
             scaled (any, optional): selects if the output is scaled or unscaled. Defaults to None.
             loop_interpolated (any, optional): sets if you should get the interpolated loops. Defaults to None.
+            measurement_state (any, optional): sets the measurement state. Defaults to None.
 
         Returns:
             np.array: output hysteresis data, bias vector for the hystersis loop
         """
+
+        # todo: can replace this to make this much nicer to get the data. Too many random transforms
+
+        if measurement_state is not None:
+            self.measurement_state = measurement_state
 
         with h5py.File(self.file, "r+") as h5_f:
 
@@ -1862,8 +1869,28 @@ class BE_Dataset:
             elif self.output_shape == "pixels":
                 pass
 
+            hysteresis_data = self.hysteresis_measurement_state(
+                hysteresis_data)
+
         # output shape (x,y, cycle, voltage_steps)
         return hysteresis_data, bias_vec
+
+    def hysteresis_measurement_state(self, hysteresis_data):
+        """utility function to extract the measurement state from the hysteresis data
+
+        Args:
+            hysteresis_data (np.array): hysteresis data to extract the measurement state from
+
+        Returns:
+            np.array: hysterisis data with the measurement state extracted
+        """
+
+        if self.measurement_state == "all":
+            return hysteresis_data
+        if self.measurement_state == "off":
+            return hysteresis_data[:, :, hysteresis_data.shape[2]//2:hysteresis_data.shape[2], :]
+        if self.measurement_state == "on":
+            return hysteresis_data[:, :, 0:hysteresis_data.shape[2]//2, :]
 
     def roll_hysteresis(self, hysteresis, bias_vector,
                         shift=4):
