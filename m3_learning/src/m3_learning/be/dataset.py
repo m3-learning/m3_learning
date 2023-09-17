@@ -514,7 +514,7 @@ class BE_Dataset:
             return f"Noisy_Data_{self.noise}"
 
     def LSQF_Loop_Fit(self,
-                      main_dataset='/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit',
+                      main_dataset='Raw_Data-SHO_Fit_000/Fit',
                       h5_target_group=None,
                       max_cores=None):
         """
@@ -523,7 +523,7 @@ class BE_Dataset:
         This is adapted from BGlib
 
         Args:
-            main_dataset (str, optional): main dataset where loop fits are conducted from. Defaults to '/Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit'.
+            main_dataset (str, optional): main dataset where loop fits are conducted from. Defaults to 'Raw_Data-SHO_Fit_000/Fit'.
             h5_target_group (str, optional): path where the data will be saved to. Defaults to None.
             max_cores (int, optional): number of cores the fitter will use, -1 will use all cores. Defaults to None.
 
@@ -1757,7 +1757,7 @@ class BE_Dataset:
 
         if self.noise == 0 or self.noise is None:
             prefix = 'Raw_Data'
-            return f"/{prefix}_SHO_Fit/{prefix}-SHO_Fit_000/Fit-Loop_Fit_000"
+            return f"/{prefix}-SHO_Fit_000/Fit-Loop_Fit_000"
         else:
             prefix = f"Noisy_Data_{self.noise}"
             return f"/Noisy_Data_{self.noise}_SHO_Fit/Noisy_Data_{self.noise}-SHO_Fit_000/Guess-Loop_Fit_000"
