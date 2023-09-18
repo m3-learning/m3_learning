@@ -22,6 +22,11 @@ def loop_fitting_function_torch(V, y, type='9 parameters'):
 
     if(type == '9 parameters'):
         
+        vector_length = int(len(V) / 2)
+        
+        # expands the tensor
+        y = y.unsqueeze(-1).repeat(1,1, vector_length)
+        
         a0 = y[:, 0]
         a1 = y[:, 1]
         a2 = y[:, 2]
@@ -32,8 +37,8 @@ def loop_fitting_function_torch(V, y, type='9 parameters'):
         b2 = y[:, 7]
         b3 = y[:, 8]
         d = 1000
-        V1 = torch.tensor(V[:int(len(V) / 2)]).cuda()
-        V2 = torch.tensor(V[int(len(V) / 2):]).cuda()
+        V1 = torch.tensor(V[:vector_length]).cuda()
+        V2 = torch.tensor(V[vector_length:]).cuda()
 
         g1 = (b1 - b0) / 2 * (torch.erf((V1 - a2) * d) + 1) + b0
         g2 = (b3 - b2) / 2 * (torch.erf((V2 - a3) * d) + 1) + b2
