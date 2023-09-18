@@ -348,6 +348,7 @@ class Model(nn.Module):
                 else:
                     pred, embedding = self.model(train_batch)
                     pred = pred.to(torch.float32)
+                    pred = torch.atleast_3d(pred)
                     embedding = embedding.to(torch.float32)
                     optimizer_.zero_grad()
                     loss = loss_func(train_batch, pred)
