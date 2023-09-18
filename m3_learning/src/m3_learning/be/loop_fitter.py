@@ -1,7 +1,7 @@
 import torch
 
 
-def loop_fitting_function_torch(V, y, type='9 parameters', device='cuda'):
+def loop_fitting_function_torch(y, V, type='9 parameters', device='cuda'):
     """Hysteresis loop fitting function using torch tensors
 
     Args:
@@ -12,7 +12,7 @@ def loop_fitting_function_torch(V, y, type='9 parameters', device='cuda'):
 
     Returns:
         np.array: neural network fit results
-    """    
+    """
 
     V = torch.tensor(V)
 
@@ -27,8 +27,8 @@ def loop_fitting_function_torch(V, y, type='9 parameters', device='cuda'):
     V = V.type(torch.float64).to(device)
     y = y.type(torch.float64).to(device)
 
-    if(type == '9 parameters'):
-        
+    if (type == '9 parameters'):
+
         a0, a1, a2, a3, a4, b0, b1, b2, b3 = [y[:, i] for i in range(9)]
 
         V1, V2 = V[:half_len], V[half_len:]
@@ -57,7 +57,7 @@ def loop_fitting_function_torch(V, y, type='9 parameters', device='cuda'):
             torch.erf((V - Al) / S2) + a3 * V
 
         return torch.squeeze(torch.cat((Branch1, torch.flipud(Branch2)), axis=0))
-    
+
         # a0 = y[:, 0].type(torch.float64)
         # a1 = y[:, 1].type(torch.float64)
         # a2 = y[:, 2].type(torch.float64)
@@ -82,8 +82,8 @@ def loop_fitting_function_torch(V, y, type='9 parameters', device='cuda'):
 
         # loop_eval = torch.transpose(torch.cat((f1, f2), axis=0), 1, 0)
         # return loop_eval
-    
-    elif(type == '13 parameters'):
+
+    elif (type == '13 parameters'):
         a1 = y[:, 0].type(torch.float64)
         a2 = y[:, 1].type(torch.float64)
         a3 = y[:, 2].type(torch.float64)
