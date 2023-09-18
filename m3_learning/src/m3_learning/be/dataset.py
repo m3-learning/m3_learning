@@ -257,6 +257,11 @@ class BE_Dataset:
         # instantiates and computes the global scaler
         self.hystersis_scaler = global_scaler()
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
+        
+        try:
+            self.LoopParmScaler()
+        except:
+            pass
 
     def SHO_preprocessing(self):
         """
@@ -841,6 +846,13 @@ class BE_Dataset:
         self.SHO_scaler.mean_[3] = 0
         self.SHO_scaler.var_[3] = 1
         self.SHO_scaler.scale_[3] = 1
+        
+    def LoopParmScaler(self):
+        
+        self.loop_param_scaler = StandardScaler()
+        data = self.LSQF_hysteresis_params().reshape(-1, 9)
+        
+        self.loop_param_scaler.fit(data)
 
     def SHO_LSQF(self, pixel=None, voltage_step=None):
         """

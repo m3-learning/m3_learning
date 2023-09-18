@@ -2376,7 +2376,7 @@ class Viz:
         if 'LSQF' in data:
             parms = self.dataset.LSQF_hysteresis_params(
             )[row, col, cycle, :].reshape(-1, 9)
-            loop = loop_fitting_function_torch(voltage[:, [0]], parms).to(
+            loop = loop_fitting_function_torch(parms, voltage[:, [0]]).to(
                 'cpu').detach().numpy().squeeze()
             ax[0].plot(voltage[:, cycle].squeeze(), loop, 'r', label='LSQF')
 
