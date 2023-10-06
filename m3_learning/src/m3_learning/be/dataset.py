@@ -263,6 +263,17 @@ class BE_Dataset:
         except:
             pass
 
+    @property
+    def hysteresis_scaler(self):
+        """
+        get_hysteresis_scaler gets the hysteresis scaler
+
+        Returns:
+            scaler: scaler for the hysteresis loops
+        """
+
+        return self.hystersis_scaler
+
     def SHO_preprocessing(self):
         """
         SHO_preprocessing conducts the preprocessing on the SHO fit results

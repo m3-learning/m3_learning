@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 from ...optimizers.AdaHessian import AdaHessian
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from ...nn.random import random_seed
 from m3_learning.nn.benchmarks.inference import computeTime
 from ...viz.layout import get_axis_range, set_axis, Axis_Ratio
@@ -68,7 +69,6 @@ def write_csv(write_CSV,
                 f"{model_updates}"]
         append_to_csv(f"{path}/{write_CSV}", data, headers)
 
-
 class Multiscale1DFitter(nn.Module):
     
     def __init__(self, 
@@ -79,6 +79,7 @@ class Multiscale1DFitter(nn.Module):
                  scaler=None, # scaler object
                  post_processing = None, 
                  device = "cuda",
+                 loops_scaler=None,
                  **kwargs):
         
         self.input_channels = input_channels
@@ -88,6 +89,7 @@ class Multiscale1DFitter(nn.Module):
         self.post_processing = post_processing
         self.device = device
         self.num_params = num_params
+        self.loops_scaler = loops_scaler
 
         super().__init__()
 
@@ -104,9 +106,11 @@ class Multiscale1DFitter(nn.Module):
 
         # fully connected block
         self.hidden_xfc = nn.Sequential(
-            nn.Linear(256, 20),
+            nn.Linear(256, 64),
             nn.SELU(),
-            nn.Linear(20, 20),
+            nn.Linear(64, 32),
+            nn.SELU(),
+            nn.Linear(32, 20),
             nn.SELU(),
         )
 
@@ -171,9 +175,6 @@ class Multiscale1DFitter(nn.Module):
         else:
             unscaled_param = embedding
 
-        # frequency_bins = resample(self.dataset.frequency_bin,
-        #                           self.dataset.resampled_bins)
-
         # passes to the pytorch fitting function
         fits = self.function(
             unscaled_param, self.x_data, device=self.device)
@@ -184,13 +185,16 @@ class Multiscale1DFitter(nn.Module):
         else:
             out = fits
 
+        out_scaled = (out - torch.tensor(self.loops_scaler.mean).cuda()) / torch.tensor(
+            self.loops_scaler.std).cuda()
+
         if self.training == True:
-            return out, unscaled_param
+            return out_scaled, unscaled_param
         if self.training == False:
             # this is a scaling that includes the corrections for shifts in the data
             embeddings = (unscaled_param.cuda() - torch.tensor(self.scaler.mean_).cuda()
                           )/torch.tensor(self.scaler.var_ ** 0.5).cuda()
-            return out, embeddings, unscaled_param
+            return out_scaled, embeddings, unscaled_param
 
 
 class ComplexPostProcessor:
@@ -277,9 +281,13 @@ class Model(nn.Module):
 
         # selects the optimizer
         if optimizer == 'Adam':
-            optimizer_ = torch.optim.Adam(self.model.parameters())
+            optimizer_ = torch.optim.Adam(self.model.parameters(), lr=3e-3)
+            scheduler = ReduceLROnPlateau(optimizer_, mode='min', factor=0.9, patience=100, verbose=True)
         elif optimizer == "AdaHessian":
-            optimizer_ = AdaHessian(self.model.parameters(), lr=.5)
+            optimizer_ = AdaHessian(self.model.parameters(), lr=0.1)
+            scheduler = ReduceLROnPlateau(optimizer_, mode='min', factor=0.5, patience=20, verbose=True)
+        elif optimizer == "LBFGS":
+            optimizer_ = torch.optim.LBFGS(self.model.parameters(), lr=0.01)
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
                 optimizer_ = optimizer['optimizer'](
@@ -335,6 +343,7 @@ class Model(nn.Module):
                     def closure(part, total, device):
                         pred, embedding = self.model(train_batch)
                         pred = pred.to(torch.float32)
+                        pred = torch.atleast_3d(pred)
                         embedding = embedding.to(torch.float32)
                         loss = loss_func(train_batch, pred)
                         return loss
@@ -404,6 +413,11 @@ class Model(nn.Module):
             print("epoch : {}/{}, recon loss = {:.8f}".format(epoch +
                                                               1, epochs, train_loss))
             print("--- %s seconds ---" % (epoch_time))
+
+            # scheduler.step(train_loss)
+            # Print the current learning rate (optional)
+            current_lr = optimizer_.param_groups[0]['lr']
+            print(f"Epoch {epoch+1}, Learning Rate: {current_lr}")
 
             if save_all:
                 torch.save(self.model.state_dict(),
@@ -476,8 +490,8 @@ class Model(nn.Module):
         num_batches = len(dataloader)
         data = data.clone().detach().requires_grad_(True)
         predictions = torch.zeros_like(data.clone().detach())
-        params_scaled = torch.zeros((data.shape[0], 4))
-        params = torch.zeros((data.shape[0], 4))
+        params_scaled = torch.zeros((data.shape[0], 9))
+        params = torch.zeros((data.shape[0], 9))
 
         # compute the predictions
         for i, train_batch in enumerate(dataloader):
@@ -490,7 +504,7 @@ class Model(nn.Module):
             pred_batch, params_scaled_, params_ = self.model(
                 train_batch.to(self.device))
 
-            predictions[start:end] = pred_batch.cpu().detach()
+            predictions[start:end] = torch.unsqueeze(pred_batch.cpu().detach(), 2)
             params_scaled[start:end] = params_scaled_.cpu().detach()
             params[start:end] = params_.cpu().detach()
 
