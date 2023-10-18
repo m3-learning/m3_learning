@@ -273,6 +273,19 @@ class BE_Dataset:
         """
 
         return self.hystersis_scaler
+    
+    @property
+    def get_voltage(self):
+        """
+        get_voltage gets the voltage vector
+
+        Returns:
+            np.array: voltage vector
+        """
+        with h5py.File(self.file, "r+") as h5_f:
+            return h5_f['Measurement_000']['Channel_000']['UDVS'][::2][:, 1][24:120] 
+
+        
 
     def SHO_preprocessing(self):
         """

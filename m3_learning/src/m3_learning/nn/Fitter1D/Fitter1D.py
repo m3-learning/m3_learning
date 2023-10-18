@@ -69,19 +69,10 @@ def write_csv(write_CSV,
                 f"{model_updates}"]
         append_to_csv(f"{path}/{write_CSV}", data, headers)
 
+
 class Multiscale1DFitter(nn.Module):
-    
-    def __init__(self, 
-                function, # function to fit
-                 x_data, # x_data to generate
-                 input_channels, # number of input channels
-                 num_params, # number of parameters to fit
-                 scaler=None, # scaler object
-                 post_processing = None, 
-                 device = "cuda",
-                 loops_scaler=None,
-                 **kwargs):
-        
+    def __init__(self, function, x_data, input_channels, num_params, scaler=None, post_processing=None, device="cuda", loops_scaler=None, **kwargs):
+
         self.input_channels = input_channels
         self.scaler = scaler
         self.function = function
@@ -150,6 +141,7 @@ class Multiscale1DFitter(nn.Module):
             nn.Linear(8, self.num_params),
         )
 
+
     def forward(self, x, n=-1):
         # output shape - samples, (real, imag), frequency
         x = torch.swapaxes(x, 1, 2)
@@ -165,6 +157,8 @@ class Multiscale1DFitter(nn.Module):
         encoded = torch.cat((cnn_flat, xfc), 1)  # merge dense and 1d conv.
         embedding = self.hidden_embedding(encoded)  # output is 4 parameters
 
+        unscaled_param = embedding
+
         if self.scaler is not None:
             # corrects the scaling of the parameters
             unscaled_param = (
@@ -178,6 +172,8 @@ class Multiscale1DFitter(nn.Module):
         # passes to the pytorch fitting function
         fits = self.function(
             unscaled_param, self.x_data, device=self.device)
+
+        out = fits
         
         # Does the post processing if required
         if self.post_processing is not None:
@@ -291,11 +287,19 @@ class Model(nn.Module):
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
                 optimizer_ = optimizer['optimizer'](
-                    self.model, optimizer['radius'], optimizer['device'])
+                    self.model, optimizer['radius'], optimizer['device'],
+                    optimizer['closure_size'],
+                    optimizer['cgopttol'], optimizer['c0tr'], optimizer['c1tr'],
+                    optimizer['c2tr'], optimizer['t1tr'], optimizer['t2tr'],
+                    optimizer['radius_max'], optimizer['radius_initial'])
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
                 optimizer_ = optimizer['optimizer'](
-                    self.model, optimizer['radius'], optimizer['device'])
+                    self.model, optimizer['radius'], optimizer['device'],
+                    optimizer['closure_size'],
+                    optimizer['cgopttol'], optimizer['c0tr'], optimizer['c1tr'],
+                    optimizer['c2tr'], optimizer['t1tr'], optimizer['t2tr'],
+                    optimizer['radius_max'], optimizer['radius_initial'])
         else:
             try:
                 optimizer = optimizer(self.model.parameters())

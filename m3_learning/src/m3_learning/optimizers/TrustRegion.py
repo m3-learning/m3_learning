@@ -45,9 +45,9 @@ class TRCG(Optimizer):
 #                  lr=required, momentum=0, dampening=0,
 #                  weight_decay=0, nesterov=False, *, maximize: bool = False,
 #                  foreach: Optional[bool] = None,
-                 cgopttol=1e-7,c0tr=0.2,c1tr=0.25,c2tr=0.75,t1tr=0.75,t2tr=2.0,
-                 radius_max=5.0,
-                 radius_initial=1.0,
+                 cgopttol=1e-7,c0tr=0.0001,c1tr=0.1,c2tr=0.75,t1tr=0.25,t2tr=2.0,
+                 radius_max=2.0,
+                 radius_initial=0.1,
                  differentiable: bool = False
                 ):
         
@@ -63,7 +63,8 @@ class TRCG(Optimizer):
         self.radius_max = radius_max
         self.radius_initial = radius_initial
         self.radius = radius
-        self.cgmaxiter = 60
+        self.cgmaxiter = sum(p.numel() for p in model.parameters())
+        self.cgmaxiter = min(120, self.cgmaxiter)
         
         
         
