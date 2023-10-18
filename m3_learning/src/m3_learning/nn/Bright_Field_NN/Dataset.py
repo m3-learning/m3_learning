@@ -24,10 +24,9 @@ import dask.array as da
 
 class Bright_Field_Dataset:
 
-    def __init__(self, path, filename, combined_name='', verbose=False):
+    def __init__(self, path, combined_name='', verbose=False):
 
         self.path = path
-        self.filename = filename
         self.combined_name = combined_name
         self.verbose = verbose
 
