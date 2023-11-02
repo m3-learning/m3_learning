@@ -21,3 +21,4 @@ jupyter-book
 torch
 torchvision
 torchaudio
+matplotlib

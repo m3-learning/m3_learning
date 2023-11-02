@@ -292,7 +292,7 @@ class Viz:
                         channels=self.channels, 
                         labelfigs_ = self.labelfigs_,
                         printer = self.printer, 
-                        name=f"{self.printer.basepath}/{output_folder}/ep_{h[embedding].attrs['epoch']}_beta_{h[embedding].attrs['beta']}",
+                        name=f"{output_folder}/ep_{h[embedding].attrs['epoch']}_beta_{h[embedding].attrs['beta']}",
                         **kwargs)
             
             
