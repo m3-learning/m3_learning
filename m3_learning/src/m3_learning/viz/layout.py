@@ -374,22 +374,22 @@ def scalebar(axes, image_size, scale_size, units="nm", loc="br"):
     # computes the fraction of the image for the scalebar
     fract = scale_size / image_size
 
-    x_point = np.linspace(x_lim[0], x_lim[1], np.int(np.floor(image_size)))
-    y_point = np.linspace(y_lim[0], y_lim[1], np.int(np.floor(image_size)))
+    x_point = np.linspace(x_lim[0], x_lim[1], int(np.floor(image_size)))
+    y_point = np.linspace(y_lim[0], y_lim[1], int(np.floor(image_size)))
 
     # sets the location of the scalebar
     if loc == "br":
-        x_start = x_point[np.int(0.9 * image_size // 1)]
-        x_end = x_point[np.int((0.9 - fract) * image_size // 1)]
-        y_start = y_point[np.int(0.1 * image_size // 1)]
-        y_end = y_point[np.int((0.1 + 0.025) * image_size // 1)]
-        y_label_height = y_point[np.int((0.1 + 0.075) * image_size // 1)]
+        x_start = x_point[int(0.9 * image_size // 1)]
+        x_end = x_point[int((0.9 - fract) * image_size // 1)]
+        y_start = y_point[int(0.1 * image_size // 1)]
+        y_end = y_point[int((0.1 + 0.025) * image_size // 1)]
+        y_label_height = y_point[int((0.1 + 0.075) * image_size // 1)]
     elif loc == "tr":
-        x_start = x_point[np.int(0.9 * image_size // 1)]
-        x_end = x_point[np.int((0.9 - fract) * image_size // 1)]
-        y_start = y_point[np.int(0.9 * image_size // 1)]
-        y_end = y_point[np.int((0.9 - 0.025) * image_size // 1)]
-        y_label_height = y_point[np.int((0.9 - 0.075) * image_size // 1)]
+        x_start = x_point[int(0.9 * image_size // 1)]
+        x_end = x_point[int((0.9 - fract) * image_size // 1)]
+        y_start = y_point[int(0.9 * image_size // 1)]
+        y_end = y_point[int((0.9 - 0.025) * image_size // 1)]
+        y_label_height = y_point[int((0.9 - 0.075) * image_size // 1)]
 
     # makes the path for the scalebar
     path_maker(axes, [x_start, x_end, y_start, y_end], "w", "k", "-", .25)
