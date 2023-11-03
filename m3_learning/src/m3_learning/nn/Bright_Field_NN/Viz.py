@@ -2,17 +2,20 @@ import matplotlib.pyplot as plt
 from m3_learning.viz.layout import imagemap, add_scalebar
 from m3_learning.util.file_IO import make_folder
 from m3_learning.viz.layout import layout_fig,subfigures
+from m3_learning.viz.layout import layout_fig,subfigures
 import numpy as np
 import torch
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import re
 import io
 import PIL
 from skimage import morphology
 from skimage.filters import threshold_otsu
+import h5py
 
 from tqdm import tqdm
 from os.path import join as pjoin
@@ -64,62 +67,76 @@ class Viz:
                     windows_group = 'windows',
                     dset_name = 'windows_data',
                     logset_name = 'windows_logdata',
-                    view_windows = 'windows_logdata'):
+                    view_windows = 'windows_logdata'):              
         '''
         Plot the filtered image, transform, and window
         
         Args:
-            img_name (list): ['condition','temperature']
+            img_name (list): the condition and temperature of the image we want to see.
+                In format ['Ramp_Up' or 'Ramp_Down', 'temperature']
             x (int): x tile
             y (int): y tile
-            name (str): name given to preprocessing h5 file, which is named '(name)_preprocessed.h5'
             condition (str): 'Ramp_up' or 'Ramp_Down'
+            cropped_scalebar (tuple) = Defaults to None,
+            windows_group (str) = Default 'windows',
+            dset_name (str) Default = 'windows_data',
+            logset_name (str) = Default  'windows_logdata',
+            view_windows (str) = Default 'windows_logdata'
         '''
-        h = self.dset.open_combined_h5()
-        image = h['All_filtered']
-        raw = self.dset.get_raw_img(img_name[0],img_name[1])
 
-        for t,temp in enumerate(self.dset.temps):
-            if f'{img_name[0]}/{img_name[1]}' in temp: break
-        # print(t)
+        with h5py.File(self.dset.combined_h5_name) as h:
+            image = h['All_filtered']
+            raw = self.dset.get_raw_img(img_name[0],img_name[1])
 
-        # Make grid
-        fig = plt.figure(figsize=(4,8/3))
-        gs = fig.add_gridspec(2, 3)
-        axs = []
-        axs.append( fig.add_subplot(gs[:,0:2]) ) # large subplot (2 rows, 2 columns)
-        axs.append( fig.add_subplot(gs[0,2]) )   # small subplot (1st row, 3rd column)
-        axs.append(fig.add_subplot(gs[1,2]))
+            for t,temp in enumerate(self.dset.temps):
+                if f'{img_name[0]}/{img_name[1]}' in temp: break
+            # print(t)
 
-        idx,bbox = self.dset.get_window_index(t,x,y,
-                                              windows_group=windows_group,
-                                              dset_name=dset_name,
-                                              logset_name=logset_name)
-        # print(idx,bbox)
-        
-        # plot the full image
-        rect = patches.Rectangle((bbox[0],bbox[2]), bbox[1]-bbox[0],bbox[3]-bbox[2],
-                                 linewidth=2, edgecolor='r', facecolor='none')
-        axs[0].set_title('Full Image')
-        axs[0].add_patch(rect)
-        imagemap(axs[0],image[t],colorbars=True)
-        if cropped_scalebar is not None:
-            # adds a scalebar to the figure
-            cropped_scalebar = self.scalebar_
-            cropped_scalebar["width"]*=(image[0].shape[0]/raw.shape[0])
-            add_scalebar(axs, cropped_scalebar)
+            # Make grid
+            fig = plt.figure(figsize=(4,8/3))
+            gs = fig.add_gridspec(2, 3)
+            axs = []
+            axs.append( fig.add_subplot(gs[:,0:2]) ) # large subplot (2 rows, 2 columns)
+            axs.append( fig.add_subplot(gs[0,2]) )   # small subplot (1st row, 3rd column)
+            axs.append(fig.add_subplot(gs[1,2]))
 
-        axs[1].set_title('FFT tile')
-        imagemap(axs[1],h[windows_group][view_windows][idx],colorbars=True)
+            idx,bbox = self.dset.get_window_index(t,x,y,
+                                                windows_group=windows_group,
+                                                dset_name=dset_name,
+                                                logset_name=logset_name)
+            # print(idx,bbox)
+            
+            # plot the full image
+            rect = patches.Rectangle((bbox[0],bbox[2]), bbox[1]-bbox[0],bbox[3]-bbox[2],
+                                    linewidth=2, edgecolor='r', facecolor='none')
+            axs[0].set_title('Full Image')
+            axs[0].add_patch(rect)
+            imagemap(axs[0],image[t],colorbars=True)
+            if cropped_scalebar is not None:
+                # adds a scalebar to the figure
+                cropped_scalebar = self.scalebar_
+                cropped_scalebar["width"]*=(image[0].shape[0]/raw.shape[0])
+                add_scalebar(axs, cropped_scalebar)
 
-        axs[2].set_title('Image tile')
-        imagemap(axs[2],image[t,bbox[2]:bbox[3],bbox[0]:bbox[1]],colorbars=True)
+            axs[1].set_title('FFT tile')
+            imagemap(axs[1],h[windows_group][view_windows][idx],colorbars=True)
 
-        plt.tight_layout()
-        plt.show()
+            axs[2].set_title('Image tile')
+            imagemap(axs[2],image[t,bbox[2]:bbox[3],bbox[0]:bbox[1]],colorbars=True)
+
+            plt.tight_layout()
+            plt.show()
 
 
     def get_theta(self,rotation):
+        """get the theta value from a n x 2 x 3 rotation matrix
+
+        Args:
+            rotation (array): n x 2 x 3 affine matrix
+
+        Returns:
+            array: array of size n with theta in radians
+        """        
         acos = np.arccos(rotation[:,0,0])
         asin = np.arcsin(rotation[:,0,1])
         theta = asin.copy()
@@ -141,9 +158,9 @@ class Viz:
         """Calculate the rotation in degrees, absoluate value of scaling, and absolute value of translation
 
         Args:
-            rotation (_type_): _description_
-            translation (_type_): _description_
-            scaling (_type_): _description_
+            rotation (numpy array): 2 x 3 affine matrix
+            translation (numpy array):  2 x 3 affine matrix
+            scaling (numpy array):  2 x 3 affine matrix
 
         Returns:
             (tuple): xyscaling, rotations, translations
@@ -290,17 +307,20 @@ class Viz:
         """Given an axes and figure, it will convert the figure to an image and plot it in
 
         Args:
-            axg (_type_): _description_
-            fig (_type_): _description_
+            axg (matplotlib.axes.Axes): where you want to plot the figure
+            fig (matplotlib.pyplot.figure()): figure you want to put into axes
         """        
         img_buf = io.BytesIO();
         fig.savefig(img_buf,bbox_inches='tight',format='png');
         im = PIL.Image.open(img_buf);
+        
         if clim!=None: ax_im = axg.imshow(im,clim=clim);
         else: ax_im = axg.imshow(im);
+        
         divider = make_axes_locatable(axg)
         cax = divider.append_axes("right", size="10%", pad=0.05)
         cbar = plt.colorbar(ax_im, cax=cax, format="%.1e")
+        
         img_buf.close()
 
 
@@ -313,7 +333,19 @@ class Viz:
                                 channels = None,
                                 **kwargs):
         """function to plot the embeddings of the data
-        """            
+
+        Args:
+            embedding (numpy array): embedding created by model encoder
+            rotation (numpy array): rotation created by model encoder
+            translation (numpy array): translation created by model encoder
+            scaling (numpy array): scaling created by model encoder
+            save_folder (str, optional): where to save embedding and affines. Defaults to '.'.
+            save_figure (bool, optional): unused. Defaults to False.
+            divider_ (bool, optional): unused. Defaults to False.
+            labelfigs_ (bool, optional): unused. Defaults to True.
+            scalebar_ (bool, optional): unused. Defaults to True.
+            channels (_type_, optional): _description_. Defaults to None.
+        """        
         # def layout_embedding_images(embedding,rotation,translation,scaling,
         #                     t_len,a,b,
                             # combined,f,date,temps):
@@ -322,80 +354,103 @@ class Viz:
         elim = embedding.min()*1.05,embedding.max()*0.95
         if elim[0]==elim[1]: elim = (0,1)
         folder = make_folder(f'{save_folder}')
-        h = self.dset.open_combined_h5()
+        elim = embedding.min()*1.05,embedding.max()*0.95
+        if elim[0]==elim[1]: elim = (0,1)
+        folder = make_folder(f'{save_folder}')
         n = int((embedding.shape[0]/self.dset.t_len)**0.5)
+        
+        with h5py.File(self.dset.combined_h5_name) as h:
+            # make images of embeddings+original image
+            for t,temp in enumerate(tqdm(self.dset.temps)):
+                title = re.split('/|\.',temp)[-3]+' '+re.split('/|\.',temp)[-2]+'$^{\circ}$C'
+                image = h['All_filtered'][t]
+                idx = (t*n*n,(t+1)*n*n)
 
-        # make images of embeddings+original image
-        for t,temp in enumerate(tqdm(self.dset.temps)):
-            title = re.split('/|\.',temp)[-3]+' '+re.split('/|\.',temp)[-2]+'$^{\circ}$C'
-            image = h['All_filtered'][t]
-            idx = (t*n*n,(t+1)*n*n)
+                plt.ioff()
+                figg = plt.figure();
+                gs = figg.add_gridspec(4,6);
+                axsg = []
+                axsg.append( figg.add_subplot(gs[:,:2]) ) # large subplot (2 rows, 2 columns)
+                axsg.append( figg.add_subplot(gs[:,2:4]) ) # large subplot (2 rows, 2 columns)
+                axsg.append( figg.add_subplot(gs[:,4:6]) ) # large subplot (2 rows, 2 columns)
+                figg.suptitle(title);
 
-            plt.ioff()
-            figg = plt.figure();
-            gs = figg.add_gridspec(4,6);
-            axsg = []
-            axsg.append( figg.add_subplot(gs[:,:2]) ) # large subplot (2 rows, 2 columns)
-            axsg.append( figg.add_subplot(gs[:,2:4]) ) # large subplot (2 rows, 2 columns)
-            axsg.append( figg.add_subplot(gs[:,4:6]) ) # large subplot (2 rows, 2 columns)
-            figg.suptitle(title);
+                axsg[0].set_title('Full Image');
+                imagemap(axsg[0], image, **kwargs)
 
-            axsg[0].set_title('Full Image');
-            imagemap(axsg[0], image, **kwargs)
+                # Embeddings
+                axsg[1].set_title('Embeddings');
+                axsg[1].axis('off');
+                if channels is None:
+                    channels = range(embedding.shape[1])
+                fig, axs = layout_fig(len(channels), mod=2, **kwargs)
+                for i,c in enumerate(channels):
+                    imagemap(axs[i], embedding[idx[0]:idx[1], c].reshape((n,n)).T, 
+                                divider_=False, 
+                                # colorbars=False,
+                                clim = elim, 
+                                # colorbars=False,
+                                clim = elim, 
+                                **kwargs)
+                self.plot_into_graph(axsg[1],fig,clim=elim)
 
-            # Embeddings
-            axsg[1].set_title('Embeddings');
-            axsg[1].axis('off');
-            if channels is None:
-                channels = range(embedding.shape[1])
-            fig, axs = layout_fig(len(channels), mod=2, **kwargs)
-            for i,c in enumerate(channels):
-                imagemap(axs[i], embedding[idx[0]:idx[1], c].reshape((n,n)).T, 
-                            divider_=False, 
-                            # colorbars=False,
-                            clim = elim, 
-                            **kwargs)
-            self.plot_into_graph(axsg[1],fig,clim=elim)
+                # Transforms
+                axsg[2].set_title('Transforms');
+                axsg[2].axis('off');
+                fig, axs = layout_fig(6, mod=2);
+                to_plot = [scaling[idx[0]:idx[1],0,0].T, scaling[idx[0]:idx[1],1,1].T,
+                        xyscaling[idx[0]:idx[1]].T, rotations[idx[0]:idx[1]].T,
+                        translation[idx[0]:idx[1],0,2].T, translation[idx[0]:idx[1],1,2].T]
+                for i,data in enumerate(to_plot):
+                    if i==3: 
+                        imagemap(axs[i], data.reshape((n,n)).T,divider_=False, 
+                                colorbars=True, cmap_='twilight',clim = (-np.pi,np.pi))
+                    else: imagemap(axs[i], data.reshape((n,n)).T,divider_=False, 
+                                colorbars=True)
+                self.plot_into_graph(axsg[2],fig)
 
-            # Transforms
-            axsg[2].set_title('Transforms');
-            axsg[2].axis('off');
-            fig, axs = layout_fig(6, mod=2);
-            to_plot = [scaling[idx[0]:idx[1],0,0].T, scaling[idx[0]:idx[1],1,1].T,
-                       xyscaling[idx[0]:idx[1]].T, rotations[idx[0]:idx[1]].T,
-                       translation[idx[0]:idx[1],0,2].T, translation[idx[0]:idx[1],1,2].T]
-            for i,data in enumerate(to_plot):
-                if i==3: 
-                    imagemap(axs[i], data.reshape((n,n)).T,divider_=False, 
-                             colorbars=True, cmap_='twilight',clim = (-np.pi,np.pi))
-                else: imagemap(axs[i], data.reshape((n,n)).T,divider_=False, 
-                               colorbars=True)
-            self.plot_into_graph(axsg[2],fig)
-
-            figg.tight_layout();
-            figg.savefig(f'{folder}/{t:02d}.png',facecolor='white',dpi=20); 
-            plt.close('all')
-
-        h.close()
+                figg.tight_layout();
+                figg.savefig(f'{folder}/{t:02d}.png',facecolor='white',dpi=20); 
+                plt.close('all')
 
 
-    def ezmask(self,image,thresh,eps=2):
-        n = int(image.shape[0]**0.5)
-        mask = image > thresh
+    def ezmask(self,flat_image,thresh,eps=2):
+        """creates mask from flattened 2d image and performs binary dilation/erosion
+
+        Args:
+            image (numpy array): stack of square images flattened on 0-axis
+            thresh (float): mask cutoff intensity
+            eps (int, optional): radius of dilation/erosion. Defaults to 2.
+
+        Returns:
+            _type_: _description_
+        """        
+        n = int(flat_image.shape[0]**0.5)
+        mask = flat_image > thresh
         # mask = morphology.binary_closing(mask)
         mask = morphology.binary_opening(mask.reshape((n,n)),morphology.disk(eps))
         mask = morphology.binary_closing(mask.reshape((n,n)),morphology.disk(eps))
         return mask
     
 
-    def div_except(self,embedding,t,c):
-        indices = list(range(8))
+    def div_except(self,embedding,t,c,emb_size=8):
+        """divide channel c by all the other channels
+
+        Args:
+            embedding (numpy array): embedding of size (n*n x num_channels), where n is the dimension of reshaped image
+            t (int): temperature image take at
+            c (int): embedding channel to keep
+
+        Returns:
+            numpy array: cleaned channel image of shape (n,n)
+        """        
+        indices = list(range(emb_size))
         indices.pop(c)
         n = int((embedding.shape[0]/self.dset.t_len)**0.5)
-        return embedding[t*n*n:(t+1)*n*n:,indices].sum(axis=(0))/7
+        return embedding[t*n*n:(t+1)*n*n:,indices].sum(axis=(0))/(emb_size-1)
     
 
-    def make_mask(self,embedding, t, c, d=None, 
+    def make_mask(self,embedding, t, c, d=None,
                   windows_group = 'windows',
                   dset_name = 'windows_data',
                   logset_name = 'windows_logdata',
@@ -403,100 +458,104 @@ class Viz:
         """makes figure with image, warp, histogram, and mask (if specified).
 
         Args:
-            t (_type_): temperature
-            c (_type_): 2D embedding channel to make a mask of.
-            d (_type_, optional): divide target channel another embedding. Defaults to None.
+            t (int): temperature
+            c (int): 2D embedding channel to make a mask of.
+            d (int, optional): divide target channel another embedding. Defaults to None.
             plot_ (bool, optional): whether to show plot. Defaults to True.
-            save_folder (_type_, optional): where to save the image. Defaults to None.
+            save_folder (str, optional): where to save the image. Defaults to None.
             err_std (int, optional): number of std of threshold to determine error range for mask. Defaults to 0.
 
         Returns:
             _type_: _description_
         """
         length = 4
-        h = self.dset.open_combined_h5()
-        logdata = h[windows_group][logset_name]
-        # print(logdata.shape)
-        n = int((logdata.shape[0]/self.dset.t_len)**0.5)
-        # step2 = int((embedding.shape[0]/self.dset.t_len))
-        orig_images = h['All_filtered']
+        with h5py.File(self.dset.combined_h5_name) as h:
+            logdata = h[windows_group][logset_name]
+            # print(logdata.shape)
+            logdata = h[windows_group][logset_name]
+            # print(logdata.shape)
+            n = int((logdata.shape[0]/self.dset.t_len)**0.5)
+            # step2 = int((embedding.shape[0]/self.dset.t_len))
+            orig_images = h['All_filtered']
 
-        im = embedding[t*n*n:(t+1)*n*n,c]
-        # print(im.shape)
-        image=im
-        if image.max==0:
-            mask = image
-            thresh=0
-        else:
-            if d!=None:
-                if d=='All': 
-                    div = self.div_except(embedding,t,c) 
-                else: 
-                    div = embedding[t*n*n:(t+1)*n*n, d] +\
-                        embedding[int(self.dset.t_len/2)*n*n:(int(self.dset.t_len/2+1))*n*n, d]
-                    # div = embedding[t,:,:,d].sum(axis=0) 
-                image = image/(div+1)
-                image = image-div
-                image[image<0] = 0
-                length = 5
-                
-            if image.max()==0: # if its 0
-                mask=image
+            im = embedding[t*n*n:(t+1)*n*n,c]
+            # print(im.shape)
+            # print(im.shape)
+            image=im
+            if image.max==0:
+                mask = image
                 thresh=0
             else:
-                thresh = threshold_otsu(embedding[:,c])
-                mask = self.ezmask(image,thresh).astype(int)
-                
-        if err_std>0:
-            if image.max()==0: 
-                mask0,mask1 = mask,mask
-            else:
-                mask0 = self.ezmask(image,max([0,thresh-im.std()*err_std])).astype(int)
-                mask1 = self.ezmask(image,thresh+im.std()*err_std).astype(int)
-
-        if plot_==True:
-            ## make figure
-            fig,axes = subfigures(3,2);
-
-            fig.set_figheight(8)
-            fig.set_figwidth(8)
-            temp = self.dset.temps[t].split('/')[-2]+ ' '+self.dset.temps[t].split('/')[-1].split('.')[-2]
-            # fig.suptitle(f'{self.dset.combined_name} at {temp}$^\circ$C')
-
-            axes[0].set_title(f'{self.dset.combined_name} at {temp}$^\circ$C')
-            imagemap(axes[0],orig_images[t])
-
-            axes[1].set_title(f'Embedding channel {c}')
-            imagemap(axes[1],im.reshape((n,n)).T)
-
-            axes[2].set_title(f'Histogram for Embedding')
-            axes[2].hist(image.flatten(),bins=50);
-            axes[2].axvline(thresh, color='k', ls='--')
+                if d!=None:
+                    if d=='All': 
+                        div = self.div_except(embedding,t,c) 
+                    else: 
+                        div = embedding[t*n*n:(t+1)*n*n, d] +\
+                            embedding[int(self.dset.t_len/2)*n*n:(int(self.dset.t_len/2+1))*n*n, d]
+                        # div = embedding[t,:,:,d].sum(axis=0) 
+                    image = image/(div+1)
+                    image = image-div
+                    image[image<0] = 0
+                    length = 5
+                    
+                if image.max()==0: # if its 0
+                    mask=image
+                    thresh=0
+                else:
+                    thresh = threshold_otsu(embedding[:,c])
+                    mask = self.ezmask(image,thresh).astype(int)
+                    
             if err_std>0:
-                axes[2].axvline(thresh+im.std()*err_std,color='r',ls='--')
-                axes[2].axvline(thresh-im.std()*err_std,color='r',ls='--')
-            axes[2].set_aspect('auto')
+                if image.max()==0: 
+                    mask0,mask1 = mask,mask
+                else:
+                    mask0 = self.ezmask(image,max([0,thresh-im.std()*err_std])).astype(int)
+                    mask1 = self.ezmask(image,thresh+im.std()*err_std).astype(int)
 
-            axes[3].set_title(f'Mask')
-            if err_std>0: 
-                imagemap(axes[3], (mask+mask0+mask1).T, clim=(0,3), str='%.0d')
-            else: 
-                imagemap(axes[3], mask.T, clim=(0,1), str='%.0d')
+            if plot_==True:
+                ## make figure
+                fig,axes = subfigures(3,2);
+                fig,axes = subfigures(3,2);
 
-            if d!=None:
-                axes[4].set_title('Cleaned')
-                imagemap(axes[4],image.T)
-                fig.delaxes(axes[5])
-            else: 
-                fig.delaxes(axes[5])
-                fig.delaxes(axes[4])
+                fig.set_figheight(8)
+                fig.set_figwidth(8)
+                temp = self.dset.temps[t].split('/')[-2]+ ' '+self.dset.temps[t].split('/')[-1].split('.')[-2]
+                # fig.suptitle(f'{self.dset.combined_name} at {temp}$^\circ$C')
 
+                axes[0].set_title(f'{self.dset.combined_name} at {temp}$^\circ$C')
+                imagemap(axes[0],orig_images[t])
 
-            if save_folder!=None:
-                plt.savefig(save_folder)
-            plt.show()
-            plt.clf()
-        h.close()
+                axes[1].set_title(f'Embedding channel {c}')
+                imagemap(axes[1],im.reshape((n,n)).T)
+
+                axes[2].set_title(f'Histogram for Embedding')
+                axes[2].hist(image.flatten(),bins=50);
+                axes[2].axvline(thresh, color='k', ls='--')
+                if err_std>0:
+                    axes[2].axvline(thresh+im.std()*err_std,color='r',ls='--')
+                    axes[2].axvline(thresh-im.std()*err_std,color='r',ls='--')
+                axes[2].set_aspect('auto')
+
+                axes[3].set_title(f'Mask')
+                if err_std>0: 
+                    imagemap(axes[3], (mask+mask0+mask1).T, clim=(0,3), str='%.0d')
+                else: 
+                    imagemap(axes[3], mask.T, clim=(0,1), str='%.0d')
+
+                if d!=None:
+                    axes[4].set_title('Cleaned')
+                    imagemap(axes[4],image.T)
+                    fig.delaxes(axes[5])
+                else: 
+                    fig.delaxes(axes[5])
+                    fig.delaxes(axes[4])
+
+                if save_folder!=None:
+                    plt.savefig(save_folder)
+                plt.show()
+                plt.clf()
+                plt.show()
+                plt.clf()
 
         if err_std>0:
             if image.max()==0: return image,image,image
@@ -504,7 +563,7 @@ class Viz:
         else:
             return mask
 
-    
+
     def graph_relative_area(self,embedding,
                             windows_group = 'windows',
                             dset_name = 'windows_data',
@@ -518,6 +577,7 @@ class Viz:
         channels (list): default is all channels. Othewise, specify indices
         masked: (bool) Whether to calculate average area with only mask or with original embedding intensities
         clean_div: (list) Channels that can be used to eliminate stray signal in selected embedding channels
+        smoothing: (int) convolution (smoothing) factor. Must be odd for odd number of temps, and even for even length.
         smoothing: (int) convolution (smoothing) factor. Must be odd for odd number of temps, and even for even length.
         legends: (list) Domain labels
         '''
@@ -648,5 +708,6 @@ class Viz:
         plt.close('all')
         # print('line2 changed')
         return dict(zip(legends,smooth_list))
+
 # TODO:
 # widget to see all temps for 1) raw 2) filtered 3) unfiltered

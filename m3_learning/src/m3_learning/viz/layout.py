@@ -21,7 +21,26 @@ import string
 Path = path.Path
 PathPatch = patches.PathPatch
 
+def plot_into_graph(self,axg,fig,clim=None):
+    """Given an axes and figure, it will convert the figure to an image and plot it in
 
+    Args:
+        axg (matplotlib.axes.Axes): where you want to plot the figure
+        fig (matplotlib.pyplot.figure()): figure you want to put into axes
+    """        
+    img_buf = io.BytesIO();
+    fig.savefig(img_buf,bbox_inches='tight',format='png');
+    im = PIL.Image.open(img_buf);
+    
+    if clim!=None: ax_im = axg.imshow(im,clim=clim);
+    else: ax_im = axg.imshow(im);
+    
+    divider = make_axes_locatable(axg)
+    cax = divider.append_axes("right", size="10%", pad=0.05)
+    cbar = plt.colorbar(ax_im, cax=cax, format="%.1e")
+    
+    img_buf.close()
+    
 def subfigures(nrows, ncols, size=(1.25, 1.25), gaps=(.8, .33), figsize=None, **kwargs):
 
     if figsize is None:
