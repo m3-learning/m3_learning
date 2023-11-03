@@ -6,7 +6,7 @@ with open("src/requirements.txt") as f:
 
 setup(
     name="m3_learning",
-    version="0.0.21",
+    version="0.0.22",
     packages=find_packages(where="src"),
     url="https://github.com/jagar2/m3_learning.git",
     install_requires=requirements,
@@ -20,5 +20,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "src"},
-    python_requires=">=3.6",
+    python_requires=">=3.10",
 )
