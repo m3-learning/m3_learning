@@ -540,6 +540,9 @@ class Model(nn.Module):
         true = type_conversion(true)
         prediction = type_conversion(prediction)
 
+        print(true.shape)
+        print(prediction.shape)
+
         errors = Model.MSE(prediction, true)
 
         index = np.argsort(errors)
@@ -587,9 +590,10 @@ class Model(nn.Module):
             (index[:n], index[start_index:end_index], index[-n:])).flatten().astype(int)
         mse = np.hstack(
             (mse[:n], mse[start_index:end_index], mse[-n:]))
+        
 
         d1 = np.stack(
-            (d1[:n], d1[start_index:end_index], d1[-n:])).squeeze()
+            (d1[:n], d1[start_index:end_index], d1[-n:])).squeeze()   
         d2 = np.stack(
             (d2[:n], d2[start_index:end_index], d2[-n:])).squeeze()
 

@@ -283,7 +283,7 @@ class BE_Dataset:
             np.array: voltage vector
         """
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f['Measurement_000']['Channel_000']['UDVS'][::2][:, 1][24:120] 
+            return h5_f['Measurement_000']['Channel_000']['UDVS'][::2][:, 1][24:120] * -1
 
         
 
@@ -837,8 +837,10 @@ class BE_Dataset:
 
             if self.scaled:
                 # TODO: add the scaling here
-                Warning("Scaling not implemented yet")
-                pass
+                data = self.loop_param_scaler.fit(data)
+                
+                # Warning("Scaling not implemented yet")
+                # pass
 
             if self.output_shape == "index":
                 data = data.reshape(
@@ -1915,7 +1917,7 @@ class BE_Dataset:
                 hysteresis_data)
 
         # output shape (x,y, cycle, voltage_steps)
-        return hysteresis_data, bias_vec
+        return hysteresis_data, np.swapaxes(np.atleast_2d(self.get_voltage), 0, 1).astype(np.float64) # bias_vec
 
     def get_bias_vector(self, plotting_values=True):
 

@@ -1,4 +1,5 @@
 import numpy as np
+from m3_learning.nn.Fitter1D.Fitter1D import Model
 from m3_learning.viz.layout import (
     layout_fig,
     inset_connector,
@@ -821,7 +822,7 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, style="b")
 
-    @static_state_decorator
+    # @static_state_decorator
     def get_best_median_worst(
         self,
         true_state,
@@ -981,6 +982,55 @@ class Viz:
 
         return data, labels
 
+    
+    @static_state_decorator
+    def get_best_median_worst_hysteresis(self,
+                                        true_state,
+                                        prediction=None,
+                                        out_state=None,
+                                        n=1,
+                                        index=None,
+                                        compare_state=None,
+                                        **kwargs):
+
+        true = true_state
+        x1 = self.dataset.get_voltage
+
+        data = torch.tensor(true).float()
+
+        pred_data, scaled_params, params = prediction.predict(data)
+
+        prediction = pred_data
+
+        x2 = self.dataset.get_voltage
+
+        # index the data if provided
+        if index is not None:
+            true = [true[0][index], true[1][index]]
+            prediction = [prediction[0][index], prediction[1][index]]
+            # params = params[index]
+
+        prediction = prediction.detach().numpy()
+        prediction = np.rollaxis(prediction, 0, prediction.ndim - 1)
+
+        true = true.detach().numpy()
+        true = np.rollaxis(true, 0, true.ndim - 1)
+
+        # this must take the scaled data
+        index1, mse1, d1, d2 = Model.get_rankings(
+            true, prediction, n=n)
+
+        # saves just the parameters that are needed
+        params = params[index1]
+
+        # gets the original index values
+        if index is not None:
+            index1 = index[index1]
+
+        return (d1, d2, x1, x2, index1, mse1)
+
+
+    
     @static_state_decorator
     def get_mse_index(self, index, model):
         # gets the raw data
@@ -1279,76 +1329,130 @@ class Viz:
         size=(1.25, 1.25),
         filename=None,
         compare_state=None,
+        fit_type='SHO',
         **kwargs,
     ):
-        d1, d2, x1, x2, label, index1, mse1 = self.get_best_median_worst(
-            true_state,
-            prediction=prediction,
-            model=model,
-            out_state=out_state,
-            n=n,
-            compare_state=compare_state,
-            **kwargs,
-        )
+        d1, d2, x1, x2, label, index1, mse1 = None, None, None, None, None, None, None
 
-        fig, ax = subfigures(1, 3, gaps=gaps, size=size)
-
-        for i, (true, prediction, error) in enumerate(zip(d1, d2, mse1)):
-            ax_ = ax[i]
-            ax_.plot(
-                x2,
-                prediction[0].flatten(),
-                color_palette["NN_A"],
-                label=f"NN {label[0]}",
-            )
-            ax1 = ax_.twinx()
-            ax1.plot(
-                x2,
-                prediction[1].flatten(),
-                color_palette["NN_P"],
-                label=f"NN {label[1]}]",
+        if fit_type == "SHO":
+            d1, d2, x1, x2, label, index1, mse1 = self.get_best_median_worst(
+                true_state,
+                prediction=prediction,
+                model=model,
+                out_state=out_state,
+                n=n,
+                compare_state=compare_state,
+                **kwargs,
             )
 
-            ax_.plot(
-                x1,
-                true[0].flatten(),
-                "o",
-                color=color_palette["NN_A"],
-                label=f"Raw {label[0]}",
-            )
-            ax1.plot(
-                x1,
-                true[1].flatten(),
-                "o",
-                color=color_palette["NN_P"],
-                label=f"Raw {label[1]}",
+            fig, ax = subfigures(1, 3, gaps=gaps, size=size)
+
+            for i, (true, prediction, error) in enumerate(zip(d1, d2, mse1)):
+                ax_ = ax[i]
+                ax_.plot(
+                    x2,
+                    prediction[0].flatten(),
+                    color_palette["NN_A"],
+                    label=f"NN {label[0]}",
+                )
+                ax1 = ax_.twinx()
+                ax1.plot(
+                    x2,
+                    prediction[1].flatten(),
+                    color_palette["NN_P"],
+                    label=f"NN {label[1]}]",
+                )
+
+                ax_.plot(
+                    x1,
+                    true[0].flatten(),
+                    "o",
+                    color=color_palette["NN_A"],
+                    label=f"Raw {label[0]}",
+                )
+                ax1.plot(
+                    x1,
+                    true[1].flatten(),
+                    "o",
+                    color=color_palette["NN_P"],
+                    label=f"Raw {label[1]}",
+                )
+
+                ax_.set_xlabel("Frequency (Hz)")
+
+                # Position text at (1 inch, 2 inches) from the bottom left corner of the figure
+                text_position_in_inches = (
+                    -1 * (gaps[0] + size[0]) * ((2 - i) % 3) + size[0] / 2,
+                    (gaps[1] + size[1]) * (1.25 - i // 3 - 1.25) - gaps[1],
+                )
+                text = f"MSE: {error:0.4f}"
+                add_text_to_figure(
+                    fig, text, text_position_in_inches, fontsize=6, ha="center"
+                )
+
+                if out_state is not None:
+                    if "measurement state" in out_state.keys():
+                        if out_state["raw_format"] == "magnitude spectrum":
+                            ax_.set_ylabel("Amplitude (Arb. U.)")
+                            ax1.set_ylabel("Phase (rad)")
+                    else:
+                        ax_.set_ylabel("Real (Arb. U.)")
+                        ax1.set_ylabel("Imag (Arb. U.)")
+
+            # add a legend just for the last one
+            lines, labels = ax_.get_legend_handles_labels()
+            lines2, labels2 = ax1.get_legend_handles_labels()
+            ax_.legend(lines + lines2, labels + labels2, loc="upper right")
+        
+        elif fit_type == "hysteresis":
+            d1, d2, x1, x2, index1, mse1 = self.get_best_median_worst_hysteresis(
+                true_state,
+                prediction=prediction,
+                n=n,
+                **kwargs,
             )
 
-            ax_.set_xlabel("Frequency (Hz)")
+            fig, ax = subfigures(1, 3, gaps=gaps, size=size)
 
-            # Position text at (1 inch, 2 inches) from the bottom left corner of the figure
-            text_position_in_inches = (
-                -1 * (gaps[0] + size[0]) * ((2 - i) % 3) + size[0] / 2,
-                (gaps[1] + size[1]) * (1.25 - i // 3 - 1.25) - gaps[1],
-            )
-            text = f"MSE: {error:0.4f}"
-            add_text_to_figure(
-                fig, text, text_position_in_inches, fontsize=6, ha="center"
-            )
+            for i, (true, prediction, error) in enumerate(zip(d1, d2, mse1)):
+                ax_ = ax[i]
 
-            if out_state is not None:
-                if "measurement state" in out_state.keys():
-                    if out_state["raw_format"] == "magnitude spectrum":
-                        ax_.set_ylabel("Amplitude (Arb. U.)")
-                        ax1.set_ylabel("Phase (rad)")
-                else:
-                    ax_.set_ylabel("Real (Arb. U.)")
-                    ax1.set_ylabel("Imag (Arb. U.)")
+                ax_.plot(
+                    x2,
+                    prediction.flatten(),
+                    color=color_palette["NN_A"],
+                    # label=f"NN {label[0]}",
+                )
 
-        # add a legend just for the last one
-        lines, labels = ax_.get_legend_handles_labels()
-        lines2, labels2 = ax1.get_legend_handles_labels()
-        ax_.legend(lines + lines2, labels + labels2, loc="upper right")
+                ax_.plot(
+                    x1,
+                    true.flatten(),
+                    "o",
+                    color=color_palette["NN_A"],
+                    # label=f"Raw {label[0]}",
+                )
+
+                ax_.set_xlabel("Voltage (V)")
+
+                # Position text at (1 inch, 2 inches) from the bottom left corner of the figure
+                text_position_in_inches = (
+                    -1 * (gaps[0] + size[0]) * ((2 - i) % 3) + size[0] / 2,
+                    (gaps[1] + size[1]) * (1.25 - i // 3 - 1.25) - gaps[1],
+                )
+
+                text = f"MSE: {error:0.4f}"
+                add_text_to_figure(
+                    fig, text, text_position_in_inches, fontsize=6, ha="center"
+                )
+                
+                ax_.set_ylabel("(Arb. U.)")
+
+                # add a legend just for the last one
+                lines, labels = ax_.get_legend_handles_labels()
+                ax_.legend(lines, labels, loc="upper right")
+
+        else:
+            raise ValueError("fit_type must be SHO or hysteresis")
 
         # prints the figure
         if self.Printer is not None and filename is not None:
@@ -2334,7 +2438,7 @@ class Viz:
             cycle = np.random.randint(0, data.shape[2], 1)
 
         return (row, col, cycle)
-
+    
     def hysteresis_comparison(self,
                               data,
                               row=None,
@@ -2368,7 +2472,7 @@ class Viz:
 
         fig, ax = subfigures(1, 1, size=size)
 
-        ax[0].plot(voltage[:, cycle].squeeze(),
+        ax[0].plot(voltage.squeeze(),
                    raw_hysteresis_loop[row, col, cycle, :].squeeze(), 'o', label = "Raw Data")
 
         # add plotting here for this
@@ -2378,7 +2482,7 @@ class Viz:
             )[row, col, cycle, :].reshape(-1, 9)
             loop = loop_fitting_function_torch(parms, voltage[:, [0]]).to(
                 'cpu').detach().numpy().squeeze()
-            ax[0].plot(voltage[:, cycle].squeeze(), loop, 'r', label='LSQF')
+            ax[0].plot(voltage.squeeze(), np.reshape(loop, (96, -1)), 'r', label='LSQF')
 
         ax[0].set_xlabel('Voltage (V)')
         ax[0].set_ylabel('Amplitude (Arb. U.)')
