@@ -1,6 +1,6 @@
 datafed
 jupyter-book
-protobuf == 3.20.0
+protobuf == 3.20.3
 BGlib
 hyperspy
 torch
@@ -23,6 +23,7 @@ zenodopy==0.3.0
 opencv-python
 imageio==2.22.3
 xrayutilities
+pyNSID
 
 
 # autopep8
