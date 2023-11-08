@@ -998,7 +998,7 @@ class Viz:
 
         data = torch.tensor(true).float()
 
-        pred_data, scaled_params, params = prediction.predict(data)
+        pred_data, scaled_params, params = prediction.predict(data, translate_params=False)
 
         prediction = pred_data
 
@@ -2030,6 +2030,75 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
 
+    
+    def violin_plot_comparison_hysteresis(self, model, X_data, filename):
+
+        df = pd.DataFrame()
+
+        # uses the model to get the predictions
+        pred_data, scaled_param, params = model.predict(X_data)
+
+        # gets the parameters from the SHO LSQF fit
+        # true = self.dataset.SHO_fit_results().reshape(-1, 4)
+
+        true = self.dataset.LSQF_hysteresis_params().reshape(-1, 9)
+
+        true_scaled = self.dataset.loop_param_scaler.transform(true)
+
+        # Builds the dataframe for the violin plot
+        true_df = pd.DataFrame(
+            true, columns=["a0", "a1", "a2", "a3", "a4",
+                           "b0", "b1", "b2", "b3"]
+        )
+        predicted_df = pd.DataFrame(
+            scaled_param, columns=["a0", "a1", "a2", "a3", "a4",
+                                    "b0", "b1", "b2", "b3"]
+        )
+
+        # merges the two dataframes
+        df = pd.concat((predicted_df, true_df))
+
+        # adds the labels to the dataframe
+        names = [true_scaled, scaled_param]
+        names_str = ["NN", "LSQF"]
+        # ["Amplitude", "Resonance", "Q-Factor", "Phase"]
+        # labels = ["A", "\u03C9", "Q", "\u03C6"]
+        labels = ["a0", "a1", "a2", "a3", "a4", "b0", "b1", "b2", "b3"]
+
+        # adds the labels to the dataframe
+        for j, name in enumerate(names):
+            for i, label in enumerate(labels):
+                dict_ = {
+                    "value": name[:, i],
+                    "parameter": np.repeat(label, name.shape[0]),
+                    "dataset": np.repeat(names_str[j], name.shape[0]),
+                }
+
+                df = pd.concat((df, pd.DataFrame(dict_)))
+
+        # builds the plot
+        fig, ax = plt.subplots(figsize=(4, 4))
+
+        # plots the data
+        sns.violinplot(
+            data=df, x="parameter", y="value", hue="dataset", split=True, ax=ax
+        )
+
+        # labels the figure and does some styling
+        labelfigs(ax, 0, style="b")
+        ax.set_ylabel("Scaled SHO Results")
+        ax.set_xlabel("")
+
+        # Get the legend associated with the plot
+        legend = ax.get_legend()
+        legend.set_title("")
+
+        # ax.set_aspect(1)
+
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename)
+
     def build_figure_for_movie(
         self,
         comparison,
@@ -2472,12 +2541,36 @@ class Viz:
         row, col, cycle = self.get_selected_hysteresis(
             raw_hysteresis_loop, row, col, cycle)
 
-        # fig, ax = subfigures(1, 1, size=size)
+        if 'LSQF' in data and 'NN' not in data:
+            fig, ax = subfigures(1, 1, size=size)
+
+            ax[0].plot(voltage.squeeze(),
+                   raw_hysteresis_loop[row, col, cycle, :].squeeze(), 'o', label = "Raw Data")
+            
+            parms = self.dataset.LSQF_hysteresis_params(
+            )[row, col, cycle, :].reshape(-1, 9)
+            loop = loop_fitting_function_torch(parms, voltage).to(
+                'cpu').detach().numpy().squeeze()
+            # ax[0].plot(voltage.squeeze(), loop.squeeze(), 'r', label='LSQF')
+            ax[0].plot(voltage.squeeze()[48:], loop[:, 0].squeeze(), 'r', label='LSQF')
+            ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'r')
+
+            ax[0].set_xlabel('Voltage (V)')
+            ax[0].set_ylabel('Amplitude (Arb. U.)')
+            ax[0].legend()
+
+            # prints the figure
+            if self.Printer is not None and filename is not None:
+                self.Printer.savefig(fig, filename, label_figs=ax, style="b")
+            
+            return
+
 
         fig, ax = subfigures(1, 3, gaps=gaps, size=size)
 
         # if 'NN' in data:
         data_raw, voltage = self.dataset.get_hysteresis(scaled=True, loop_interpolated = True)
+        print(data_raw.shape)
         d1, d2, v1, v2, index1, mse1, params = self.get_best_median_worst_hysteresis(
             torch.atleast_3d(torch.tensor(data_raw.reshape(-1, 96))),
             prediction=model,
@@ -2491,20 +2584,29 @@ class Viz:
             # ax[0].plot(voltage.squeeze()[48:], loop[:, 0].squeeze(), 'g', label='NN')
             # ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'g', label='NN')
 
+        print(params.shape)
+        print(raw_hysteresis_loop.shape)
+        print(index1)
+
 
         for i, (true, prediction, error, parms) in enumerate(zip(d1, d2, mse1, params)):
             ax_ = ax[i]
 
-            ax_.plot(voltage.squeeze(),
+            ax_.plot(voltage.squeeze()*-1,
                 raw_hysteresis_loop.reshape(-1, 96)[index1[i], :], 'o', label = "Raw Data")
 
             print(parms.shape)
 
+            # parms = params
+
             loop = loop_fitting_function_torch(parms.reshape(-1, 9), voltage).to(
                 'cpu').detach().numpy().squeeze()
+            print(loop.shape)
             # ax[0].plot(voltage.squeeze(), np.reshape(loop, (96, -1)), 'g', label='NN')
-            ax_.plot(voltage.squeeze()[48:], loop[:, 0].squeeze(), 'g', label='NN')
-            ax_.plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'g')
+            ax_.plot(voltage.squeeze()[:48], loop[:, 0].squeeze(), '--g', label='NN')
+            ax_.plot(voltage.squeeze()[48:], loop[:, 1].squeeze(), '--g')
+
+            # ax_.plot(voltage.squeeze(), prediction.flatten(), 'o', label = "NN")
 
             # ax_.plot(
             #     v2,
@@ -2521,13 +2623,13 @@ class Viz:
             # ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'r', label='LSQF')
 
             ax_.plot(
-                v1.squeeze()[48:],
+                v1.squeeze()[:48],
                 loop[:, 0].squeeze(),
                 "r",
                 label='LSQF',
             )
             ax_.plot(
-                v1.squeeze()[:48],
+                v1.squeeze()[48:],
                 loop[:, 1].squeeze(),
                 "r",
             )
@@ -2558,22 +2660,6 @@ class Viz:
             # add a legend just for the last one
             lines, labels = ax_.get_legend_handles_labels()
             ax_.legend(lines, labels, loc="upper right")
-
-        
-        # ax[0].plot(voltage.squeeze(),
-        #            raw_hysteresis_loop[row, col, cycle, :].squeeze(), 'o', label = "Raw Data")
-
-        # add plotting here for this
-
-        # if 'LSQF' in data:
-        #     parms = self.dataset.LSQF_hysteresis_params(
-        #     )[row, col, cycle, :].reshape(-1, 9)
-        #     loop = loop_fitting_function_torch(parms, voltage).to(
-        #         'cpu').detach().numpy().squeeze()
-        #     # ax[0].plot(voltage.squeeze(), loop.squeeze(), 'r', label='LSQF')
-        #     ax[0].plot(voltage.squeeze()[48:], loop[:, 0].squeeze(), 'r', label='LSQF')
-        #     ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'r', label='LSQF')
-
 
 
         # ax[0].set_xlabel('Voltage (V)')
