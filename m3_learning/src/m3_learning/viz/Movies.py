@@ -1,10 +1,11 @@
 import glob as glob
 import cv2
 from m3_learning.util.file_IO import make_folder
-
+from tqdm import tqdm
+import numpy as np
 
 def make_movie(movie_name, input_folder, output_folder, file_format,
-               fps, output_format='mp4', reverse=False):
+               fps, output_format='mp4', reverse=False, text_list=None,pad_image=True):
     """Function that constructs a movie from images
 
     Args:
@@ -34,9 +35,14 @@ def make_movie(movie_name, input_folder, output_folder, file_format,
     else:
         new_list = file_list
 
-    # reads the first image to get the shape
-    img = cv2.imread(new_list[0])
-    shape_ = (img.shape[1], img.shape[0])
+    frames = []
+    # Add frames to the list
+    for i,image in enumerate(tqdm(new_list)):
+        frames.append(cv2.imread(image))
+        
+    # get the largest shape of images
+    shapes = np.array([frame.shape for frame in frames]).max(axis=0)
+    shape_ = (shapes[1], shapes[0])
 
     # Create the video writer
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -44,8 +50,24 @@ def make_movie(movie_name, input_folder, output_folder, file_format,
         f"{output_folder}/{movie_name}.{output_format}", fourcc, fps, shape_)
 
     # Add frames to the video
-    for image in new_list:
-        frame = cv2.imread(image)
+    for i,frame in enumerate(frames):
+                
+        if pad_image:
+            frame = cv2.copyMakeBorder(frame, 0, shape_[1]-frame.shape[0], 0, shape_[0]-frame.shape[1], 
+                                       cv2.BORDER_REPLICATE)
+        else: frame = cv2.imread(image)
+
+        # Add text
+        if text_list is not None:
+            disp_text = new_list[i].split('/')[-1].split(f'.{file_format}')[0]
+            # describe the type of font to be used. 
+            font = cv2.FONT_HERSHEY_SIMPLEX 
+            cv2.putText(frame, disp_text,
+                (50, shape_[1]-50),  
+                font, 3,  
+                (0,0,255),  
+                2, cv2.LINE_4) 
+            
         video_writer.write(frame)
 
     # Release the video writer

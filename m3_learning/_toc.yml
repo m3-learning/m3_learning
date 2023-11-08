@@ -9,29 +9,34 @@ parts:
         title: "Band Excitation Piezoresponse Force Microscopy of $PbZr_{0.2}Ti_{0.8}O_3$"
   - caption: "Papers"
     chapters:
-    - file: papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains
-      title: "Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction"
-    - file: papers/2023_RHEED_PLD_SrTiO3/RHEED_toc
-      title: "Predicting Pulsed-Laser Deposition $SrTiO_3$ Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction"
-      sections:
-        - file: papers/2023_RHEED_PLD_SrTiO3/1_Abstract
-          title: Abstract
-        - file: papers/2023_RHEED_PLD_SrTiO3/2_RHEED_metrics
-          title: RHEED Metrics
-        - file: papers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details
-          title: RHEED Metrics with Details
-        - file: papers/2023_RHEED_PLD_SrTiO3/4_AFM_and_XRD
-          title: AFM_and_XRD
-        - file: papers/2023_RHEED_PLD_SrTiO3/5_AFM_and_XRD-details
-          title: AFM and XRD with Details
-        - file: papers/2023_RHEED_PLD_SrTiO3/6_Growth_mechanism
-          title: Growth Mechanism
-        - file: papers/2023_RHEED_PLD_SrTiO3/7_Growth_mechanism-details
-          title: Growth Mechanism with Details
-        - file: papers/2023_RHEED_PLD_SrTiO3/8_Characteristic_time
-          title: Characteristic Time
-        - file: papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details
-          title: Characteristic Time with Details
+      - file: papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/toc.md
+        title: "Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction"
+        sections:
+          - file: papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains
+            title: "Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction"
+          - file: papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_vortex_VAE
+            title: "Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction"
+      - file: papers/2023_RHEED_PLD_SrTiO3/RHEED_toc
+        title: "Predicting Pulsed-Laser Deposition $SrTiO_3$ Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction"
+        sections:
+          - file: papers/2023_RHEED_PLD_SrTiO3/1_Abstract
+            title: Abstract
+          - file: papers/2023_RHEED_PLD_SrTiO3/2_RHEED_metrics
+            title: RHEED Metrics
+          - file: papers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details
+            title: RHEED Metrics with Details
+          - file: papers/2023_RHEED_PLD_SrTiO3/4_AFM_and_XRD
+            title: AFM_and_XRD
+          - file: papers/2023_RHEED_PLD_SrTiO3/5_AFM_and_XRD-details
+            title: AFM and XRD with Details
+          - file: papers/2023_RHEED_PLD_SrTiO3/6_Growth_mechanism
+            title: Growth Mechanism
+          - file: papers/2023_RHEED_PLD_SrTiO3/7_Growth_mechanism-details
+            title: Growth Mechanism with Details
+          - file: papers/2023_RHEED_PLD_SrTiO3/8_Characteristic_time
+            title: Characteristic Time
+          - file: papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details
+            title: Characteristic Time with Details
     - file: papers/2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BTO_environmental_demo.ipynb
       title: "The effect of chemical environment and temperature on the domain structure of free-standing $BaTiO_3$ via in-situ STEM"
   - caption: "Tutorials"
