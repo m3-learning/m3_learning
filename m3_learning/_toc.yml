@@ -32,6 +32,8 @@ parts:
           title: Characteristic Time
         - file: papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details
           title: Characteristic Time with Details
+    - file: papers/2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BTO_environmental_demo.ipynb
+      title: "The effect of chemical environment and temperature on the domain structure of free-standing $BaTiO_3$ via in-situ STEM"
   - caption: "Tutorials"
     chapters:
       - file: Tutorials/Unsupervised_Learning_with_AEs/Unsupervised_Learning_with_Autoencoders
