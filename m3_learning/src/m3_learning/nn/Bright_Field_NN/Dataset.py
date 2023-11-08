@@ -26,7 +26,7 @@ import dask.array as da
 class Bright_Field_Dataset:
 
     def __init__(self, datapath, combined_name='', verbose=False):
-        """_summary_
+        """Initialization function
 
         Args:
             path (str): folder where data is saved. This dataset is only compatible 
@@ -75,17 +75,26 @@ class Bright_Field_Dataset:
         return l
 
 
-    def get_raw_img(self, state, temperature):
+    def get_raw_img(self, **kwargs):
         """Gets raw image from files
 
         Args:
+            path_index (int): which number image in to use, when images are ordered according to time taken
+            
+            OR
+            
             state (str): "Ramp_Up" or "Ramp_Down"
-            temperature (int/str): temperature image taken
+            temperature (int/str): temperature image taken at
             
         Returns:
             numpy.ndarray: raw image
         """        
-        s = f"{self.path}/{state}/{temperature}.png"
+        if len(kwargs.keys())==1:
+            s = self.get_temp_paths()[kwargs['path_index']]
+            
+        if len(kwargs.keys())==2:
+            s = f"{self.path}/{kwargs['state']}/{kwargs['temperature']}.png"
+            
         im = rgb2gray(imageio.imread(s))
         return im
 
@@ -161,9 +170,7 @@ class Bright_Field_Dataset:
 
 
     def get_window_index(self,t,a,b,
-                         windows_group='windows',
-                         dset_name='windows_data',
-                         logset_name='windows_logdata',):
+                         dataset_key):
         """gets the scan from temperature idx t and point a,b, on the sample.
 
         Args:
@@ -181,7 +188,7 @@ class Bright_Field_Dataset:
         """        
         with h5py.File(self.combined_h5_path,'a') as h:
             # try:
-            grp = h[windows_group][logset_name]
+            grp = h[dataset_key]
             orig = h['All_filtered']
             t_,ox,oy = orig.shape
             _,a_,b_,_,_ = grp.attrs['orig_shape']
@@ -231,7 +238,7 @@ class Bright_Field_Dataset:
         """
         t_len = len(self.temps)
         
-        with h5py.File(self.combined_h5_name) as h:
+        with h5py.File(self.combined_h5_path,'a') as h:
             if 'All' in h.keys():
                 del h['All']
             
@@ -302,7 +309,7 @@ class Bright_Field_Dataset:
         """     
         # window_parms['interpol_factor'] = target_size/window_parms['window_size_x']*window_parms['zoom_factor'] # v2
         iw = ImageWindowing(window_parms)
-        with h5py.File(self.combined_h5_name) as h:
+        with h5py.File(self.combined_h5_path,'a') as h:
             # set windows group
             if windows_group not in h.keys(): 
                 h_windows=h.create_group(windows_group)

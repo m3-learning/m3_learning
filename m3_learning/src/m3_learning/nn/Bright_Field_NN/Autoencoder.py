@@ -19,6 +19,7 @@ class ConvAutoencoder():
     # TODO: check that contrastive and beta loss works here
 
     def __init__(self,
+                 dset,
                  encoder_step_size,
                  pooling_list,
                  decoder_step_size,
@@ -49,6 +50,7 @@ class ConvAutoencoder():
         self.device = device
         self.learning_rate = learning_rate
         self.checkpt = ''
+        self.dset = dset
 
         # complies the network
         self.compile_model()
@@ -89,7 +91,7 @@ class ConvAutoencoder():
         self.autoencoder.type(torch.float32)
 
     def Train(self,
-              data,
+              dataset_key,
               max_learning_rate=1e-4,
               coef_1=0,
               coef_2=0,
@@ -127,6 +129,9 @@ class ConvAutoencoder():
 
         # set seed
         torch.manual_seed(seed)
+        
+        with h5py.File(self.dset.combined_h5_path,'a') as h:
+            data = h[dataset_key][:]
 
         # builds the dataloader
         self.DataLoader_ = DataLoader(
@@ -270,7 +275,7 @@ class ConvAutoencoder():
         self.start_epoch = checkpoint['epoch']
         self.checkpt = path_checkpoint.split('/')[-1].split('.')[1]
 
-    def get_embedding(self, dset_path, batch_size_=32):
+    def get_embedding(self, dataset_key, batch_size_=32):
         """extracts embeddings from the data
 
         Args:
@@ -281,9 +286,9 @@ class ConvAutoencoder():
             tuple of Arrays: predicted embeddings and affine transforms
         """
 
-        with h5py.File(self.dset.combined_h5_name) as h:
+        with h5py.File(self.dset.combined_h5_path,'a') as h:
 
-            data = h[dset_path][:]
+            data = h[dataset_key][:]
             # builds the dataloader
             dataloader = DataLoader(
                 data.reshape(-1, data.shape[-2], data.shape[-1]), batch_size_, shuffle=False)
