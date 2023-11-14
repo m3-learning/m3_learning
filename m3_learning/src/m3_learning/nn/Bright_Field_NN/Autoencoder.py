@@ -16,8 +16,10 @@ import h5py
 class ConvAutoencoder():
     """builds the convolutional autoencoder
     """
+    # TODO: check that contrastive and beta loss works here
 
     def __init__(self,
+                 dset,
                  encoder_step_size,
                  pooling_list,
                  decoder_step_size,
@@ -48,6 +50,7 @@ class ConvAutoencoder():
         self.device = device
         self.learning_rate = learning_rate
         self.checkpt = ''
+        self.dset = dset
 
         # complies the network
         self.compile_model()
@@ -88,7 +91,7 @@ class ConvAutoencoder():
         self.autoencoder.type(torch.float32)
 
     def Train(self,
-              data,
+              dataset_key,
               max_learning_rate=1e-4,
               coef_1=0,
               coef_2=0,
@@ -118,12 +121,17 @@ class ConvAutoencoder():
             folder_path (str, optional): path where to save the weights. Defaults to './'.
             batch_size (int, optional): sets the batch size for training. Defaults to 32.
             best_train_loss (float, optional): current loss value to determine if you should save the value. Defaults to None.
+            save_all (bool, optional): save even if the train loss increased. Default False
+        
         """
 
         make_folder(folder_path)
 
         # set seed
         torch.manual_seed(seed)
+        
+        with h5py.File(self.dset.combined_h5_path,'a') as h:
+            data = h[dataset_key][:]
 
         # builds the dataloader
         self.DataLoader_ = DataLoader(
@@ -267,83 +275,98 @@ class ConvAutoencoder():
         self.start_epoch = checkpoint['epoch']
         self.checkpt = path_checkpoint.split('/')[-1].split('.')[1]
 
-    def get_embedding(self, data, batch_size_=32):
+    def get_embedding(self, dataset_key, batch_size_=32):
         """extracts embeddings from the data
 
         Args:
-            data (torch.tensor): data to get embeddings from
+            dset_path (str): location of original training data in combined h5 file
             batch_size (int, optional): batchsize for inference. Defaults to 32.
 
         Returns:
-            torch.tensor: predicted embeddings
+            tuple of Arrays: predicted embeddings and affine transforms
         """
 
-        # builds the dataloader
-        dataloader = DataLoader(
-            data.reshape(-1, data.shape[-2], data.shape[-1]), batch_size_, shuffle=False)
+        with h5py.File(self.dset.combined_h5_path,'a') as h:
 
-        embedding_ = np.zeros(
-            [data.shape[0], self.embedding_size])
-        rotation_ = np.zeros(
-            [data.shape[0], 2, 3])
-        translation_ = np.zeros(
-            [data.shape[0], 2, 3])
-        scaling_ = np.zeros(
-            [data.shape[0], 2, 3])
-        
-        for i, x in enumerate(tqdm(dataloader, leave=True, total=len(dataloader))):
-            with torch.no_grad():
-                value = x
-                test_value = Variable(value.to(self.device))
-                test_value = test_value.float()
-                batch_size = x.shape[0]
+            data = h[dataset_key][:]
+            # builds the dataloader
+            dataloader = DataLoader(
+                data.reshape(-1, data.shape[-2], data.shape[-1]), batch_size_, shuffle=False)
 
-                embedding = self.encoder(test_value)[0][:,0,:].to('cpu').detach().numpy()
-                rotation = self.encoder(test_value)[1].to('cpu').detach().numpy()
-                translation = self.encoder(test_value)[2].to('cpu').detach().numpy()
-                scaling = self.encoder(test_value)[3].to('cpu').detach().numpy()
-                
-                embedding_[i*batch_size:(i+1)*batch_size, :] = embedding
-                rotation_[i*batch_size:(i+1)*batch_size, :] = rotation
-                translation_[i*batch_size:(i+1)*batch_size, :] = translation
-                scaling_[i*batch_size:(i+1)*batch_size, :] = scaling
+            embedding_ = np.zeros(
+                [data.shape[0], self.embedding_size])
+            rotation_ = np.zeros(
+                [data.shape[0], 2, 3])
+            translation_ = np.zeros(
+                [data.shape[0], 2, 3])
+            scaling_ = np.zeros(
+                [data.shape[0], 2, 3])
+            
+            for i, x in enumerate(tqdm(dataloader, leave=True, total=len(dataloader))):
+                with torch.no_grad():
+                    value = x
+                    test_value = Variable(value.to(self.device))
+                    test_value = test_value.float()
+                    batch_size = x.shape[0]
+                    # get embeddings
+                    embedding = self.encoder(test_value)[0][:,0,:].to('cpu').detach().numpy()
+                    rotation = self.encoder(test_value)[1].to('cpu').detach().numpy()
+                    translation = self.encoder(test_value)[2].to('cpu').detach().numpy()
+                    scaling = self.encoder(test_value)[3].to('cpu').detach().numpy()
+                    # write embeddings to h5 file
+                    embedding_[i*batch_size:(i+1)*batch_size, :] = embedding
+                    rotation_[i*batch_size:(i+1)*batch_size, :] = rotation
+                    translation_[i*batch_size:(i+1)*batch_size, :] = translation
+                    scaling_[i*batch_size:(i+1)*batch_size, :] = scaling
 
-        # self.embeddings = (embedding_, rotation_, translation_, scaling_)
-
-        return (embedding_, rotation_, translation_, scaling_)
+            # self.embeddings = (embedding_, rotation_, translation_, scaling_)
+            # return embeddings as np array
+            return (embedding_, rotation_, translation_, scaling_)
 
     def save_embedding(self,h5_name,embedding,rotation,translation,scaling,
-                        group_label='embeddings_',dset_label='_',overwrite=False):
+                        group_label='embeddings_',dset_label='',overwrite=False):
+        """saves np.array files to h5 file for faster access times. 
+
+        Args:
+            h5_name (str): full path to the place to save the embedding h5 file
+            embedding (numpy.array): _description_
+            rotation (numpy.array): _description_
+            translation (numpy.array): _description_
+            scaling (numpy.array): _description_
+            group_label (str, optional): _description_. Defaults to 'embeddings_'.
+            dset_label (str, optional): label to put in front of the dataset names. Defaults to ''.
+            overwrite (bool, optional): whether to overwrite existing embeddings. Defaults to False.
+        """        
+        
         if h5_name[-3:]!='.h5': h5_name+='.h5'
 
-        try: h_file = h5py.File(h5_name,'r+')
-        except: h_file = h5py.File(h5_name,'w')
+        with h5py.File(h5_name,'a') as h_file:
         
-        if group_label+self.checkpt not in h_file:
-            h_file.create_group(group_label+self.checkpt)
-        subgroup = h_file[group_label+self.checkpt]
+            if group_label+self.checkpt not in h_file:
+                h_file.create_group(group_label+self.checkpt)
+            subgroup = h_file[group_label+self.checkpt]
 
-        if overwrite:
-            labels = [dset_label+'embedding',
-                     dset_label+'rotation',
-                     dset_label+'translation',
-                     dset_label+'scaling']
-            for label in labels:
-                try:
-                    del subgroup[label]     
-                except:
-                    continue
+            if overwrite:
+                if len(dset_label)>0 and dset_label[-1]!='_':
+                    dset_label+='_'
+                labels = [dset_label+'embedding',
+                        dset_label+'rotation',
+                        dset_label+'translation',
+                        dset_label+'scaling']
+                for label in labels:
+                    try:
+                        del subgroup[label]     
+                    except:
+                        continue
 
-        if dset_label+'embedding' not in subgroup:
-            subgroup.create_dataset(dset_label+'embedding',data=embedding,dtype='f4')
-        if dset_label+'rotation' not in subgroup:
-            subgroup.create_dataset(dset_label+'rotation',data=rotation,dtype='f4')
-        if dset_label+'translation' not in subgroup:
-            subgroup.create_dataset(dset_label+'translation',data=translation,dtype='f4')
-        if dset_label+'scaling' not in subgroup:
-            subgroup.create_dataset(dset_label+'scaling',data=scaling,dtype='f4')
-
-        h_file.close()
+            if dset_label+'embedding' not in subgroup:
+                subgroup.create_dataset(dset_label+'embedding',data=embedding,dtype='f4')
+            if dset_label+'rotation' not in subgroup:
+                subgroup.create_dataset(dset_label+'rotation',data=rotation,dtype='f4')
+            if dset_label+'translation' not in subgroup:
+                subgroup.create_dataset(dset_label+'translation',data=translation,dtype='f4')
+            if dset_label+'scaling' not in subgroup:
+                subgroup.create_dataset(dset_label+'scaling',data=scaling,dtype='f4')
 
     def generate_spectra(self, embedding):
         """generates spectra from embeddings

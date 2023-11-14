@@ -17,11 +17,33 @@ from matplotlib import (
     patheffects,
 )
 import string
+import PIL
+import io
 
 Path = path.Path
 PathPatch = patches.PathPatch
 
+def plot_into_graph(axg,fig,colorbar_=True,clim=None,**kwargs):
+    """Given an axes and figure, it will convert the figure to an image and plot it in
 
+    Args:
+        axg (matplotlib.axes.Axes): where you want to plot the figure
+        fig (matplotlib.pyplot.figure()): figure you want to put into axes
+    """        
+    img_buf = io.BytesIO();
+    fig.savefig(img_buf,bbox_inches='tight',format='png');
+    im = PIL.Image.open(img_buf);
+    
+    if clim!=None: ax_im = axg.imshow(im,clim=clim);
+    else: ax_im = axg.imshow(im);
+    
+    if colorbar_:
+        divider = make_axes_locatable(axg)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cbar = plt.colorbar(ax_im, cax=cax,**kwargs)
+    
+    img_buf.close()
+    
 def subfigures(nrows, ncols, size=(1.25, 1.25), gaps=(.8, .33), figsize=None, **kwargs):
 
     if figsize is None:
@@ -219,7 +241,8 @@ def embedding_maps(data, image, colorbar_shown=True, c_lim=None, mod=None, title
     fig.tight_layout()
 
 
-def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_format="%.1e", cmap_ = 'viridis', **kwargs):
+def imagemap(ax, data, colorbars=True, clim=None, divider_=True, 
+             cbar_number_format="%.1e", cmap_ = 'viridis', **kwargs):
     """pretty way to plot image maps with standard formats
 
     Args:
@@ -254,7 +277,7 @@ def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_for
             cax = divider.append_axes("right", size="10%", pad=0.05)
             cbar = plt.colorbar(im, cax=cax, format=cbar_number_format)
         else:
-            cb = plt.colorbar(im, fraction=0.046, pad=0.04)
+            cb = plt.colorbar(im, fraction=0.046, pad=0.04,format=cbar_number_format)
             cb.ax.tick_params(labelsize=6, width=0.05)
 
 

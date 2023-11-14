@@ -213,7 +213,7 @@ class Viz:
 
         # loops around the number of iterations to generate
         for i in tqdm(range(generator_iters)):
-
+            plt.ioff()
             # builds the figure
             fig, ax = layout_fig(graph_layout[0], graph_layout[1], **kwargs)
             ax = ax.reshape(-1)
@@ -261,7 +261,8 @@ class Viz:
                 self.printer.savefig(fig,
                                      f'{i:04d}_maps', tight_layout=False, basepath=folder)
 
-            plt.close(fig)
+            plt.close('all')
+            plt.clf()
                    
     def embeddings(self, **kwargs):
         """function to plot the embeddings of the data
@@ -287,13 +288,16 @@ class Viz:
                 
             make_folder(f"{self.printer.basepath}/{output_folder}/")
             
-            for embedding in embedding_names:
+            for embedding in tqdm(embedding_names):
+                plt.ioff();
                 embeddings_(h[embedding], 
                         channels=self.channels, 
                         labelfigs_ = self.labelfigs_,
                         printer = self.printer, 
                         name=f"{output_folder}/ep_{h[embedding].attrs['epoch']}_beta_{h[embedding].attrs['beta']}",
                         **kwargs)
+                plt.close('all')
+                plt.clf()
             
             
     def multi_generate_from_zero(self, input_folder, output_folder='generated0', **kwargs):
@@ -301,9 +305,10 @@ class Viz:
         checkpoint_pathlist = glob.glob(f'{input_folder}/*.pkl')
         checkpoint_pathlist.sort()
         make_folder(f'{self.printer.basepath}/{output_folder}/')
-        for checkpoint_path in checkpoint_pathlist:
+        for checkpoint_path in tqdm(checkpoint_pathlist):
+            plt.ioff();
             check_name = checkpoint_path.split('/')[-1].split('.pkl')[0]
-            print(check_name)
+            # print(check_name)
             
             checkpoint = self.model.load_weights(checkpoint_path, return_checkpoint=True)
             start_epoch = checkpoint['epoch']
@@ -315,3 +320,5 @@ class Viz:
             imagemap(ax1, res.detach().cpu().reshape(256,256))
             
             self.printer.savefig(fig1,f'{output_folder}/Ep_{start_epoch}_beta_{beta:.4f}')
+            plt.close('all')
+            plt.clf()
