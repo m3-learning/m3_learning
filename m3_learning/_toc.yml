@@ -15,7 +15,7 @@ parts:
           - file: papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains
             title: "Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction"
           - file: papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_vortex_VAE
-            title: "Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction"
+            title: VAE demonstration on vortex
       - file: papers/2023_RHEED_PLD_SrTiO3/RHEED_toc
         title: "Predicting Pulsed-Laser Deposition $SrTiO_3$ Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction"
         sections:
@@ -37,11 +37,11 @@ parts:
             title: Characteristic Time
           - file: papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details
             title: Characteristic Time with Details
-      - file: papers/2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/toc.md
+      - file: papers/2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BF_BTO_toc.md
         title: "The effect of chemical environment and temperature on the domain structure of free-standing $BaTiO_3$ via in-situ STEM"
         sections:       
           - file: papers/2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BTO_environmental_demo.ipynb
-            title: "The effect of chemical environment and temperature on the domain structure of free-standing $BaTiO_3$ via in-situ STEM"
+            title: Model Demonstration
   - caption: "Tutorials"
     chapters:
       - file: Tutorials/Unsupervised_Learning_with_AEs/Unsupervised_Learning_with_Autoencoders

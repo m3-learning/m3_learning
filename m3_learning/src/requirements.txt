@@ -1,3 +1,6 @@
+pyNSID
+sidpy
+py-cpuinfo
 datafed
 jupyter-book
 protobuf == 3.20.3
@@ -12,9 +15,7 @@ autopep8
 seaborn
 wget
 zenodopy
-py-cpuinfo
 pycroscopy
-sidpy
 scikit-image
 scikit-learn
 matplotlib
@@ -23,7 +24,6 @@ zenodopy==0.3.0
 opencv-python
 imageio==2.22.3
 xrayutilities
-pyNSID
 
 
 # autopep8
