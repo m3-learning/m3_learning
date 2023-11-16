@@ -84,8 +84,12 @@ class Viz:
                              bright_field_=None,
                              dark_field_=None,
                              scalebar_=True,
+<<<<<<< HEAD
                              filename=None,
                              shape_=[256, 256, 256, 256],
+=======
+                             using_panel=False,
+>>>>>>> 3c9474c (small viz update)
                              **kwargs):
         """visualizes the raw STEM data and the virtual STEM data
 
@@ -104,7 +108,9 @@ class Viz:
             fig_num += 1
         if dark_field_ is not None:
             fig_num += 1
-
+            
+        if not using_panel: plt.ioff();
+        
         # creates the figure
         fig, axs = layout_fig(fig_num, fig_num, figsize=(
             1.5*fig_num, 1.25))
@@ -137,10 +143,24 @@ class Viz:
         if scalebar_:
             # adds a scalebar to the figure
             add_scalebar(axs[-1], self.scalebar_)
+<<<<<<< HEAD
 
         # saves the figure
         if self.printer is not None:
             self.printer.savefig(fig, filename, tight_layout=False)
+=======
+            
+        if not using_panel:
+            make_folder(f'{self.printer.basepath}bf_df/')
+            # saves the figure
+            if self.printer is not None:
+                self.printer.savefig(fig, f'bf_df/{dataset.meta["particle_list"][ind]}', tight_layout=False)
+        else: plt.show()
+                
+        plt.close('all')
+        plt.clf()
+
+>>>>>>> 3c9474c (small viz update)
 
     def find_nearest(self, array, value, averaging_number):
         """Finds the nearest value in an array
