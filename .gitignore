@@ -174,3 +174,6 @@ m3_learning/papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffr
 !m3_learning/papers/2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/*.ipynb
 *Data/
 *Figures/
+
+# Northwestern
+!m3_learning/papers/HE_nanoparticles/*.ipynb
