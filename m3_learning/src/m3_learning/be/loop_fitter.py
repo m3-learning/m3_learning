@@ -27,8 +27,11 @@ def loop_fitting_function_torch(y, V, type='9 parameters', device='cuda'):
     V = V.type(torch.float64).to(device)
     y = y.type(torch.float64).to(device)
 
+    # print(y.shape)
     # expands the tensor
-    y = y.unsqueeze(-1).repeat(1, 1, half_len)
+    y = y.unsqueeze(-1)#.repeat(1, 1, half_len)
+    # print("y-shape")
+    # print(y.shape)
 
     if (type == '9 parameters'):
 

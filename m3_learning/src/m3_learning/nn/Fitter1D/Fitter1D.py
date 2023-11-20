@@ -540,9 +540,6 @@ class Model(nn.Module):
         true = type_conversion(true)
         prediction = type_conversion(prediction)
 
-        print(true.shape)
-        print(prediction.shape)
-
         errors = Model.MSE(prediction, true)
 
         index = np.argsort(errors)

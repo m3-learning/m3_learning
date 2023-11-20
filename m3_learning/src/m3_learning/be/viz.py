@@ -2541,6 +2541,7 @@ class Viz:
         row, col, cycle = self.get_selected_hysteresis(
             raw_hysteresis_loop, row, col, cycle)
 
+        # if only the LSQF is to be plotted
         if 'LSQF' in data and 'NN' not in data:
             fig, ax = subfigures(1, 1, size=size)
 
@@ -2551,7 +2552,6 @@ class Viz:
             )[row, col, cycle, :].reshape(-1, 9)
             loop = loop_fitting_function_torch(parms, voltage).to(
                 'cpu').detach().numpy().squeeze()
-            # ax[0].plot(voltage.squeeze(), loop.squeeze(), 'r', label='LSQF')
             ax[0].plot(voltage.squeeze()[48:], loop[:, 0].squeeze(), 'r', label='LSQF')
             ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'r')
 
@@ -2565,84 +2565,48 @@ class Viz:
             
             return
 
+        # if we are plotting the NN and LSQF results
+        fig, ax = subfigures(3, 2, gaps=gaps, size=size)
 
-        fig, ax = subfigures(1, 3, gaps=gaps, size=size)
-
-        # if 'NN' in data:
         data_raw, voltage = self.dataset.get_hysteresis(scaled=True, loop_interpolated = True)
-        print(data_raw.shape)
         d1, d2, v1, v2, index1, mse1, params = self.get_best_median_worst_hysteresis(
             torch.atleast_3d(torch.tensor(data_raw.reshape(-1, 96))),
             prediction=model,
             n=1
         )
 
-            # parms = NN[6][2].reshape(-1, 9)
-            # loop = loop_fitting_function_torch(parms, voltage).to(
-            #     'cpu').detach().numpy().squeeze()
-            # # ax[0].plot(voltage.squeeze(), np.reshape(loop, (96, -1)), 'g', label='NN')
-            # ax[0].plot(voltage.squeeze()[48:], loop[:, 0].squeeze(), 'g', label='NN')
-            # ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'g', label='NN')
-
-        print(params.shape)
-        print(raw_hysteresis_loop.shape)
-        print(index1)
-
 
         for i, (true, prediction, error, parms) in enumerate(zip(d1, d2, mse1, params)):
-            ax_ = ax[i]
+            plot_idx = i * 2
 
-            ax_.plot(voltage.squeeze()*-1,
+            # plot the raw data for LSQF
+            ax[plot_idx].plot(voltage.squeeze()*-1,
                 raw_hysteresis_loop.reshape(-1, 96)[index1[i], :], 'o', label = "Raw Data")
 
-            print(parms.shape)
+            true_unscaled = self.dataset.hystersis_scaler.inverse_transform(true.reshape(-1, 1))
 
-            # parms = params
-
-            loop = loop_fitting_function_torch(parms.reshape(-1, 9), voltage).to(
+            ax[plot_idx + 1].plot(voltage.squeeze(),
+                true_unscaled, 'o', label = "Raw Data")
+            
+            # plot the NN prediction
+            loop = loop_fitting_function_torch(parms.reshape(-1, 9), voltage[:,0].squeeze()).to(
                 'cpu').detach().numpy().squeeze()
-            print(loop.shape)
-            # ax[0].plot(voltage.squeeze(), np.reshape(loop, (96, -1)), 'g', label='NN')
-            ax_.plot(voltage.squeeze()[:48], loop[:, 0].squeeze(), '--g', label='NN')
-            ax_.plot(voltage.squeeze()[48:], loop[:, 1].squeeze(), '--g')
+            ax[plot_idx + 1].plot(v1.squeeze(), loop.squeeze(), 'g', label='NN')
 
-            # ax_.plot(voltage.squeeze(), prediction.flatten(), 'o', label = "NN")
-
-            # ax_.plot(
-            #     v2,
-            #     prediction.flatten(),
-            #     label='NN',
-            # )
-
-            parms = self.dataset.LSQF_hysteresis_params(
+            # plot the LSQF prediction
+            parms_lsqf = self.dataset.LSQF_hysteresis_params(
             ).reshape(-1, 9)[index1[i], :]
-            loop = loop_fitting_function_torch(parms, voltage).to(
+            loop = loop_fitting_function_torch(parms_lsqf, voltage[:,0].squeeze()).to(
                 'cpu').detach().numpy().squeeze()
-            # ax[0].plot(voltage.squeeze(), loop.squeeze(), 'r', label='LSQF')
-            # ax[0].plot(voltage.squeeze()[48:], loop[:, 0].squeeze(), 'r', label='LSQF')
-            # ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'r', label='LSQF')
-
-            ax_.plot(
-                v1.squeeze()[:48],
-                loop[:, 0].squeeze(),
+            ax[plot_idx].plot(
+                v1.squeeze(),
+                loop.squeeze(),
                 "r",
                 label='LSQF',
             )
-            ax_.plot(
-                v1.squeeze()[48:],
-                loop[:, 1].squeeze(),
-                "r",
-            )
 
-            # ax_.plot(
-            #     x1,
-            #     true.flatten(),
-            #     "o",
-            #     color=color_palette["NN_A"],
-            #     # label=f"Raw {label[0]}",
-            # )
-
-            ax_.set_xlabel("Voltage (V)")
+            ax[plot_idx].set_xlabel("Voltage (V)")
+            ax[plot_idx + 1].set_xlabel("Voltage (V)")
 
             # Position text at (1 inch, 2 inches) from the bottom left corner of the figure
             text_position_in_inches = (
@@ -2650,55 +2614,32 @@ class Viz:
                 (gaps[1] + size[1]) * (1.25 - i // 3 - 1.25) - gaps[1],
             )
 
-            text = f"MSE: {error:0.4f}"
+            # gets the axis position in inches - gets the bottom center
+            center = get_axis_pos_inches(fig, ax[plot_idx + 1])
+
+            # selects the text position as an offset from the bottom center
+            text_position_in_inches = (center[0], center[1] - 0.33)
+
+            error_string = f"MSE: {error:0.4f}"
+
             add_text_to_figure(
-                fig, text, text_position_in_inches, fontsize=6, ha="center"
+                fig,
+                error_string,
+                text_position_in_inches,
+                fontsize=6,
+                ha="center",
+                # va="top",
             )
             
-            ax_.set_ylabel("(Arb. U.)")
+            ax[plot_idx].set_ylabel("(Arb. U.)")
+            ax[plot_idx + 1].set_ylabel("(Arb. U.)")
 
-            # add a legend just for the last one
-            lines, labels = ax_.get_legend_handles_labels()
-            ax_.legend(lines, labels, loc="upper right")
-
-
-        # ax[0].set_xlabel('Voltage (V)')
-        # ax[0].set_ylabel('Amplitude (Arb. U.)')
-        # ax[0].legend()
+        # add a legend just for the last one
+        lines, labels = ax[plot_idx].get_legend_handles_labels()
+        ax[plot_idx].legend(lines, labels, loc="upper right")
+        lines, labels = ax[plot_idx+1].get_legend_handles_labels()
+        ax[plot_idx+1].legend(lines, labels, loc="upper right")
 
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
-
-        # # prints the figure
-        # if self.Printer is not None:
-        #     self.Printer.savefig(fig, filename, style="b")
-
-
-    def hysteresis_comparison_test(self,
-                                   data_lsqf,
-                                   data_nn,
-                                   index,
-                                   size=(1.25, 1.25),
-                                   filename="hysteresis_comparison"):
-        
-        fig, ax = subfigures(1, 1, size=size)
-
-        voltage = self.dataset.get_voltage
-
-        ax[0].plot(voltage.squeeze(),
-                     data_lsqf.squeeze(), 'o', label = "Raw Data")
-        
-        ax[0].plot(voltage.squeeze(),
-                        data_nn.squeeze(), 'o', label = "NN prediction")
-        
-        
-        # add plotting here for this
-
-        ax[0].set_xlabel('Voltage (V)')
-        ax[0].set_ylabel('Amplitude (Arb. U.)')
-        ax[0].legend()
-
-        # prints the figure
-        if self.Printer is not None:
-            self.Printer.savefig(fig, filename, style="b")
