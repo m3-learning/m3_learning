@@ -206,7 +206,7 @@ class BE_Dataset:
                                                   'V',  # units
                                                   None,  # position dimensions
                                                   None,  # spectroscopic dimensions
-                                                  pos_ind=h5_main.h5_pos_ind,
+                                                  pos_ind=h5_main.h5_pos_inds,
                                                   h5_pos_vals=h5_main.h5_pos_vals,
                                                   h5_spec_inds=h5_main.h5_spec_inds,
                                                   h5_spec_vals=h5_main.h5_spec_vals,
