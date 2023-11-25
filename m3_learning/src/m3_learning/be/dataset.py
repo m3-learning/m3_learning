@@ -154,7 +154,7 @@ class BE_Dataset:
 
     def generate_noisy_data_records(self,
                                     noise_levels,
-                                    basegroup='/Measurement_000/Channel_000',
+                                    basegroup='Measurement_000/Channel_000',
                                     verbose=False,
                                     noise_STD=None):
         """
@@ -204,12 +204,13 @@ class BE_Dataset:
                                                   f'Noisy_Data_{noise_level}',
                                                   'Piezoresponse',  # quantity
                                                   'V',  # units
-                                                  None,  # position dimensions
-                                                  None,  # spectroscopic dimensions
-                                                  pos_ind=h5_main.h5_pos_inds,
+                                                  self.get_pos_dims,  # position dimensions
+                                                  self.get_spec_dims,  # spectroscopic dimensions
+                                                  h5_pos_inds=h5_main.h5_pos_inds,
                                                   h5_pos_vals=h5_main.h5_pos_vals,
                                                   h5_spec_inds=h5_main.h5_spec_inds,
                                                   h5_spec_vals=h5_main.h5_spec_vals,
+                                                  dtype=np.complex64,
                                                   compression='gzip')
 
     def set_noise_state(self, noise):
@@ -257,7 +258,7 @@ class BE_Dataset:
         # instantiates and computes the global scaler
         self.hystersis_scaler = global_scaler()
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
-        
+
         try:
             self.LoopParmScaler()
         except:
@@ -273,7 +274,7 @@ class BE_Dataset:
         """
 
         return self.hystersis_scaler
-    
+
     @property
     def get_voltage(self):
         """
@@ -284,8 +285,6 @@ class BE_Dataset:
         """
         with h5py.File(self.file, "r+") as h5_f:
             return h5_f['Measurement_000']['Channel_000']['UDVS'][::2][:, 1][24:120] * -1
-
-        
 
     def SHO_preprocessing(self):
         """
@@ -741,6 +740,40 @@ class BE_Dataset:
         return self.num_bins*self.voltage_steps
 
     @property
+    def get_pos_dims(self):
+        """Gets the position dimensions"""
+        with h5py.File(self.file, "r+") as h5_f:
+            h5_main = usid.hdf_utils.find_dataset(h5_f, "Raw_Data")[0]
+
+            # Extract the spec_dim_descriptors, spec_dim_labels, and spec_dim_sizes
+            pos_dim_descriptors = h5_main.pos_dim_descriptors
+            pos_dim_labels = h5_main.pos_dim_labels
+            pos_dim_sizes = h5_main.pos_dim_sizes
+
+            # Create the list of usid.Dimension objects
+            pos_dim = [usid.Dimension(descriptor, label, size)
+                       for descriptor, label, size in zip(pos_dim_descriptors, pos_dim_labels, pos_dim_sizes)]
+
+            return pos_dim
+
+    @property
+    def get_spec_dims(self):
+        """Gets the position dimensions"""
+        with h5py.File(self.file, "r+") as h5_f:
+            h5_main = usid.hdf_utils.find_dataset(h5_f, "Raw_Data")[0]
+
+            # Extract the spec_dim_descriptors, spec_dim_labels, and spec_dim_sizes
+            spec_dim_descriptors = h5_main.spec_dim_descriptors
+            spec_dim_labels = h5_main.spec_dim_labels
+            spec_dim_sizes = h5_main.spec_dim_sizes
+
+            # Create the list of usid.Dimension objects
+            spec_dim = [usid.Dimension(descriptor, label, size)
+                        for descriptor, label, size in zip(spec_dim_descriptors, spec_dim_labels, spec_dim_sizes)]
+
+            return spec_dim
+
+    @property
     def get_original_data(self):
         """
         get_original_data gets the raw BE data as a complex value
@@ -838,7 +871,7 @@ class BE_Dataset:
             if self.scaled:
                 # TODO: add the scaling here
                 data = self.loop_param_scaler.fit(data)
-                
+
                 # Warning("Scaling not implemented yet")
                 # pass
 
@@ -872,12 +905,12 @@ class BE_Dataset:
         self.SHO_scaler.mean_[3] = 0
         self.SHO_scaler.var_[3] = 1
         self.SHO_scaler.scale_[3] = 1
-        
+
     def LoopParmScaler(self):
-        
+
         self.loop_param_scaler = StandardScaler()
         data = self.LSQF_hysteresis_params().reshape(-1, 9)
-        
+
         self.loop_param_scaler.fit(data)
 
     def SHO_LSQF(self, pixel=None, voltage_step=None):
@@ -1917,7 +1950,8 @@ class BE_Dataset:
                 hysteresis_data)
 
         # output shape (x,y, cycle, voltage_steps)
-        return hysteresis_data, np.swapaxes(np.atleast_2d(self.get_voltage), 0, 1).astype(np.float64) # bias_vec
+        # bias_vec
+        return hysteresis_data, np.swapaxes(np.atleast_2d(self.get_voltage), 0, 1).astype(np.float64)
 
     def get_bias_vector(self, plotting_values=True):
 
@@ -1962,7 +1996,7 @@ class BE_Dataset:
 
             if plotting_values:
                 bias_vec = self.roll_hysteresis(bias_vec)
-                
+
             return bias_vec
 
     def hysteresis_measurement_state(self, hysteresis_data):
