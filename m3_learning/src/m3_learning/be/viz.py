@@ -18,6 +18,7 @@ from scipy import fftpack
 import matplotlib.pyplot as plt
 from m3_learning.be.nn import SHO_Model
 from m3_learning.be.loop_fitter import loop_fitting_function_torch
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # import m3_learning
 # from m3_learning.util.rand_util import get_tuple_names
@@ -2643,3 +2644,89 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
+
+    
+    def hysteresis_maps(
+        self,
+        parms_pred,
+        colorbars=True,
+        fig_width=10.5,  # figure width in inches
+        filename=None,
+    ):
+
+        # calculates the size of the embedding image
+        embedding_image_size = 120
+
+        fig, axs = plt.subplots(
+            2,
+            9,
+            figsize=(fig_width, 4),
+            gridspec_kw={"height_ratios": [1, 1]},
+        )
+
+        parms_lsqf = self.dataset.LSQF_hysteresis_params().reshape(-1, 9)
+
+        clims = []
+
+        colorbar_labels = [
+            'a0', 'a1', 'a2', 'a3', 'a4', 'b0', 'b1', 'b2', 'b3'
+        ]
+
+        # Titles for each row
+        row_titles = ['Predicted Parameters', 'LSQF Parameters']
+
+        for i in range(9):
+            clims.append(
+                (
+                    np.min(
+                        [
+                            parms_pred[:, i].min(),
+                            parms_lsqf[:, i].min(),
+                        ]
+                    ),
+                    np.max(
+                        [
+                            parms_pred[:, i].max(),
+                            parms_lsqf[:, i].max(),
+                        ]
+                    ),
+                )
+            )
+
+            axs[0, i].imshow(
+                parms_pred[:, i].reshape(embedding_image_size, embedding_image_size),
+                cmap="viridis",
+                vmin=clims[i][0],
+                vmax=clims[i][1],
+            )
+
+            axs[1, i].imshow(
+                parms_lsqf[:, i].reshape(embedding_image_size, embedding_image_size),
+                cmap="viridis",
+                vmin=clims[i][0],
+                vmax=clims[i][1],
+            )
+
+            if colorbars:
+                # Create an axis divider for each subplot
+                divider = make_axes_locatable(axs[1, i])
+                # Append axes to the bottom of the divider with appropriate padding
+                cax = divider.append_axes("bottom", size="5%", pad=0.25)
+                cbar = plt.colorbar(axs[1, i].images[0], cax=cax, format="%.1e", orientation='horizontal')
+                cbar.set_label(colorbar_labels[i])  # Set the label for each colorbar
+
+        # Calculate the vertical position for the row titles
+        title_y_positions = [0.85, 0.5]  # You may need to adjust these values
+
+        # Set the titles for each row using fig.text
+        for i, title in enumerate(row_titles):
+            fig.text(0.5, title_y_positions[i], title, ha='center', va='center', fontsize=10, transform=fig.transFigure)
+
+        
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(
+                fig, filename, size=6, loc="tl", inset_fraction=(0.2, 0.2)
+            )
+
+        fig.show()
