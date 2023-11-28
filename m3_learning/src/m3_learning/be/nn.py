@@ -17,15 +17,14 @@ from m3_learning.util.rand_util import save_list_to_txt
 import pandas as pd
 
 # def loop_fitting_function_torch(V, y, type='9 parameters'):
-    
+
 #     y = y.type(torch.float64)
 
 #     if(type == '9 parameters'):
-        
-#         vector_length = int(len(V) / 2)
-        
 
-        
+#         vector_length = int(len(V) / 2)
+
+
 #         a0 = y[:, 0]
 #         a1 = y[:, 1]
 #         a2 = y[:, 2]
@@ -50,7 +49,7 @@ import pandas as pd
 
 #         loop_eval = torch.transpose(torch.cat((f1, f2), axis=0), 1, 0)
 #         return loop_eval
-    
+
 #     elif(type == '13 parameters'):
 #         a1 = y[:, 0]
 #         a2 = y[:, 1]
@@ -668,13 +667,13 @@ class SHO_Model(AE_Fitter_SHO):
 
 
 @static_state_decorator
-def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_CSV="Batch_Training_Noisy_Data.csv",
+def batch_training(dataset, optimizers, noise_list, batch_size, epochs, seed, write_CSV="Batch_Training_Noisy_Data.csv",
                    basepath=None, early_stopping_loss=None, early_stopping_count=None, early_stopping_time=None, skip=-1, **kwargs,
                    ):
 
     # Generate all combinations
     combinations = list(itertools.product(
-        optimizers, noise, batch_size, epochs, seed))
+        optimizers, noise_list, batch_size, epochs, seed))
 
     for i, training in enumerate(combinations):
         if i < skip:
@@ -725,16 +724,18 @@ def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_C
             early_stopping_time=early_stopping_time,
             **kwargs,
         )
-        
+
         del model
 
+
 def find_best_model(basepath, filename):
-    
+
     # Read the CSV
     df = pd.read_csv(basepath + '/' + filename)
 
     # Extract noise level from the 'Model Name' column
-    df['Noise Level'] = df['Model Name'].apply(lambda x: float(x.split('_')[3]))
+    df['Noise Level'] = df['Model Name'].apply(
+        lambda x: float(x.split('_')[3]))
 
     # Create an empty dictionary to store the results
     results = {}
@@ -743,14 +744,16 @@ def find_best_model(basepath, filename):
     for noise_level in df['Noise Level'].unique():
         for optimizer in df['Optimizer'].unique():
             # Create a mask for the current combination
-            mask = (df['Noise Level'] == noise_level) & (df['Optimizer'] == optimizer)
-            
+            mask = (df['Noise Level'] == noise_level) & (
+                df['Optimizer'] == optimizer)
+
             # If there's any row with this combination
             if df[mask].shape[0] > 0:
                 # Find the index of the minimum 'Train Loss'
                 min_loss_index = df.loc[mask, 'Train Loss'].idxmin()
-                
+
                 # Store the result
-                results[(noise_level, optimizer)] = df.loc[min_loss_index].to_dict()
+                results[(noise_level, optimizer)
+                        ] = df.loc[min_loss_index].to_dict()
 
     return results
