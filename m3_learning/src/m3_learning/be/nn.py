@@ -372,9 +372,6 @@ class SHO_Model(AE_Fitter_SHO):
         already_stopped = False
 
         model_updates = 0
-        
-        # starts the timer
-        start_time = time.time()
 
         # loops around each epoch
         for epoch in range(epochs):
@@ -389,6 +386,9 @@ class SHO_Model(AE_Fitter_SHO):
             for train_batch in train_dataloader:
 
                 model_updates += 1
+
+                # starts the timer
+                start_time = time.time()
 
                 train_batch = train_batch.to(datatype).to(self.device)
 
