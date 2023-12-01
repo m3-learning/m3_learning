@@ -15,6 +15,7 @@ import itertools
 from m3_learning.optimizers.TrustRegion import TRCG
 from m3_learning.util.rand_util import save_list_to_txt
 import pandas as pd
+import gc
 
 # def loop_fitting_function_torch(V, y, type='9 parameters'):
 
@@ -103,7 +104,8 @@ def write_csv(write_CSV,
                    "Seed",
                    "filename",
                    "early_stoppage",
-                   "model updates"]
+                   "model updates", 
+                   "cuda memory"]
         data = [model_name,
                 optimizer_name,
                 epochs,
@@ -114,7 +116,8 @@ def write_csv(write_CSV,
                 seed,
                 f"{path}/{model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth",
                 f"{stoppage_early}",
-                f"{model_updates}"]
+                f"{model_updates}",
+                f"{torch.cuda.memory_summary()}"]
         append_to_csv(f"{path}/{write_CSV}", data, headers)
 
 
@@ -725,7 +728,28 @@ def batch_training(dataset, optimizers, noise_list, batch_size, epochs, seed, wr
             **kwargs,
         )
 
-        del model
+        del model, X_train, X_test, y_train, y_test
+        
+        torch.cuda.empty_cache()
+        clear_all_tensors()
+        gc.collect()
+        print(torch.cuda.memory_summary())
+
+
+def clear_all_tensors():
+    # Get all objects in global scope
+    for obj_name in dir():
+        # Filter out objects that are not tensors
+        if not obj_name.startswith('_'):
+            obj = globals()[obj_name]
+            if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+                del obj
+
+    # Clear PyTorch GPU cache
+    torch.cuda.empty_cache()
+
+    # Force Python's Garbage Collector to release unreferenced memory
+    gc.collect()
 
 
 def find_best_model(basepath, filename):
