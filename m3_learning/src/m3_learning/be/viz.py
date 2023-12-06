@@ -284,7 +284,7 @@ class Viz:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
 
     @static_state_decorator
-    def SHO_hist(self, SHO_data, filename=None, scaled=True):
+    def SHO_hist(self, SHO_data, filename=None, scaled=False):
         """Plots the SHO hysterisis parameters
 
         Args:
@@ -293,7 +293,7 @@ class Viz:
         """
 
         # if the scale is False will not use the scale in the viz
-        if self.dataset.scaled:
+        if self.dataset.scaled or scaled:
             self.SHO_ranges = None
 
         # if the SHO data is not a list it will make it a list
@@ -983,23 +983,23 @@ class Viz:
 
         return data, labels
 
-    
     @static_state_decorator
     def get_best_median_worst_hysteresis(self,
-                                        true_state,
-                                        prediction=None,
-                                        out_state=None,
-                                        n=1,
-                                        index=None,
-                                        compare_state=None,
-                                        **kwargs):
+                                         true_state,
+                                         prediction=None,
+                                         out_state=None,
+                                         n=1,
+                                         index=None,
+                                         compare_state=None,
+                                         **kwargs):
 
         true = true_state
         x1 = self.dataset.get_voltage
 
         data = torch.tensor(true).float()
 
-        pred_data, scaled_params, params = prediction.predict(data, translate_params=False)
+        pred_data, scaled_params, params = prediction.predict(
+            data, translate_params=False)
 
         prediction = pred_data
 
@@ -1030,8 +1030,6 @@ class Viz:
 
         return (d1, d2, x1, x2, index1, mse1, params)
 
-
-    
     @static_state_decorator
     def get_mse_index(self, index, model):
         # gets the raw data
@@ -1404,7 +1402,7 @@ class Viz:
             lines, labels = ax_.get_legend_handles_labels()
             lines2, labels2 = ax1.get_legend_handles_labels()
             ax_.legend(lines + lines2, labels + labels2, loc="upper right")
-        
+
         elif fit_type == "hysteresis":
             d1, d2, x1, x2, index1, mse1, _ = self.get_best_median_worst_hysteresis(
                 true_state,
@@ -1445,7 +1443,7 @@ class Viz:
                 add_text_to_figure(
                     fig, text, text_position_in_inches, fontsize=6, ha="center"
                 )
-                
+
                 ax_.set_ylabel("(Arb. U.)")
 
                 # add a legend just for the last one
@@ -2031,7 +2029,6 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
 
-    
     def violin_plot_comparison_hysteresis(self, model, X_data, filename):
 
         df = pd.DataFrame()
@@ -2053,7 +2050,7 @@ class Viz:
         )
         predicted_df = pd.DataFrame(
             scaled_param, columns=["a0", "a1", "a2", "a3", "a4",
-                                    "b0", "b1", "b2", "b3"]
+                                   "b0", "b1", "b2", "b3"]
         )
 
         # merges the two dataframes
@@ -2508,7 +2505,7 @@ class Viz:
             cycle = np.random.randint(0, data.shape[2], 1)
 
         return (row, col, cycle)
-    
+
     def hysteresis_comparison(self,
                               data,
                               row=None,
@@ -2547,13 +2544,14 @@ class Viz:
             fig, ax = subfigures(1, 1, size=size)
 
             ax[0].plot(voltage.squeeze(),
-                   raw_hysteresis_loop[row, col, cycle, :].squeeze(), 'o', label = "Raw Data")
-            
+                       raw_hysteresis_loop[row, col, cycle, :].squeeze(), 'o', label="Raw Data")
+
             parms = self.dataset.LSQF_hysteresis_params(
             )[row, col, cycle, :].reshape(-1, 9)
             loop = loop_fitting_function_torch(parms, voltage).to(
                 'cpu').detach().numpy().squeeze()
-            ax[0].plot(voltage.squeeze()[48:], loop[:, 0].squeeze(), 'r', label='LSQF')
+            ax[0].plot(voltage.squeeze()[48:],
+                       loop[:, 0].squeeze(), 'r', label='LSQF')
             ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'r')
 
             ax[0].set_xlabel('Voltage (V)')
@@ -2563,41 +2561,43 @@ class Viz:
             # prints the figure
             if self.Printer is not None and filename is not None:
                 self.Printer.savefig(fig, filename, label_figs=ax, style="b")
-            
+
             return
 
         # if we are plotting the NN and LSQF results
         fig, ax = subfigures(3, 2, gaps=gaps, size=size)
 
-        data_raw, voltage = self.dataset.get_hysteresis(scaled=True, loop_interpolated = True)
+        data_raw, voltage = self.dataset.get_hysteresis(
+            scaled=True, loop_interpolated=True)
         d1, d2, v1, v2, index1, mse1, params = self.get_best_median_worst_hysteresis(
             torch.atleast_3d(torch.tensor(data_raw.reshape(-1, 96))),
             prediction=model,
             n=1
         )
 
-
         for i, (true, prediction, error, parms) in enumerate(zip(d1, d2, mse1, params)):
             plot_idx = i * 2
 
             # plot the raw data for LSQF
             ax[plot_idx].plot(voltage.squeeze()*-1,
-                raw_hysteresis_loop.reshape(-1, 96)[index1[i], :], 'o', label = "Raw Data")
+                              raw_hysteresis_loop.reshape(-1, 96)[index1[i], :], 'o', label="Raw Data")
 
-            true_unscaled = self.dataset.hystersis_scaler.inverse_transform(true.reshape(-1, 1))
+            true_unscaled = self.dataset.hystersis_scaler.inverse_transform(
+                true.reshape(-1, 1))
 
             ax[plot_idx + 1].plot(voltage.squeeze(),
-                true_unscaled, 'o', label = "Raw Data")
-            
+                                  true_unscaled, 'o', label="Raw Data")
+
             # plot the NN prediction
-            loop = loop_fitting_function_torch(parms.reshape(-1, 9), voltage[:,0].squeeze()).to(
+            loop = loop_fitting_function_torch(parms.reshape(-1, 9), voltage[:, 0].squeeze()).to(
                 'cpu').detach().numpy().squeeze()
-            ax[plot_idx + 1].plot(v1.squeeze(), loop.squeeze(), 'g', label='NN')
+            ax[plot_idx + 1].plot(v1.squeeze(),
+                                  loop.squeeze(), 'g', label='NN')
 
             # plot the LSQF prediction
             parms_lsqf = self.dataset.LSQF_hysteresis_params(
             ).reshape(-1, 9)[index1[i], :]
-            loop = loop_fitting_function_torch(parms_lsqf, voltage[:,0].squeeze()).to(
+            loop = loop_fitting_function_torch(parms_lsqf, voltage[:, 0].squeeze()).to(
                 'cpu').detach().numpy().squeeze()
             ax[plot_idx].plot(
                 v1.squeeze(),
@@ -2631,7 +2631,7 @@ class Viz:
                 ha="center",
                 # va="top",
             )
-            
+
             ax[plot_idx].set_ylabel("(Arb. U.)")
             ax[plot_idx + 1].set_ylabel("(Arb. U.)")
 
@@ -2645,7 +2645,6 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
 
-    
     def hysteresis_maps(
         self,
         parms_pred,
@@ -2694,14 +2693,16 @@ class Viz:
             )
 
             axs[0, i].imshow(
-                parms_pred[:, i].reshape(embedding_image_size, embedding_image_size),
+                parms_pred[:, i].reshape(
+                    embedding_image_size, embedding_image_size),
                 cmap="viridis",
                 vmin=clims[i][0],
                 vmax=clims[i][1],
             )
 
             axs[1, i].imshow(
-                parms_lsqf[:, i].reshape(embedding_image_size, embedding_image_size),
+                parms_lsqf[:, i].reshape(
+                    embedding_image_size, embedding_image_size),
                 cmap="viridis",
                 vmin=clims[i][0],
                 vmax=clims[i][1],
@@ -2712,17 +2713,19 @@ class Viz:
                 divider = make_axes_locatable(axs[1, i])
                 # Append axes to the bottom of the divider with appropriate padding
                 cax = divider.append_axes("bottom", size="5%", pad=0.25)
-                cbar = plt.colorbar(axs[1, i].images[0], cax=cax, format="%.1e", orientation='horizontal')
-                cbar.set_label(colorbar_labels[i])  # Set the label for each colorbar
+                cbar = plt.colorbar(
+                    axs[1, i].images[0], cax=cax, format="%.1e", orientation='horizontal')
+                # Set the label for each colorbar
+                cbar.set_label(colorbar_labels[i])
 
         # Calculate the vertical position for the row titles
         title_y_positions = [0.85, 0.5]  # You may need to adjust these values
 
         # Set the titles for each row using fig.text
         for i, title in enumerate(row_titles):
-            fig.text(0.5, title_y_positions[i], title, ha='center', va='center', fontsize=10, transform=fig.transFigure)
+            fig.text(0.5, title_y_positions[i], title, ha='center',
+                     va='center', fontsize=10, transform=fig.transFigure)
 
-        
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(
