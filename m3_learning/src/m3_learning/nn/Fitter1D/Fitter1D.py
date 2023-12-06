@@ -17,6 +17,7 @@ from m3_learning.optimizers.TrustRegion import TRCG
 from m3_learning.util.rand_util import save_list_to_txt
 import pandas as pd
 
+
 def static_state_decorator(func):
     """Decorator that stops the function from changing the state
 
@@ -86,7 +87,8 @@ class Multiscale1DFitter(nn.Module):
 
         # Input block of 1d convolution
         self.hidden_x1 = nn.Sequential(
-            nn.Conv1d(in_channels=self.input_channels, out_channels=8, kernel_size=7),
+            nn.Conv1d(in_channels=self.input_channels,
+                      out_channels=8, kernel_size=7),
             nn.SELU(),
             nn.Conv1d(in_channels=8, out_channels=6, kernel_size=7),
             nn.SELU(),
@@ -141,7 +143,6 @@ class Multiscale1DFitter(nn.Module):
             nn.Linear(8, self.num_params),
         )
 
-
     def forward(self, x, n=-1):
         # output shape - samples, (real, imag), frequency
         x = torch.swapaxes(x, 1, 2)
@@ -174,15 +175,18 @@ class Multiscale1DFitter(nn.Module):
             unscaled_param, self.x_data, device=self.device)
 
         out = fits
-        
+
         # Does the post processing if required
         if self.post_processing is not None:
             out = self.post_processing.compute(fits)
         else:
             out = fits
 
-        out_scaled = (out - torch.tensor(self.loops_scaler.mean).cuda()) / torch.tensor(
-            self.loops_scaler.std).cuda()
+        if self.loops_scaler is not None:
+            out_scaled = (out - torch.tensor(self.loops_scaler.mean).cuda()) / torch.tensor(
+                self.loops_scaler.std).cuda()
+        else:
+            out_scaled = out
 
         if self.training == True:
             return out_scaled, unscaled_param
@@ -194,7 +198,7 @@ class Multiscale1DFitter(nn.Module):
 
 
 class ComplexPostProcessor:
-    
+
     def __init__(self, dataset):
         self.dataset = dataset
 
@@ -209,9 +213,9 @@ class ComplexPostProcessor:
             self.dataset.raw_data_scaler.imag_scaler.std
         ).cuda()
         out = torch.stack((real_scaled, imag_scaled), 2)
-        
+
         return out
-    
+
 
 class Model(nn.Module):
 
@@ -223,7 +227,7 @@ class Model(nn.Module):
                  path='Trained Models/SHO Fitter/',
                  device=None,
                  **kwargs):
-        
+
         super().__init__()
 
         if device is None:
@@ -278,10 +282,12 @@ class Model(nn.Module):
         # selects the optimizer
         if optimizer == 'Adam':
             optimizer_ = torch.optim.Adam(self.model.parameters(), lr=3e-3)
-            scheduler = ReduceLROnPlateau(optimizer_, mode='min', factor=0.9, patience=100, verbose=True)
+            scheduler = ReduceLROnPlateau(
+                optimizer_, mode='min', factor=0.9, patience=100, verbose=True)
         elif optimizer == "AdaHessian":
             optimizer_ = AdaHessian(self.model.parameters(), lr=0.1)
-            scheduler = ReduceLROnPlateau(optimizer_, mode='min', factor=0.5, patience=20, verbose=True)
+            scheduler = ReduceLROnPlateau(
+                optimizer_, mode='min', factor=0.5, patience=20, verbose=True)
         elif optimizer == "LBFGS":
             optimizer_ = torch.optim.LBFGS(self.model.parameters(), lr=0.01)
         elif isinstance(optimizer, dict):
@@ -494,8 +500,8 @@ class Model(nn.Module):
         num_batches = len(dataloader)
         data = data.clone().detach().requires_grad_(True)
         predictions = torch.zeros_like(data.clone().detach())
-        params_scaled = torch.zeros((data.shape[0], 9))
-        params = torch.zeros((data.shape[0], 9))
+        params_scaled = torch.zeros((data.shape[0], self.model.num_params))
+        params = torch.zeros((data.shape[0], self.model.num_params))
 
         # compute the predictions
         for i, train_batch in enumerate(dataloader):
@@ -508,7 +514,10 @@ class Model(nn.Module):
             pred_batch, params_scaled_, params_ = self.model(
                 train_batch.to(self.device))
 
-            predictions[start:end] = torch.unsqueeze(pred_batch.cpu().detach(), 2)
+
+            predictions[start:end] = pred_batch.cpu().detach()
+            # predictions[start:end] = torch.unsqueeze(
+            #     pred_batch.cpu().detach(), 2) #12/5/2023
             params_scaled[start:end] = params_scaled_.cpu().detach()
             params[start:end] = params_.cpu().detach()
 
@@ -587,10 +596,9 @@ class Model(nn.Module):
             (index[:n], index[start_index:end_index], index[-n:])).flatten().astype(int)
         mse = np.hstack(
             (mse[:n], mse[start_index:end_index], mse[-n:]))
-        
 
         d1 = np.stack(
-            (d1[:n], d1[start_index:end_index], d1[-n:])).squeeze()   
+            (d1[:n], d1[start_index:end_index], d1[-n:])).squeeze()
         d2 = np.stack(
             (d2[:n], d2[start_index:end_index], d2[-n:])).squeeze()
 
@@ -682,16 +690,18 @@ def batch_training(dataset, optimizers, noise, batch_size, epochs, seed, write_C
             early_stopping_time=early_stopping_time,
             **kwargs,
         )
-        
+
         del model
 
+
 def find_best_model(basepath, filename):
-    
+
     # Read the CSV
     df = pd.read_csv(basepath + '/' + filename)
 
     # Extract noise level from the 'Model Name' column
-    df['Noise Level'] = df['Model Name'].apply(lambda x: float(x.split('_')[3]))
+    df['Noise Level'] = df['Model Name'].apply(
+        lambda x: float(x.split('_')[3]))
 
     # Create an empty dictionary to store the results
     results = {}
@@ -700,14 +710,16 @@ def find_best_model(basepath, filename):
     for noise_level in df['Noise Level'].unique():
         for optimizer in df['Optimizer'].unique():
             # Create a mask for the current combination
-            mask = (df['Noise Level'] == noise_level) & (df['Optimizer'] == optimizer)
-            
+            mask = (df['Noise Level'] == noise_level) & (
+                df['Optimizer'] == optimizer)
+
             # If there's any row with this combination
             if df[mask].shape[0] > 0:
                 # Find the index of the minimum 'Train Loss'
                 min_loss_index = df.loc[mask, 'Train Loss'].idxmin()
-                
+
                 # Store the result
-                results[(noise_level, optimizer)] = df.loc[min_loss_index].to_dict()
+                results[(noise_level, optimizer)
+                        ] = df.loc[min_loss_index].to_dict()
 
     return results
