@@ -36,6 +36,7 @@ def write_csv(write_CSV,
               path,
               model_name,
               optimizer_name,
+              i,
               epochs,
               total_time,
               train_loss,
@@ -43,10 +44,12 @@ def write_csv(write_CSV,
               loss_func,
               seed,
               stoppage_early,
-              model_updates):
+              model_updates, 
+              ):
 
     if write_CSV is not None:
         headers = ["Model Name",
+                   "Training Number"
                    "Optimizer",
                    "Epochs",
                    "Training_Time",
@@ -58,6 +61,7 @@ def write_csv(write_CSV,
                    "early_stoppage",
                    "model updates"]
         data = [model_name,
+                i,
                 optimizer_name,
                 epochs,
                 total_time,
@@ -260,6 +264,7 @@ class Model(nn.Module):
             early_stopping_count=None,
             early_stopping_time=None,
             save_training_loss=True,
+            i = None,
             **kwargs):
 
         loss_ = []
@@ -281,31 +286,17 @@ class Model(nn.Module):
 
         # selects the optimizer
         if optimizer == 'Adam':
-            optimizer_ = torch.optim.Adam(self.model.parameters(), lr=3e-3)
-            scheduler = ReduceLROnPlateau(
-                optimizer_, mode='min', factor=0.9, patience=100, verbose=True)
+            optimizer_ = torch.optim.Adam(self.model.parameters())
         elif optimizer == "AdaHessian":
-            optimizer_ = AdaHessian(self.model.parameters(), lr=0.1)
-            scheduler = ReduceLROnPlateau(
-                optimizer_, mode='min', factor=0.5, patience=20, verbose=True)
-        elif optimizer == "LBFGS":
-            optimizer_ = torch.optim.LBFGS(self.model.parameters(), lr=0.01)
+            optimizer_ = AdaHessian(self.model.parameters(), lr=.5)
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
                 optimizer_ = optimizer['optimizer'](
-                    self.model, optimizer['radius'], optimizer['device'],
-                    optimizer['closure_size'],
-                    optimizer['cgopttol'], optimizer['c0tr'], optimizer['c1tr'],
-                    optimizer['c2tr'], optimizer['t1tr'], optimizer['t2tr'],
-                    optimizer['radius_max'], optimizer['radius_initial'])
+                    self.model, optimizer['radius'], optimizer['device'])
         elif isinstance(optimizer, dict):
             if optimizer['name'] == "TRCG":
                 optimizer_ = optimizer['optimizer'](
-                    self.model, optimizer['radius'], optimizer['device'],
-                    optimizer['closure_size'],
-                    optimizer['cgopttol'], optimizer['c0tr'], optimizer['c1tr'],
-                    optimizer['c2tr'], optimizer['t1tr'], optimizer['t2tr'],
-                    optimizer['radius_max'], optimizer['radius_initial'])
+                    self.model, optimizer['radius'], optimizer['device'])
         else:
             try:
                 optimizer = optimizer(self.model.parameters())
@@ -399,6 +390,7 @@ class Model(nn.Module):
                             write_csv(write_CSV,
                                       path,
                                       self.model_name,
+                                      i,
                                       optimizer_name,
                                       epoch,
                                       total_time,
@@ -441,6 +433,7 @@ class Model(nn.Module):
                     write_csv(write_CSV,
                               path,
                               self.model_name,
+                              i,
                               optimizer_name,
                               epoch,
                               total_time,
@@ -457,6 +450,7 @@ class Model(nn.Module):
         write_csv(write_CSV,
                   path,
                   self.model_name,
+                  i,
                   optimizer_name,
                   epoch,
                   total_time,
