@@ -152,6 +152,21 @@ class Viz:
 
         return wrapper
 
+    def static_scale_decorator(func):
+        """Decorator that stops the function from changing the state
+
+        Args:
+            func (method): any method
+        """
+
+        def wrapper(*args, **kwargs):
+            current_state = args[0].SHO_ranges
+            out = func(*args, **kwargs)
+            args[0].SHO_ranges = current_state
+            return out
+
+        return wrapper
+
     @static_state_decorator
     def raw_be(self, dataset, filename="Figure_1_random_cantilever_resonance_results"):
         """Plots the raw data and the BE waveform
@@ -283,6 +298,7 @@ class Viz:
         if self.Printer is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
 
+    @static_scale_decorator
     @static_state_decorator
     def SHO_hist(self, SHO_data, filename=None, scaled=False):
         """Plots the SHO hysterisis parameters
@@ -1048,8 +1064,8 @@ class Viz:
             predictions = predictions.detach().numpy()
 
         if isinstance(model, dict):
-            # holds the raw state
-            current_state = self.dataset.get_state
+            # # holds the raw state
+            # current_state = self.dataset.get_state
 
             # sets the phase shift to zero for the specific fitter - this is a requirement for using the fitting function
             exec(f"self.dataset.{model['fitter']}_phase_shift =0")
@@ -1083,8 +1099,8 @@ class Viz:
             # (samples, voltage steps, real/imaginary)
             predictions = pred_data[[index]]
 
-            # restores the state to the original state
-            self.set_attributes(**current_state)
+            # # restores the state to the original state
+            # self.set_attributes(**current_state)
 
         return SHO_Model.MSE(data.detach().numpy(), predictions)
 
@@ -1260,7 +1276,7 @@ class Viz:
             array, array, list: returns the output data, the SHO parameters, and the labels for the data
         """
 
-        current_state = self.dataset.get_state
+        # current_state = self.dataset.get_state
 
         pixel, voltage = np.unravel_index(
             index, (self.dataset.num_pix, self.dataset.voltage_steps)
@@ -1276,8 +1292,8 @@ class Viz:
             pred_data = np.array(pred_data)
 
         if isinstance(model, dict):
-            # holds the raw state
-            current_state = self.dataset.get_state
+            # # holds the raw state
+            # current_state = self.dataset.get_state
 
             self.dataset.scaled = False
 
@@ -1305,14 +1321,14 @@ class Viz:
             pred_data = pred_data[[index]]
             params = params_shifted[[index]]
 
-            self.set_attributes(**current_state)
+            # self.set_attributes(**current_state)
 
         pred_data = np.swapaxes(pred_data, 1, 2)
 
         pred_data, labels = self.out_state(pred_data, out_state)
 
-        # returns the state to the original state
-        self.set_attributes(**current_state)
+        # # returns the state to the original state
+        # self.set_attributes(**current_state)
 
         return pred_data, params, labels
 
