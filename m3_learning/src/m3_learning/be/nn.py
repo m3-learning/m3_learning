@@ -17,6 +17,10 @@ from m3_learning.util.rand_util import save_list_to_txt
 import pandas as pd
 import gc
 
+from m3_learning.nn.Fitter1D.Fitter1D import Multiscale1DFitter, Model
+from m3_learning.nn.Fitter1D.Fitter1D import ComplexPostProcessor
+
+
 # def loop_fitting_function_torch(V, y, type='9 parameters'):
 
 #     y = y.type(torch.float64)
@@ -81,6 +85,7 @@ import gc
 
 
 def write_csv(write_CSV,
+              noise_level,
               path,
               model_name,
               optimizer_name,
@@ -95,6 +100,7 @@ def write_csv(write_CSV,
 
     if write_CSV is not None:
         headers = ["Model Name",
+                   "Noise Level",
                    "Optimizer",
                    "Epochs",
                    "Training_Time",
@@ -104,9 +110,10 @@ def write_csv(write_CSV,
                    "Seed",
                    "filename",
                    "early_stoppage",
-                   "model updates", 
+                   "model updates",
                    "cuda memory"]
         data = [model_name,
+                noise_level,
                 optimizer_name,
                 epochs,
                 total_time,
@@ -116,8 +123,7 @@ def write_csv(write_CSV,
                 seed,
                 f"{path}/{model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth",
                 f"{stoppage_early}",
-                f"{model_updates}",
-                f"{torch.cuda.memory_summary()}"]
+                f"{model_updates}"]
         append_to_csv(f"{path}/{write_CSV}", data, headers)
 
 
@@ -442,6 +448,7 @@ class SHO_Model(AE_Fitter_SHO):
                                        f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss/total_num}.pth")
 
                             write_csv(write_CSV,
+                                      self.dataset.noise_state,
                                       path,
                                       self.model_name,
                                       optimizer_name,
@@ -479,6 +486,7 @@ class SHO_Model(AE_Fitter_SHO):
                                f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
 
                     write_csv(write_CSV,
+                              self.dataset.noise_state,
                               path,
                               self.model_name,
                               optimizer_name,
@@ -495,6 +503,7 @@ class SHO_Model(AE_Fitter_SHO):
         torch.save(self.model.state_dict(),
                    f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
         write_csv(write_CSV,
+                  self.dataset.noise_state,
                   path,
                   self.model_name,
                   optimizer_name,
@@ -511,6 +520,9 @@ class SHO_Model(AE_Fitter_SHO):
             save_list_to_txt(
                 loss_, f"{path}/Training_loss_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.txt")
 
+        del optimizer_
+        gc.collect()
+        torch.cuda.empty_cache()
         self.model.eval()
 
     def load(self, model_path):
@@ -709,15 +721,27 @@ def batch_training(dataset, optimizers, noise_list, batch_size, epochs, seed, wr
 
         print(f'Working on combination: {model_name}')
 
+        postprocessor = ComplexPostProcessor(dataset)
+
+        model_ = Multiscale1DFitter(SHO_fit_func_nn,  # function
+                                    dataset.frequency_bin,  # x data
+                                    2,  # input channels
+                                    4,  # output channels
+                                    dataset.SHO_scaler,
+                                    postprocessor)
+
         # instantiate the model
-        model = SHO_Model(dataset, training=True, model_basename=model_name)
+        model = Model(model_, dataset, training=True,
+                      model_basename="SHO_Fitter_original_data")
+
+        # # instantiate the model
+        # model = SHO_Model(dataset, training=True, model_basename=model_name)
 
         # fits the model
         model.fit(
             X_train,
             batch_size=batch_size,
             optimizer=optimizer,
-
             epochs=epochs,
             write_CSV=write_CSV,
             seed=seed,
@@ -725,15 +749,15 @@ def batch_training(dataset, optimizers, noise_list, batch_size, epochs, seed, wr
             early_stopping_loss=early_stopping_loss,
             early_stopping_count=early_stopping_count,
             early_stopping_time=early_stopping_time,
+            i=i,
             **kwargs,
         )
 
         del model, X_train, X_test, y_train, y_test
-        
+
         torch.cuda.empty_cache()
         clear_all_tensors()
         gc.collect()
-        print(torch.cuda.memory_summary())
 
 
 def clear_all_tensors():

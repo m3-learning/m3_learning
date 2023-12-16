@@ -1,8 +1,4 @@
-# import sys
-# sys.path.append("/home/ferroelectric/m3_learning/m3_learning/src")
-
-
-from m3_learning.be.nn import SHO_fit_func_nn, SHO_Model, batch_training
+from m3_learning.be.nn import SHO_fit_func_nn, batch_training
 from m3_learning.util.system_info import SystemInfo
 
 import argparse
@@ -25,12 +21,12 @@ filename = "data_raw_unmod.h5"
 save_path = "/home/ferroelectric/Documents/m3_learning/m3_learning/papers/2023_Rapid_Fitting/Data/"
 optimizer_TR = {"name": "TRCG", "optimizer": TRCG,
                 "radius": 5, "device": "cuda", "ADAM_epochs": 2}
-optimizers = [optimizer_TR, 'Adam']
+optimizers = ['Adam', optimizer_TR]
 noise_list = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 batch_size = [500, 1000, 5000, 10000]
 epochs = [5]
-seed = [41, 43, 44, 45, 46]
-early_stopping_time = 60*5
+seed = [0, 41, 43, 44, 45, 46]
+early_stopping_time = 60*4
 basepath_postfix = 'nn_benchmarks_noise'
 
 # Original filename
@@ -83,4 +79,5 @@ batch_training(dataset, optimizers, noise_list, batch_size, epochs,
                write_CSV="Batch_Trainging_SpeedTest.csv",
                basepath=basepath,
                early_stopping_time=early_stopping_time,
-               skip=319)
+               skip=432
+               )
