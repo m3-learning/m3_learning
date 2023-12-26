@@ -503,7 +503,7 @@ class SHO_Model(AE_Fitter_SHO):
         torch.save(self.model.state_dict(),
                    f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
         write_csv(write_CSV,
-                  self.dataset.noise_state,
+                  self.model.dataset.noise_state,
                   path,
                   self.model_name,
                   optimizer_name,
