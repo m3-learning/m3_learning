@@ -658,7 +658,7 @@ class BE_Dataset:
     def dc_voltage(self):
         """Gets the DC voltage vector"""
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f[f"Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
+            return h5_f[f"Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
 
     @property
     def num_pix(self):
