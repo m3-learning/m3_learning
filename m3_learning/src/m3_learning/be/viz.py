@@ -1015,7 +1015,7 @@ class Viz:
         data = torch.tensor(true).float()
 
         pred_data, scaled_params, params = prediction.predict(
-            data, translate_params=False)
+            data, translate_params=False, is_SHO=False)
 
         prediction = pred_data
 
@@ -2050,7 +2050,7 @@ class Viz:
         df = pd.DataFrame()
 
         # uses the model to get the predictions
-        pred_data, scaled_param, params = model.predict(X_data)
+        pred_data, scaled_param, params = model.predict(X_data, is_SHO=False)
 
         # gets the parameters from the SHO LSQF fit
         # true = self.dataset.SHO_fit_results().reshape(-1, 4)
@@ -2670,7 +2670,8 @@ class Viz:
     ):
 
         # calculates the size of the embedding image
-        embedding_image_size = 120
+        embedding_image_size = 60
+        cycle = 3
 
         fig, axs = plt.subplots(
             2,
@@ -2679,7 +2680,8 @@ class Viz:
             gridspec_kw={"height_ratios": [1, 1]},
         )
 
-        parms_lsqf = self.dataset.LSQF_hysteresis_params().reshape(-1, 9)
+        parms_lsqf = self.dataset.LSQF_hysteresis_params()[:, :, cycle, :].reshape(-1, 9)
+        parms_pred = parms_pred.reshape(embedding_image_size, embedding_image_size, 4, 9)[:, :, cycle, :].reshape(-1, 9)
 
         clims = []
 

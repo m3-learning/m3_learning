@@ -489,7 +489,8 @@ class Model(nn.Module):
 
     def predict(self, data, batch_size=10000,
                 single=False,
-                translate_params=True):
+                translate_params=True,
+                is_SHO=True):
 
         self.model.eval()
 
@@ -514,10 +515,11 @@ class Model(nn.Module):
             pred_batch, params_scaled_, params_ = self.model(
                 train_batch.to(self.device))
 
-
-            predictions[start:end] = pred_batch.cpu().detach()
-            # predictions[start:end] = torch.unsqueeze(
-            #     pred_batch.cpu().detach(), 2) #12/5/2023
+            if is_SHO:
+                predictions[start:end] = pred_batch.cpu().detach()
+            else:
+                predictions[start:end] = torch.unsqueeze(
+                    pred_batch.cpu().detach(), 2) #12/5/2023
             params_scaled[start:end] = params_scaled_.cpu().detach()
             params[start:end] = params_.cpu().detach()
 
@@ -605,7 +607,7 @@ class Model(nn.Module):
         # return ind, mse, np.swapaxes(d1[ind], 1, d1.ndim-1), np.swapaxes(d2[ind], 1, d2.ndim-1)
         return ind, mse, d1, d2
 
-    def print_mse(self, data, labels):
+    def print_mse(self, data, labels, is_SHO=True):
         """prints the MSE of the model
 
         Args:
@@ -618,7 +620,7 @@ class Model(nn.Module):
 
             if isinstance(data, torch.Tensor):
                 # computes the predictions
-                pred_data, scaled_param, parm = self.predict(data)
+                pred_data, scaled_param, parm = self.predict(data, is_SHO=is_SHO)
             elif isinstance(data, dict):
                 pred_data, _ = self.model.dataset.get_raw_data_from_LSQF_SHO(
                     data)
