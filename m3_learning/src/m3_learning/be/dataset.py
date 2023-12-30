@@ -542,7 +542,7 @@ class BE_Dataset:
             return f"Noisy_Data_{self.noise}"
 
     def LSQF_Loop_Fit(self,
-                      main_dataset='Raw_Data-SHO_Fit_000/Fit',
+                      main_dataset='Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Fit',
                       h5_target_group=None,
                       max_cores=None):
         """
@@ -863,7 +863,7 @@ class BE_Dataset:
 
         # extracts the hysteresis parameters from the H5 file
         with h5py.File(self.file, "r+") as h5_f:
-            data = h5_f[f"/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
+            data = h5_f[f"/Raw_Data_SHO_Fit/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
             data = data.reshape(self.num_rows, self.num_cols, self.num_cycles)
             data = np.array([data['a_0'], data['a_1'], data['a_2'], data['a_3'], data['a_4'],
                             data['b_0'], data['b_1'], data['b_2'], data['b_3']]).transpose((1, 2, 3, 0))
@@ -1834,7 +1834,7 @@ class BE_Dataset:
 
         if self.noise == 0 or self.noise is None:
             prefix = 'Raw_Data'
-            return f"/{prefix}-SHO_Fit_000/Fit-Loop_Fit_000"
+            return f"/Raw_Data_SHO_Fit/{prefix}-SHO_Fit_000/Fit-Loop_Fit_000"
         else:
             prefix = f"Noisy_Data_{self.noise}"
             return f"/Noisy_Data_{self.noise}_SHO_Fit/Noisy_Data_{self.noise}-SHO_Fit_000/Guess-Loop_Fit_000"
