@@ -2665,13 +2665,13 @@ class Viz:
         self,
         parms_pred,
         colorbars=True,
+        cycle=3,
         fig_width=10.5,  # figure width in inches
         filename=None,
     ):
 
         # calculates the size of the embedding image
         embedding_image_size = 60
-        cycle = 3
 
         fig, axs = plt.subplots(
             2,
