@@ -298,6 +298,8 @@ class Viz:
         if self.Printer is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
 
+        return fig
+
     @static_scale_decorator
     @static_state_decorator
     def SHO_hist(self, SHO_data, filename=None, scaled=False):
