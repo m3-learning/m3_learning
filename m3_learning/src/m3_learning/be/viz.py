@@ -1265,6 +1265,8 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
 
+        return fig
+
     @static_state_decorator
     def get_SHO_params(self, index, model, out_state):
         """Function that gets the SHO parameters for a given index based on a specific model
@@ -1685,6 +1687,8 @@ class Viz:
 
         fig.show()
 
+        return fig
+
     @static_state_decorator
     def SHO_switching_maps_test(
         self,
@@ -2046,6 +2050,8 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
+
+        return fig
 
     def violin_plot_comparison_hysteresis(self, model, X_data, filename):
 
