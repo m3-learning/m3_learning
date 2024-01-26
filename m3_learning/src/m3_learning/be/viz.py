@@ -2120,6 +2120,8 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
+        
+        return fig
 
     def build_figure_for_movie(
         self,
@@ -2669,6 +2671,8 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
 
+        return fig
+
     def hysteresis_maps(
         self,
         parms_pred,
@@ -2759,3 +2763,5 @@ class Viz:
             )
 
         fig.show()
+
+        return fig
