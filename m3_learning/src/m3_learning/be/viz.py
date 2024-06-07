@@ -159,10 +159,27 @@ class Viz:
             func (method): any method
         """
 
-        def wrapper(*args, **kwargs):
-            current_state = args[0].SHO_ranges
-            out = func(*args, **kwargs)
-            args[0].SHO_ranges = current_state
+        def wrapper(self,SHO_data, *args, **kwargs):
+            
+            current_SHO_ranges = self.SHO_ranges
+            current_dataset_state = self.dataset.get_state  # Assume this returns a dict of the dataset state
+
+            print('current_SHO_ranges:', current_SHO_ranges)
+            print('current_dataset_state:', current_dataset_state)
+            
+            # Call the original function
+            out = func(self, SHO_data, *args, **kwargs)
+            
+            # Restore the preserved state
+            self.SHO_ranges = current_SHO_ranges
+            self.dataset.set_attributes(**current_dataset_state)
+            
+            #current_state = args[0].SHO_ranges
+            #current_state = args[0].dataset.get_state
+            #print('current_state',current_state)
+            #out = func(self, SHO_data, *args, **kwargs)
+            #args[0].SHO_ranges = current_state
+            #args[0].dataset.set_attributes(**current_state)
             return out
 
         return wrapper
@@ -301,7 +318,6 @@ class Viz:
         return fig
 
     @static_scale_decorator
-    @static_state_decorator
     def SHO_hist(self, SHO_data, filename=None, scaled=False):
         """Plots the SHO hysterisis parameters
 
@@ -312,6 +328,7 @@ class Viz:
 
         # if the scale is False will not use the scale in the viz
         if self.dataset.scaled or scaled:
+            print('dataset is scaled')
             self.SHO_ranges = None
 
         # if the SHO data is not a list it will make it a list
