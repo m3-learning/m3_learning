@@ -24,7 +24,8 @@ from m3_learning.be.processing import convert_amp_phase
 from sklearn.model_selection import train_test_split
 from m3_learning.be.nn import SHO_fit_func_nn
 import m3_learning
-from m3_learning.be.USID_data import USIDataset
+# from m3_learning.be.USID_data import USIDataset
+from pyUSID.io.usi_data import USIDataset
 from sidpy.hdf.hdf_utils import get_attr
 from pyUSID.io.hdf_utils import check_if_main, create_results_group, write_reduced_anc_dsets, link_as_main, \
     get_dimensionality, get_sort_order, get_unit_values, reshape_to_n_dims, write_main_dataset, reshape_from_n_dims
@@ -416,7 +417,8 @@ class BE_Dataset:
 
     def SHO_Fitter(self, force=False, max_cores=-1, max_mem=1024*8,
                    dataset="Raw_Data",
-                   h5_sho_targ_grp=None):
+                   h5_sho_targ_grp=None,
+                   fit_group=False):
         """Function that computes the SHO fit results
 
         This function is adapted from BGlib
@@ -525,7 +527,10 @@ class BE_Dataset:
             print(
                 f"LSQF method took {time.time() - start_time_lsqf} seconds to compute parameters")
 
-            return sho_fitter
+            if fit_group:
+                return sho_fitter, h5_sho_fit
+            else:
+                return sho_fitter
 
     def measure_group(self):
         """
@@ -541,18 +546,21 @@ class BE_Dataset:
             return f"Noisy_Data_{self.noise}"
 
     def LSQF_Loop_Fit(self,
-                      main_dataset='Raw_Data-SHO_Fit_000/Fit',
+                      main_dataset=None,
                       h5_target_group=None,
-                      max_cores=None):
+                      max_cores=None,
+                      force=False,
+                      h5_sho_targ_grp=None):
         """
         LSQF_Loop_Fit Function that conducts the hysteresis loop fits based on the LSQF results. 
 
         This is adapted from BGlib
 
         Args:
-            main_dataset (str, optional): main dataset where loop fits are conducted from. Defaults to 'Raw_Data-SHO_Fit_000/Fit'.
+            main_dataset (str, optional): main dataset where loop fits are conducted from. Defaults to None.
             h5_target_group (str, optional): path where the data will be saved to. Defaults to None.
             max_cores (int, optional): number of cores the fitter will use, -1 will use all cores. Defaults to None.
+            h5_sho_targ_grp (str, optional): path where the SHO fits are saved. Defaults to None.
 
         Raises:
             TypeError: _description_
@@ -562,6 +570,27 @@ class BE_Dataset:
         """
 
         with h5py.File(self.file, "r+") as h5_file:
+
+            # finds the main dataset location in the file
+            if main_dataset is None:
+                h5_main = usid.hdf_utils.find_dataset(
+                    h5_file, 'Raw_Data')[0]
+            else:
+                h5_main = usid.hdf_utils.find_dataset(
+                    h5_file, main_dataset)[0]
+            
+            
+            # does the SHO_fit if it does not exist.
+            sho_fit_points = 5  # The number of data points at each step to use when fitting
+            sho_override = False  # Force recompute if True
+            sho_fitter = belib.analysis.BESHOfitter(
+                h5_main, cores=max_cores, verbose=False, h5_target_group=h5_sho_targ_grp)
+            sho_fitter.set_up_guess(
+                guess_func=belib.analysis.be_sho_fitter.SHOGuessFunc.complex_gaussian, num_points=sho_fit_points)
+            h5_sho_guess = sho_fitter.do_guess(override=sho_override)
+            sho_fitter.set_up_fit()
+            h5_sho_fit = sho_fitter.do_fit(override=sho_override)
+            h5_sho_grp = h5_sho_fit.parent
 
             # gets the experiment type from the file
             expt_type = sidpy.hdf.hdf_utils.get_attr(h5_file, 'data_type')
@@ -582,16 +611,10 @@ class BE_Dataset:
                 print('VS cycle fraction could not be found. Setting to default value')
                 vs_cycle_frac = 'full'
 
-            if isinstance(main_dataset, str):
-                main_dataset = USIDataset(h5_file[main_dataset])
-            elif isinstance(main_dataset, USIDataset):
-                pass
-            else:
-                raise TypeError(
-                    'main_dataset should be a string or USIDataset object')
+            sho_fit, sho_dataset = self.SHO_Fitter(fit_group=True)
 
-            # instantiates the loopfitter using belib
-            loop_fitter = belib.analysis.BELoopFitter(main_dataset,
+            # instantiates the loop fitter using belib
+            loop_fitter = belib.analysis.BELoopFitter(h5_sho_fit,
                                                       expt_type, vs_mode, vs_cycle_frac,
                                                       h5_target_group=h5_target_group,
                                                       cores=max_cores,
@@ -599,13 +622,13 @@ class BE_Dataset:
 
             # computes the guess for the loop fits
             loop_fitter.set_up_guess()
-            h5_loop_guess = loop_fitter.do_guess(override=False)
+            h5_loop_guess = loop_fitter.do_guess(override=force)
 
             # Calling explicitly here since Fitter won't do it automatically
             h5_guess_loop_parms = loop_fitter.extract_loop_parameters(
                 h5_loop_guess)
             loop_fitter.set_up_fit()
-            h5_loop_fit = loop_fitter.do_fit(override=False)
+            h5_loop_fit = loop_fitter.do_fit(override=force)
 
             # save the path where the loop fit results are saved
             h5_loop_group = h5_loop_fit.parent
@@ -828,7 +851,7 @@ class BE_Dataset:
 
         # extracts the hysteresis parameters from the H5 file
         with h5py.File(self.file, "r+") as h5_f:
-            data = h5_f[f"/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
+            data = h5_f[f"/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000"][:]
             data = data.reshape(self.num_rows, self.num_cols, self.num_cycles)
             data = np.array([data['a_0'], data['a_1'], data['a_2'], data['a_3'], data['a_4'],
                             data['b_0'], data['b_1'], data['b_2'], data['b_3']]).transpose((1, 2, 3, 0))
