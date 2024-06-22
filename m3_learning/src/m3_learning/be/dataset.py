@@ -711,8 +711,11 @@ class BE_Dataset:
     def voltage_steps(self):
         """Number of DC voltage steps"""
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f["Measurement_000"].attrs["num_udvs_steps"]
-
+            try:
+                return h5_f["Measurement_000"].attrs["num_udvs_steps"]
+            except:
+                # computes the number of voltage steps for datasets that do not contain the attribute
+                return h5_f["Measurement_000"].attrs["VS_steps_per_full_cycle"]*h5_f["Measurement_000"].attrs["VS_number_of_cycles"]*(2 if h5_f["Measurement_000"].attrs["VS_measure_in_field_loops"] == 'in and out-of-field' else 1)
 
     @property
     def sampling_rate(self):
