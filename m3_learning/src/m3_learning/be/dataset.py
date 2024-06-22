@@ -578,13 +578,15 @@ class BE_Dataset:
             else:
                 h5_main = usid.hdf_utils.find_dataset(
                     h5_file, main_dataset)[0]
-            
-            
+
+            # gets the measurement group name
+            h5_meas_grp = h5_main.parent.parent
+
             # does the SHO_fit if it does not exist.
             sho_fit_points = 5  # The number of data points at each step to use when fitting
             sho_override = False  # Force recompute if True
             sho_fitter = belib.analysis.BESHOfitter(
-                h5_main, cores=max_cores, verbose=False, h5_target_group=h5_sho_targ_grp)
+                h5_main, cores=max_cores, verbose=False, h5_target_group=h5_meas_grp)
             sho_fitter.set_up_guess(
                 guess_func=belib.analysis.be_sho_fitter.SHOGuessFunc.complex_gaussian, num_points=sho_fit_points)
             h5_sho_guess = sho_fitter.do_guess(override=sho_override)
@@ -616,7 +618,7 @@ class BE_Dataset:
             # instantiates the loop fitter using belib
             loop_fitter = belib.analysis.BELoopFitter(h5_sho_fit,
                                                       expt_type, vs_mode, vs_cycle_frac,
-                                                      h5_target_group=h5_target_group,
+                                                      #   h5_target_group=h5_meas_grp,
                                                       cores=max_cores,
                                                       verbose=False)
 

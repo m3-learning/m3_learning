@@ -1,3 +1,5 @@
+numpy
+
 autopep8
 BGlib
 gdown==4.5.3
