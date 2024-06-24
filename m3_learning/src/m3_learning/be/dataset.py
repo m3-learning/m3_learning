@@ -213,11 +213,6 @@ class BE_Dataset:
                                                   h5_spec_vals=h5_main.h5_spec_vals,
                                                   compression='gzip')
 
-                # def write_main_dataset(h5_parent_group, main_data, main_data_name, quantity, units, pos_dims, spec_dims,
-                #                        main_dset_attrs=None, h5_pos_inds=None, h5_pos_vals=None, h5_spec_inds=None, h5_spec_vals=None,
-                #                        aux_spec_prefix='Spectroscopic_', aux_pos_prefix='Position_', verbose=False,
-                #                        slow_to_fast=False, **kwargs):
-
     def set_noise_state(self, noise):
         """function that uses the noise state to set the current dataset
 
