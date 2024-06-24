@@ -205,13 +205,18 @@ class BE_Dataset:
                                                   f'Noisy_Data_{noise_level}',
                                                   'Piezoresponse',  # quantity
                                                   'V',  # units
-                                                  None,  # position dimensions
-                                                  None,  # spectroscopic dimensions
-                                                  pos_ind=h5_main.h5_pos_inds,
+                                                  self.get_pos_dims,  # position dimensions
+                                                  self.get_spec_dims,  # spectroscopic dimensions
+                                                  h5_pos_inds=h5_main.h5_pos_inds,
                                                   h5_pos_vals=h5_main.h5_pos_vals,
                                                   h5_spec_inds=h5_main.h5_spec_inds,
                                                   h5_spec_vals=h5_main.h5_spec_vals,
                                                   compression='gzip')
+
+                # def write_main_dataset(h5_parent_group, main_data, main_data_name, quantity, units, pos_dims, spec_dims,
+                #                        main_dset_attrs=None, h5_pos_inds=None, h5_pos_vals=None, h5_spec_inds=None, h5_spec_vals=None,
+                #                        aux_spec_prefix='Spectroscopic_', aux_pos_prefix='Position_', verbose=False,
+                #                        slow_to_fast=False, **kwargs):
 
     def set_noise_state(self, noise):
         """function that uses the noise state to set the current dataset
@@ -1312,6 +1317,40 @@ class BE_Dataset:
         # if noise is included this calls the setter function
         if kwargs.get("noise"):
             self.noise = kwargs.get("noise")
+
+    @property
+    def get_pos_dims(self):
+        """Gets the position dimensions"""
+        with h5py.File(self.file, "r+") as h5_f:
+            h5_main = usid.hdf_utils.find_dataset(h5_f, "Raw_Data")[0]
+
+            # Extract the spec_dim_descriptors, spec_dim_labels, and spec_dim_sizes
+            pos_dim_descriptors = h5_main.pos_dim_descriptors
+            pos_dim_labels = h5_main.pos_dim_labels
+            pos_dim_sizes = h5_main.pos_dim_sizes
+
+            # Create the list of usid.Dimension objects
+            pos_dim = [usid.Dimension(descriptor, label, size)
+                       for descriptor, label, size in zip(pos_dim_descriptors, pos_dim_labels, pos_dim_sizes)]
+
+            return pos_dim
+
+    @property
+    def get_spec_dims(self):
+        """Gets the position dimensions"""
+        with h5py.File(self.file, "r+") as h5_f:
+            h5_main = usid.hdf_utils.find_dataset(h5_f, "Raw_Data")[0]
+
+            # Extract the spec_dim_descriptors, spec_dim_labels, and spec_dim_sizes
+            spec_dim_descriptors = h5_main.spec_dim_descriptors
+            spec_dim_labels = h5_main.spec_dim_labels
+            spec_dim_sizes = h5_main.spec_dim_sizes
+
+            # Create the list of usid.Dimension objects
+            spec_dim = [usid.Dimension(descriptor, label, size)
+                        for descriptor, label, size in zip(spec_dim_descriptors, spec_dim_labels, spec_dim_sizes)]
+
+            return spec_dim
 
     @static_state_decorator
     def raw_spectra(self,
