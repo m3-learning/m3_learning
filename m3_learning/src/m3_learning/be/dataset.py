@@ -1862,7 +1862,7 @@ class BE_Dataset:
 
         if self.noise == 0 or self.noise is None:
             prefix = 'Raw_Data'
-            return f"/{prefix}-SHO_Fit_000/Fit-Loop_Fit_000"
+            return f"Measurement_000/{prefix}-SHO_Fit_000/Fit-Loop_Fit_000"
         else:
             prefix = f"Noisy_Data_{self.noise}"
             return f"/Noisy_Data_{self.noise}_SHO_Fit/Noisy_Data_{self.noise}-SHO_Fit_000/Guess-Loop_Fit_000"
@@ -1918,7 +1918,7 @@ class BE_Dataset:
             h5_path = self.get_loop_path()
 
             # gets the projected loops
-            h5_projected_loops = h5_f[h5_path + '/Projected_Loops']
+            h5_projected_loops = h5_f[ h5_path + '/Projected_Loops']
 
             # Prepare some variables for plotting loops fits and guesses
             # Plot the Loop Guess and Fit Results
