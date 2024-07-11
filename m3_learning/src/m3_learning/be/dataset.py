@@ -857,7 +857,7 @@ class BE_Dataset:
 
         # extracts the hysteresis parameters from the H5 file
         with h5py.File(self.file, "r+") as h5_f:
-            data = h5_f[f"/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000"][:]
+            data = h5_f[f"/Measurement_000/{self.dataset}-SHO_Fit_000/Fit-Loop_Fit_000/Fit"][:]
             data = data.reshape(self.num_rows, self.num_cols, self.num_cycles)
             data = np.array([data['a_0'], data['a_1'], data['a_2'], data['a_3'], data['a_4'],
                             data['b_0'], data['b_1'], data['b_2'], data['b_3']]).transpose((1, 2, 3, 0))
