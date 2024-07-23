@@ -1,9 +1,10 @@
+import sys
+sys.path.append('/home/ferroelectric/Documents/m3_learning/m3_learning/src')
+
 from m3_learning.be.filters import clean_interpolate
 import numpy as np
 import pytest
 from scipy.interpolate import CubicSpline
-import sys
-sys.path.append('/home/ferroelectric/Documents/m3_learning/m3_learning/src')
 
 
 def test_clean_interpolate():

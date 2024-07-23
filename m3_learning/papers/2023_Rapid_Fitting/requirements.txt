@@ -6,7 +6,7 @@ h5py==3.8.0
 
 matplotlib==3.7.1
 beautifulsoup4==4.11.1
-BGlib==0.0.3
+BGlib==0.0.4
 
 autopep8==2.0.2
 
@@ -26,3 +26,5 @@ torchaudio
 py-cpuinfo
 opencv-python
 hyperspy
+
+sidpy
