@@ -1044,7 +1044,6 @@ class Viz:
         if index is not None:
             true = [true[0][index], true[1][index]]
             prediction = [prediction[0][index], prediction[1][index]]
-            # params = params[index]
 
         prediction = prediction.detach().numpy()
         prediction = np.rollaxis(prediction, 0, prediction.ndim - 1)
@@ -2658,8 +2657,7 @@ class Viz:
                                     loop.squeeze(), 'g', label='NN')
 
                 # plot the LSQF prediction
-                parms_lsqf = self.dataset.LSQF_hysteresis_params(
-                ).reshape(-1, 9)[index1[i], :]
+                
                 loop = loop_fitting_function_torch(parms_lsqf, voltage[:, 0].squeeze()).to(
                     'cpu').detach().numpy().squeeze()
                 ax[plot_idx].plot(

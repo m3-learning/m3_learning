@@ -1,26 +1,14 @@
 from matplotlib.patches import ConnectionPatch
-from matplotlib.patches import ConnectionPatch
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib.transforms as transforms
 from itertools import product
-from matplotlib.text import Annotation
-import matplotlib.transforms as transforms
-from itertools import product
-from matplotlib.text import Annotation
 import numpy as np
-import os
-import torch
 from matplotlib import (
     pyplot as plt,
-    animation,
-    colors,
-    ticker,
     path,
     patches,
     patheffects,
 )
-import string
 
 Path = path.Path
 PathPatch = patches.PathPatch
@@ -103,24 +91,39 @@ def add_box(axs, pos, **kwargs):
 
 
 def inset_connector(fig, ax1, ax2, coord1=None, coord2=None, **kwargs):
+    """
+    Create a connection between two axes in a figure.
+
+    Parameters:
+    fig (Figure): The figure to add the connection to.
+    ax1 (Axes): The first axes object.
+    ax2 (Axes): The second axes object.
+    coord1 (list, optional): The coordinates of the first connection point. Defaults to None.
+    coord2 (list, optional): The coordinates of the second connection point. Defaults to None.
+    **kwargs: Additional keyword arguments.
+
+    """
     if coord1 is None:
+        # Get the x and y limits of ax1
         coord1_xlim = ax1.get_xlim()
         coord1_ylim = ax1.get_ylim()
 
+        # Calculate the coordinates of the first connection point
         coord1_l1 = (coord1_xlim[0], coord1_ylim[0])
         coord1_l2 = (coord1_xlim[0], coord1_ylim[1])
         coord1 = [coord1_l1, coord1_l2]
 
     if coord2 is None:
+        # Get the x and y limits of ax2
         coord2_xlim = ax2.get_xlim()
         coord2_ylim = ax2.get_ylim()
 
+        # Calculate the coordinates of the second connection point
         coord2_l1 = (coord2_xlim[0], coord2_ylim[0])
         coord2_l2 = (coord2_xlim[0], coord2_ylim[1])
         coord2 = [coord2_l1, coord2_l2]
 
     for p1, p2 in zip(coord1, coord2):
-
         # Create a connection between the two points
         con = ConnectionPatch(xyA=p1, xyB=p2,
                               coordsA=ax1.transData, coordsB=ax2.transData, **kwargs)
@@ -246,26 +249,21 @@ def inset_connector(fig, ax1, ax2, coord1=None, coord2=None, **kwargs):
 
 def path_maker(axes, locations, facecolor, edgecolor, linestyle, lineweight):
     """
-    Adds path to figure
-    Parameters
-    ----------
-    axes : matplotlib axes
-        axes which to add the plot to
-    locations : numpy array
-        location to position the path
-    facecolor : str, optional
-        facecolor of the path
-    edgecolor : str, optional
-        edgecolor of the path
-    linestyle : str, optional
-        sets the style of the line, using conventional matplotlib styles
-    lineweight : float, optional
-        thickness of the line
+    Create a path patch and add it to the axes.
+
+    Parameters:
+    axes (Axes): The axes to add the path patch to.
+    locations (tuple): The locations of the path in the form (x1, x2, y1, y2).
+    facecolor (str): The face color of the path patch.
+    edgecolor (str): The edge color of the path patch.
+    linestyle (str): The line style of the path patch.
+    lineweight (float): The line weight of the path patch.
+
     """
     vertices = []
     codes = []
     codes = [Path.MOVETO] + [Path.LINETO] * 3 + [Path.CLOSEPOLY]
-    # extracts the vertices used to construct the path
+    # Extract the vertices used to construct the path
     vertices = [
         (locations[0], locations[2]),
         (locations[1], locations[2]),
@@ -274,26 +272,30 @@ def path_maker(axes, locations, facecolor, edgecolor, linestyle, lineweight):
         (0, 0),
     ]
     vertices = np.array(vertices, float)
-    #  makes a path from the vertices
+    # Make a path from the vertices
     path = Path(vertices, codes)
     pathpatch = PathPatch(
         path, facecolor=facecolor, edgecolor=edgecolor, ls=linestyle, lw=lineweight
     )
-    # adds path to axes
+    # Add the path to the axes
     axes.add_patch(pathpatch)
 
 
 def layout_fig(graph, mod=None, figsize=None, layout='compressed', **kwargs):
-    """Utility function that helps lay out many figures
+    """
+    Utility function that helps lay out many figures.
 
-    Args:
-        graph (int): number of graphs
-        mod (int, optional): value that assists in determining the number of rows and columns. Defaults to None.
+    Parameters:
+    graph (int): Number of graphs.
+    mod (int, optional): Value that assists in determining the number of rows and columns. Defaults to None.
+    figsize (tuple, optional): Size of the figure. Defaults to None.
+    layout (str, optional): Layout style of the subplots. Defaults to 'compressed'.
+    **kwargs: Additional keyword arguments.
 
     Returns:
-        tuple: figure and axis
-    """
+    tuple: Figure and axes.
 
+    """
     # sets the kwarg values
     for key, value in kwargs.items():
         exec(f'{key} = value')
@@ -364,6 +366,7 @@ def embedding_maps(data, image, colorbar_shown=True, c_lim=None, mod=None, title
                     im.set_clim(c_lim)
 
     if title is not None:
+        
         # Adds title to the figure
         fig.suptitle(title, fontsize=16, y=1, horizontalalignment="center")
 
@@ -425,6 +428,20 @@ def find_nearest(array, value, averaging_number):
 
 
 def combine_lines(*args):
+    """
+    Combine the lines and labels from multiple plots into a single legend.
+
+    Args:
+        *args: Variable number of arguments representing the plots.
+
+    Returns:
+        A tuple containing the combined lines and labels.
+
+    Example:
+        lines, labels = combine_lines(plot1, plot2, plot3)
+    """
+
+
 
     lines = []
     labels = []
@@ -441,6 +458,27 @@ def combine_lines(*args):
 def labelfigs(axes, number=None, style="wb",
               loc="tl", string_add="", size=8,
               text_pos="center", inset_fraction=(0.15, 0.15), **kwargs):
+    """
+    Add labels to figures.
+
+    Parameters:
+    axes (Axes): The axes to add the labels to.
+    number (int, optional): The number to be added as a label. Defaults to None.
+    style (str, optional): The style of the label. Defaults to "wb".
+    loc (str, optional): The location of the label. Defaults to "tl".
+    string_add (str, optional): Additional string to be added to the label. Defaults to "".
+    size (int, optional): The font size of the label. Defaults to 8.
+    text_pos (str, optional): The position of the label text. Defaults to "center".
+    inset_fraction (tuple, optional): The fraction of the axes to inset the label. Defaults to (0.15, 0.15).
+    **kwargs: Additional keyword arguments.
+
+    Returns:
+    Text: The created text object.
+
+    Raises:
+    ValueError: If an invalid position is provided.
+
+    """
 
     # initializes an empty string
     text = ""
@@ -481,7 +519,7 @@ def labelfigs(axes, number=None, style="wb",
     if number is not None:
         text += number_to_letters(number)
 
-    text_ = axes.text(x, y, text, va='center', ha='center',
+    text_ = axes.text(x, y, text, va=text_pos, ha='center',
                       path_effects=[patheffects.withStroke(
                       linewidth=formatting["linewidth"], foreground="k")],
                       color=formatting["color"], size=size, **kwargs
@@ -491,6 +529,16 @@ def labelfigs(axes, number=None, style="wb",
 
 
 def number_to_letters(num):
+    """
+    Convert a number to a string representation using letters.
+
+    Parameters:
+    num (int): The number to convert.
+
+    Returns:
+    str: The string representation of the number.
+
+    """
     letters = ''
     while num >= 0:
         num, remainder = divmod(num, 26)
@@ -501,33 +549,28 @@ def number_to_letters(num):
 
 def scalebar(axes, image_size, scale_size, units="nm", loc="br"):
     """
-    Adds scalebar to figures
-    Parameters
-    ----------
-    axes : matplotlib axes
-        axes which to add the plot to
-    image_size : int
-        size of the image in nm
-    scale_size : str, optional
-        size of the scalebar in units of nm
-    units : str, optional
-        sets the units for the label
-    loc : str, optional
-        sets the location of the label
+    Adds a scalebar to figures.
+
+    Parameters:
+    axes (matplotlib.axes.Axes): The axes to add the scalebar to.
+    image_size (int): The size of the image in nm.
+    scale_size (str): The size of the scalebar in units of nm.
+    units (str, optional): The units for the label. Defaults to "nm".
+    loc (str, optional): The location of the label. Defaults to "br".
     """
 
-    # gets the size of the image
+    # Get the size of the image
     x_lim, y_lim = axes.get_xlim(), axes.get_ylim()
     x_size, y_size = np.abs(np.int64(np.floor(x_lim[1] - x_lim[0]))), np.abs(
         np.int64(np.floor(y_lim[1] - y_lim[0]))
     )
-    # computes the fraction of the image for the scalebar
+    # Compute the fraction of the image for the scalebar
     fract = scale_size / image_size
 
     x_point = np.linspace(x_lim[0], x_lim[1], np.int64(np.floor(image_size)))
     y_point = np.linspace(y_lim[0], y_lim[1], np.int64(np.floor(image_size)))
 
-    # sets the location of the scalebar
+    # Set the location of the scalebar
     if loc == "br":
         x_start = x_point[np.int64(0.9 * image_size // 1)]
         x_end = x_point[np.int64((0.9 - fract) * image_size // 1)]
@@ -541,10 +584,10 @@ def scalebar(axes, image_size, scale_size, units="nm", loc="br"):
         y_end = y_point[np.int64((0.9 - 0.025) * image_size // 1)]
         y_label_height = y_point[np.int64((0.9 - 0.075) * image_size // 1)]
 
-    # makes the path for the scalebar
+    # Make the path for the scalebar
     path_maker(axes, [x_start, x_end, y_start, y_end], "w", "k", "-", .25)
 
-    # adds the text label for the scalebar
+    # Add the text label for the scalebar
     axes.text(
         (x_start + x_end) / 2,
         y_label_height,
@@ -559,6 +602,16 @@ def scalebar(axes, image_size, scale_size, units="nm", loc="br"):
 
 
 def Axis_Ratio(axes, ratio=1):
+    """
+    Set the aspect ratio of the axes to be proportional to the ratio of data ranges.
+
+    Parameters:
+    axes (matplotlib.axes.Axes): The axes object to set the aspect ratio for.
+    ratio (float, optional): The desired aspect ratio. Defaults to 1.
+
+    Returns:
+    None
+    """
     # Set aspect ratio to be proportional to the ratio of data ranges
     xmin, xmax = axes.get_xlim()
     ymin, ymax = axes.get_ylim()
@@ -570,7 +623,15 @@ def Axis_Ratio(axes, ratio=1):
 
 
 def get_axis_range(axs):
+    """
+    Return the minimum and maximum values of a Matplotlib axis.
 
+    Parameters:
+        axs (list): A list of Matplotlib axis objects.
+
+    Returns:
+        list: A list of the form [xmin, xmax, ymin, ymax], where xmin and xmax are the minimum and maximum values of the x axis, and ymin and ymax are the minimum and maximum values of the y axis.
+    """
     def get_axis_range_(ax):
         """
         Return the minimum and maximum values of a Matplotlib axis.
@@ -584,6 +645,11 @@ def get_axis_range(axs):
         xmin, xmax = ax.get_xlim()
         ymin, ymax = ax.get_ylim()
         return xmin, xmax, ymin, ymax
+
+    xmin = None
+    xmax = None
+    ymin = None
+    ymax = None
 
     for ax in axs:
         ax_xmin, ax_xmax, ax_ymin, ax_ymax = get_axis_range_(ax)
