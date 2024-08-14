@@ -27,20 +27,35 @@ PathPatch = patches.PathPatch
 
 
 def subfigures(nrows, ncols, size=(1.25, 1.25), gaps=(.8, .33), figsize=None, **kwargs):
+    """
+    Create subfigures with specified number of rows and columns.
 
+    Parameters:
+    nrows (int): Number of rows.
+    ncols (int): Number of columns.
+    size (tuple, optional): Size of each subfigure. Defaults to (1.25, 1.25).
+    gaps (tuple, optional): Gaps between subfigures. Defaults to (.8, .33).
+    figsize (tuple, optional): Size of the figure. Defaults to None.
+    **kwargs: Additional keyword arguments.
+
+    Returns:
+    fig (Figure): The created figure.
+    ax (list): List of axes objects.
+
+    """
     if figsize is None:
         figsize = (size[0]*ncols + gaps[0]*ncols, size[1]*nrows+gaps[1]*nrows)
 
-    # create a new figure with a size of 6x6 inches
+    # create a new figure with the specified size
     fig = plt.figure(figsize=figsize)
 
     ax = []
 
     for i, j in product(range(nrows), range(ncols)):
         rvalue = (nrows-1) - j
-        # create the first axis with absolute position (1 inch, 1 inch) and size (2 inches, 2 inches)
+        # calculate the position and size of each subfigure
         pos1 = [(size[0]*rvalue + gaps[0]*rvalue)/figsize[0], (size[1]*i + gaps[1]*i)/figsize[1],
-                size[0]/figsize[0], size[1]/figsize[1]]  # transforms.Bbox.from_bounds()
+                size[0]/figsize[0], size[1]/figsize[1]]
         ax.append(fig.add_axes(pos1))
 
     ax.reverse()
