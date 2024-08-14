@@ -2548,6 +2548,35 @@ class Viz:
             cycle = np.random.randint(0, data.shape[2], 1)
 
         return (row, col, cycle)
+    
+    def random_hysteresis(self, 
+                          raw_hysteresis_loop,
+                          voltage,
+                          filename,
+                          size,
+                          row, col, cycle):
+                          
+        
+        fig, ax = subfigures(1, 1, size=size)
+
+        ax[0].plot(voltage.squeeze(),
+                    raw_hysteresis_loop[row, col, cycle, :].squeeze(), 'o', label="Raw Data")
+
+        parms = self.dataset.LSQF_hysteresis_params(
+        )[row, col, cycle, :].reshape(-1, 9)
+        loop = loop_fitting_function_torch(parms, voltage).to(
+            'cpu').detach().numpy().squeeze()
+        ax[0].plot(voltage.squeeze()[48:],
+                    loop[:, 0].squeeze(), 'r', label='LSQF')
+        ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'r')
+
+        ax[0].set_xlabel('Voltage (V)')
+        ax[0].set_ylabel('Amplitude (Arb. U.)')
+        ax[0].legend()
+
+        # prints the figure
+        if self.Printer is not None and filename is not None:
+            self.Printer.savefig(fig, filename, label_figs=ax, style="b")
 
     def hysteresis_comparison(self,
                               data,
@@ -2571,6 +2600,7 @@ class Viz:
             measurement_state (str, optional): measurement state to plot. Defaults to None.
         """
 
+        # sets the measurement state
         if self.dataset.measurement_state is not None:
             self.dataset.measurement_state = measurement_state
 
@@ -2584,27 +2614,11 @@ class Viz:
 
         # if only the LSQF is to be plotted
         if 'LSQF' in data and 'NN' not in data:
-            fig, ax = subfigures(1, 1, size=size)
-
-            ax[0].plot(voltage.squeeze(),
-                       raw_hysteresis_loop[row, col, cycle, :].squeeze(), 'o', label="Raw Data")
-
-            parms = self.dataset.LSQF_hysteresis_params(
-            )[row, col, cycle, :].reshape(-1, 9)
-            loop = loop_fitting_function_torch(parms, voltage).to(
-                'cpu').detach().numpy().squeeze()
-            ax[0].plot(voltage.squeeze()[48:],
-                       loop[:, 0].squeeze(), 'r', label='LSQF')
-            ax[0].plot(voltage.squeeze()[:48], loop[:, 1].squeeze(), 'r')
-
-            ax[0].set_xlabel('Voltage (V)')
-            ax[0].set_ylabel('Amplitude (Arb. U.)')
-            ax[0].legend()
-
-            # prints the figure
-            if self.Printer is not None and filename is not None:
-                self.Printer.savefig(fig, filename, label_figs=ax, style="b")
-
+            self.random_hysteresis(raw_hysteresis_loop,
+                          voltage,
+                          filename,
+                          size,
+                          row, col, cycle)
             return
 
         # if we are plotting the NN and LSQF results

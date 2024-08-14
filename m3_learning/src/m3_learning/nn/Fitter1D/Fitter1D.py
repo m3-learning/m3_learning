@@ -608,30 +608,34 @@ class Model(nn.Module):
         return ind, mse, d1, d2
 
     def print_mse(self, data, labels, is_SHO=True):
-        """prints the MSE of the model
+        """Prints the MSE of the model.
 
         Args:
-            data (tuple): tuple of datasets to calculate the MSE
-            labels (list): List of strings with the names of the datasets
+            data (tuple): Tuple of datasets to calculate the MSE.
+            labels (list): List of strings with the names of the datasets.
         """
 
-        # loops around the dataset and labels and prints the MSE for each
+        # Loops around the dataset and labels and prints the MSE for each
         for data, label in zip(data, labels):
 
             if isinstance(data, torch.Tensor):
-                # computes the predictions
+                # Ensure all data and predictions are of the same datatype (float)
+                data = data.float()
+                # Computes the predictions
                 pred_data, scaled_param, parm = self.predict(data, is_SHO=is_SHO)
             elif isinstance(data, dict):
-                pred_data, _ = self.model.dataset.get_raw_data_from_LSQF_SHO(
-                    data)
+                pred_data, _ = self.model.dataset.get_raw_data_from_LSQF_SHO(data)
                 data, _ = self.model.dataset.NN_data()
                 pred_data = torch.from_numpy(pred_data)
+
+           
+            pred_data = pred_data.float()
 
             # Computes the MSE
             out = nn.MSELoss()(data, pred_data)
 
-            # prints the MSE
-            print(f"{label} Mean Squared Error: {out:0.4f}")
+            # Prints the MSE
+            print(f"{label} Mean Squared Error: {out.item():0.4f}")
 
 
 @static_state_decorator
