@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from m3_learning.util.file_IO import make_folder
 from m3_learning.viz.layout import labelfigs
 

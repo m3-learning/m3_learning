@@ -1,16 +1,11 @@
-"""
-Created on Sun Jan 24 16:34:00 2021
-@author: Alibek Kaliyev
-"""
-
 import h5py
 
-# define a small function called 'print_tree' to look at the folder tree structure
 def print_tree(parent):
-    """Utility function to nicely display the tree of an h5 file
+    """
+    Utility function to print the tree structure of an h5 file.
 
     Args:
-        parent (h5py): H5 file to print the tree
+        parent (h5py.Group): The parent group to start printing the tree from.
     """
     print(parent.name)
     if isinstance(parent, h5py.Group):
@@ -18,6 +13,15 @@ def print_tree(parent):
             print_tree(parent[child])
             
 def get_tree(parent):
+    """
+    Utility function to get the tree structure of an h5 file.
+
+    Args:
+        parent (h5py.Group): The parent group to start getting the tree from.
+
+    Returns:
+        list: A list containing the names of all groups and datasets in the tree.
+    """
     tree = []
     tree.append(parent.name)
     if isinstance(parent, h5py.Group):
@@ -28,24 +32,26 @@ def get_tree(parent):
 
 
 def make_group(base, group):
-    """Utility function to add a group onto a h5_file, adds the dependency to not return and error if it already exists.
+    """
+    Utility function to add a group to an h5 file.
 
     Args:
-        base (h5py): base h5 file to add new group
-        group (string): name of the 
+        base (h5py.File): The base h5 file to add the new group to.
+        group (str): The name of the group to add.
     """
     try: 
         return base.create_group(group)
     except:
-        print('could not add group - it might already exist')
+        print('Could not add group - it might already exist.')
     
 def make_dataset(base, dataset, data):
-    """Utility function to write or overwrite an h5 Dataset
+    """
+    Utility function to write or overwrite an h5 dataset.
 
     Args:
-        base (h5.DataGroup): Base path of the h5 file
-        dataset (str): Dataset name to put in the h5 file
-        data (np.array): Data to store in the dataset
+        base (h5py.Group): The base group of the h5 file.
+        dataset (str): The name of the dataset to create or overwrite.
+        data (np.array): The data to store in the dataset.
     """
     try: 
         base[dataset] = data
@@ -59,35 +65,49 @@ def find_groups_with_string(filename, desired_string, start_path="/"):
     even if they are nested within other groups, and return their full paths.
 
     Args:
-    - filename (str): the name of the h5 file
-    - desired_string (str): the string to search for in the group names
-    - start_path (str): the path within the h5 file to start the search from (default: "/")
+        filename (str): The name of the h5 file.
+        desired_string (str): The string to search for in the group names.
+        start_path (str): The path within the h5 file to start the search from (default: "/").
 
     Returns:
-    - A list of full paths to groups that contain the desired string
+        list: A list of full paths to groups that contain the desired string.
     """
     group_paths_with_string = []
 
-    # open the h5 file
     with h5py.File(filename, 'r') as file:
         
-        # recursively search through the groups in the given path
         def search_groups(path):
+            """
+            Recursively search through the groups in the given path.
+
+            Args:
+                path (str): The path to search for groups.
+
+            """
             for name, obj in file[path].items():
-                # if the object is a group, check if it contains the desired string
                 if isinstance(obj, h5py.Group):
                     group_path = f"{path}/{name}"
                     if desired_string in name:
                         group_paths_with_string.append(group_path[1:])
-                    # if the group contains subgroups, recursively search them
                     search_groups(group_path)
         
-        # start the search from the specified path (or from the root if not specified)
         search_groups(start_path)
 
     return group_paths_with_string
 
 def find_measurement(file, search_string, group, list_all=False):
+    """
+    Find measurements in an h5 file that match a certain string.
+
+    Args:
+        file (str): The name of the h5 file.
+        search_string (str): The string to search for in the measurement names.
+        group (str): The name of the group to search within.
+        list_all (bool): Whether to return all matching measurement names or just the first one (default: False).
+
+    Returns:
+        str or list: The matching measurement name(s) if found, or None if not found.
+    """
     with h5py.File(file, 'r') as f:
         names = []
         for name in f[group]:
@@ -98,4 +118,3 @@ def find_measurement(file, search_string, group, list_all=False):
             return names[0]
         return names
     return None
-

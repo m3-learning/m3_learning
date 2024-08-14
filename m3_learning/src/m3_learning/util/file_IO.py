@@ -25,18 +25,15 @@ def make_folder(folder, **kwargs):
     return folder
 
 
-"""
-Created on Tue Oct 09 16:39:00 2018
-@author: Joshua C. Agar
-"""
-
-
 def reporthook(count, block_size, total_size):
     """
     A function that displays the status and speed of the download
 
+    Args:
+        count (int): The number of blocks downloaded.
+        block_size (int): The size of each block in bytes.
+        total_size (int): The total size of the file in bytes.
     """
-
     global start_time
     if count == 0:
         start_time = time.time()
@@ -48,7 +45,6 @@ def reporthook(count, block_size, total_size):
     sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
                      (percent, progress_size / (1024 * 1024), speed, duration))
     sys.stdout.flush()
-
 
 def download_file(url, filename):
     """ A function that downloads the data file from a URL
