@@ -167,7 +167,16 @@ def subfigures(nrows, ncols, size=(1.25, 1.25), gaps=(.8, .33), figsize=None, **
 
 
 def add_text_to_figure(fig, text, text_position_in_inches, **kwargs):
+    """
+    Add text to a figure at a specified position.
 
+    Parameters:
+    fig (Figure): The figure to add the text to.
+    text (str): The text to be added.
+    text_position_in_inches (tuple): The position of the text in inches.
+    **kwargs: Additional keyword arguments.
+
+    """
     # Get the figure size in inches and dpi
     fig_size_inches = fig.get_size_inches()
     fig_dpi = fig.get_dpi()
@@ -182,13 +191,33 @@ def add_text_to_figure(fig, text, text_position_in_inches, **kwargs):
 
 
 def add_box(axs, pos, **kwargs):
+    """
+    Add a box to the axes.
 
+    Parameters:
+    axs (Axes): The axes to add the box to.
+    pos (tuple): The position of the box in the form (xmin, ymin, xmax, ymax).
+    **kwargs: Additional keyword arguments.
+
+    """
     xmin, ymin, xmax, ymax = pos
     rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, **kwargs)
     axs.add_patch(rect)
 
 
 def inset_connector(fig, ax1, ax2, coord1=None, coord2=None, **kwargs):
+    """
+    Create a connection between two axes in a figure.
+
+    Parameters:
+    fig (Figure): The figure to add the connection to.
+    ax1 (Axes): The first axes object.
+    ax2 (Axes): The second axes object.
+    coord1 (list, optional): The coordinates of the first connection point. Defaults to None.
+    coord2 (list, optional): The coordinates of the second connection point. Defaults to None.
+    **kwargs: Additional keyword arguments.
+
+    """
     if coord1 is None:
         coord1_xlim = ax1.get_xlim()
         coord1_ylim = ax1.get_ylim()
@@ -573,6 +602,16 @@ def get_axis_range(axs):
 
 
 def set_axis(axs, range):
+    """
+    Set the x and y axis limits for each axis in the given list.
+
+    Parameters:
+    axs (list): A list of matplotlib axes objects.
+    range (list): A list containing the x and y axis limits in the format [xmin, xmax, ymin, ymax].
+
+    Returns:
+    None
+    """
     for ax in axs:
         ax.set_xlim(range[0], range[1])
         ax.set_ylim(range[2], range[3])
