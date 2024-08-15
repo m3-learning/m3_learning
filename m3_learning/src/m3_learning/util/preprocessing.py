@@ -1,54 +1,55 @@
+import numpy as np
+
 """
 Created on Sun Jan 24 16:34:00 2021
 @author: Alibek Kaliyev
 """
 
-import numpy as np
 
-class global_scaler:
+class GlobalScaler:
     """Class that computes the global scaler of a dataset.
-    This assumes that all values are considered as part of the scaling
+    This assumes that all values are considered as part of the scaling.
     """
-    
+
     def fit(self, data):
-        """Conducts the global scaler fit
+        """Conducts the global scaler fit.
 
         Args:
-            data (np.array): data to conduct scaler
+            data (np.array): Data to conduct scaler on.
         """
         self.mean = np.mean(data.reshape(-1))
         self.std = np.std(data.reshape(-1))
 
     def fit_transform(self, data):
-        """Conducts the fit transform
+        """Conducts the fit transform.
 
         Args:
-            data (np.array): data to conduct scaler
+            data (np.array): Data to conduct scaler on.
 
         Returns:
-            np.array: scaled data output
+            np.array: Scaled data output.
         """
         self.fit(data)
         return self.transform(data)
 
     def transform(self, data):
-        """Applies the transform
+        """Applies the transform.
 
         Args:
-            data (np.array): data to conduct scaler
+            data (np.array): Data to conduct scaler on.
 
         Returns:
-            np.array: scaled data output
+            np.array: Scaled data output.
         """
-        return (data - self.mean)/self.std
+        return (data - self.mean) / self.std
 
     def inverse_transform(self, data):
-        """Applies the inverse transform
+        """Applies the inverse transform.
 
         Args:
-            data (np.array): data to conduct inverse scaler
+            data (np.array): Data to conduct inverse scaler on.
 
         Returns:
-            np.array: unscaled data output
+            np.array: Unscaled data output.
         """
         return (data * self.std) + self.mean

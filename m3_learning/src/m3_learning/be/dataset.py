@@ -16,7 +16,7 @@ from m3_learning.viz.layout import layout_fig
 from scipy.interpolate import interp1d
 from scipy import fftpack
 from sklearn.preprocessing import StandardScaler
-from m3_learning.util.preprocessing import global_scaler
+from m3_learning.util.preprocessing import GlobalScaler
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -256,7 +256,7 @@ class BE_Dataset:
         cleaned_hysteresis = clean_interpolate(hysteresis)
 
         # instantiates and computes the global scaler
-        self.hystersis_scaler = global_scaler()
+        self.hystersis_scaler = GlobalScaler()
         self.hystersis_scaler.fit_transform(cleaned_hysteresis)
 
         try:
@@ -1796,8 +1796,8 @@ class BE_Dataset:
             imag = np.imag(data)
 
             # does a global scaler on the data
-            self.real_scaler = global_scaler()
-            self.imag_scaler = global_scaler()
+            self.real_scaler = GlobalScaler()
+            self.imag_scaler = GlobalScaler()
 
             # computes global scaler on the real and imaginary parts
             self.real_scaler.fit(real)
