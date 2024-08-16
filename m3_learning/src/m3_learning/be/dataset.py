@@ -1869,6 +1869,7 @@ class BE_Dataset:
 
     @static_state_decorator
     def get_hysteresis(self,
+                       fits = False, 
                        noise=None,
                        plotting_values=False,
                        output_shape=None,
@@ -1916,9 +1917,12 @@ class BE_Dataset:
 
             # gets the path where the hysteresis loops are located
             h5_path = self.get_loop_path()
-
-            # gets the projected loops
-            h5_projected_loops = h5_f[ h5_path + '/Projected_Loops']
+            
+            if fits == False:
+                # gets the projected loops
+                h5_projected_loops = h5_f[ h5_path + '/Projected_Loops']
+            else:
+                h5_projected_loops = h5_f[ h5_path + '/Fit']
 
             # Prepare some variables for plotting loops fits and guesses
             # Plot the Loop Guess and Fit Results
@@ -2109,3 +2113,27 @@ class BE_Dataset:
             except:
                 raise ValueError(
                     "The data shape is not compatible with the number of rows and columns")
+                
+    def get_LSQF_hysteresis_fits(self, compare=False):
+        """
+        Retrieves the least squares quadratic fit hysteresis loops.
+        Args:
+            compare (bool, optional): If True, returns the fitted loops, raw hysteresis loops, and voltage values. 
+                                     If False, returns only the fitted loops. Defaults to False.
+        Returns:
+            numpy.ndarray or tuple: If compare is True, returns a tuple containing the fitted loops, 
+                                    raw hysteresis loops, and voltage values. 
+                                    If compare is False, returns only the fitted loops.
+        """
+        raw_hysteresis_loop, voltage = self.dataset.get_hysteresis(
+            loop_interpolated=True, plotting_values=True)
+        
+        params = BE_viz.dataset.LSQF_hysteresis_params().reshape(-1, 9)
+        
+        loops = loop_fitting_function_torch(params, voltage[:,0].squeeze()).to(
+                'cpu').detach().numpy().squeeze()
+        
+        if compare:
+            return loops, raw_hysteresis_loop, voltage
+        
+        return loops

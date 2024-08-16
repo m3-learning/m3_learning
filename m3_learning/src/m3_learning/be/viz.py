@@ -1022,28 +1022,32 @@ class Viz:
     def get_best_median_worst_hysteresis(self,
                                          true_state,
                                          prediction=None,
-                                         out_state=None,
+                                        #  out_state=None,
                                          n=1,
-                                         index=None,
-                                         compare_state=None,
+                                        #  index=None,
                                          **kwargs):
 
         true = true_state
         x1 = self.dataset.get_voltage
 
         data = torch.tensor(true).float()
-
-        pred_data, scaled_params, params = prediction.predict(
-            data, translate_params=False, is_SHO=False)
+        
+        if isinstance(prediction, Fitter1D.Model):
+            pred_data, scaled_params, params = prediction.predict(
+                data, translate_params=False, is_SHO=False)
+        elif isinstance(prediction, np.ndarray):
+            pred_data = prediction
+        else:
+            raise ValueError("prediction must be a Model or a numpy array")
 
         prediction = pred_data
 
         x2 = self.dataset.get_voltage
 
-        # index the data if provided
-        if index is not None:
-            true = [true[0][index], true[1][index]]
-            prediction = [prediction[0][index], prediction[1][index]]
+        # # index the data if provided
+        # if index is not None:
+        #     true = [true[0][index], true[1][index]]
+        #     prediction = [prediction[0][index], prediction[1][index]]
 
         prediction = prediction.detach().numpy()
         prediction = np.rollaxis(prediction, 0, prediction.ndim - 1)
