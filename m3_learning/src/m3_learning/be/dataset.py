@@ -20,10 +20,10 @@ from m3_learning.util.preprocessing import GlobalScaler
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from m3_learning.be.processing import convert_amp_phase
 from sklearn.model_selection import train_test_split
 from m3_learning.be.nn import SHO_fit_func_nn
 import m3_learning
+from m3_learning.be.loop_fitter import loop_fitting_function_torch
 # from m3_learning.be.USID_data import USIDataset
 from pyUSID.io.usi_data import USIDataset
 from sidpy.hdf.hdf_utils import get_attr
@@ -2125,15 +2125,15 @@ class BE_Dataset:
                                     raw hysteresis loops, and voltage values. 
                                     If compare is False, returns only the fitted loops.
         """
-        raw_hysteresis_loop, voltage = self.dataset.get_hysteresis(
+        raw_hysteresis_loop, voltage = self.get_hysteresis(
             loop_interpolated=True, plotting_values=True)
         
-        params = BE_viz.dataset.LSQF_hysteresis_params().reshape(-1, 9)
+        params = self.LSQF_hysteresis_params().reshape(-1, 9)
         
         loops = loop_fitting_function_torch(params, voltage[:,0].squeeze()).to(
                 'cpu').detach().numpy().squeeze()
         
         if compare:
-            return loops, raw_hysteresis_loop, voltage
+            return loops, raw_hysteresis_loop.reshape(-1, voltage.shape[0])*-1, voltage
         
         return loops

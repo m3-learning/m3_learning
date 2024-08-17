@@ -19,7 +19,8 @@ import matplotlib.pyplot as plt
 from m3_learning.be.nn import SHO_Model
 from m3_learning.be.loop_fitter import loop_fitting_function_torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+from m3_learning.nn.Fitter1D.Fitter1D import Multiscale1DFitter, Model
+from m3_learning.nn.Fitter1D import Fitter1D
 # import m3_learning
 # from m3_learning.util.rand_util import get_tuple_names
 import torch
@@ -47,7 +48,7 @@ def get_lowest_loss_for_noise_level(path, desired_noise_level):
     """
     get_lowest_loss_for_noise_level function to get the lowest loss for a given noise level from the checkpoint files in a directory
 
-    Args:
+    Args:,
         path (os.path): path where the files exist
         desired_noise_level (int): noise level
 
@@ -1024,7 +1025,7 @@ class Viz:
                                          prediction=None,
                                         #  out_state=None,
                                          n=1,
-                                        #  index=None,
+                                        index=None,
                                          **kwargs):
 
         true = true_state
