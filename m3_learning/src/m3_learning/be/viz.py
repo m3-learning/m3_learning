@@ -1049,19 +1049,27 @@ class Viz:
         # if index is not None:
         #     true = [true[0][index], true[1][index]]
         #     prediction = [prediction[0][index], prediction[1][index]]
-
-        prediction = prediction.detach().numpy()
+        
+        # converts to numpy from tensor if needed
+        try:
+            prediction = prediction.detach().numpy()
+            true = true.detach().numpy()
+        except:
+            pass
+        
         prediction = np.rollaxis(prediction, 0, prediction.ndim - 1)
-
-        true = true.detach().numpy()
         true = np.rollaxis(true, 0, true.ndim - 1)
 
         # this must take the scaled data
         index1, mse1, d1, d2 = Model.get_rankings(
             true, prediction, n=n)
 
-        # saves just the parameters that are needed
-        params = params[index1]
+        # saves the parameters if the model is provided 
+        try:
+            # saves just the parameters that are needed
+            params = params[index1]
+        except:
+            params = None
 
         # gets the original index values
         if index is not None:
