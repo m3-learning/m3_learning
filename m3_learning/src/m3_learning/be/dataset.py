@@ -2125,8 +2125,8 @@ class BE_Dataset:
                                     raw hysteresis loops, and voltage values. 
                                     If compare is False, returns only the fitted loops.
         """
-        raw_hysteresis_loop, voltage = self.get_hysteresis(
-            loop_interpolated=True, plotting_values=True)
+        raw_hysteresis_loops, voltage = self.get_hysteresis(scaled=True, loop_interpolated = True)
+        raw_hysteresis_loops = raw_hysteresis_loops.reshape(-1,96)
         
         params = self.LSQF_hysteresis_params().reshape(-1, 9)
         
@@ -2134,6 +2134,6 @@ class BE_Dataset:
                 'cpu').detach().numpy().squeeze()
         
         if compare:
-            return loops, raw_hysteresis_loop.reshape(-1, voltage.shape[0])*-1, voltage
+            return loops, raw_hysteresis_loops, voltage
         
         return loops
