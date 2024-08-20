@@ -2083,6 +2083,9 @@ class Viz:
         return fig
 
     def violin_plot_comparison_hysteresis(self, model, X_data, filename):
+        
+        if X_data.shape !=3:
+            X_data = torch.atleast_3d(torch.tensor(X_data.reshape(-1, self.dataset.get_hysteresis_voltage_len))).float()
 
         df = pd.DataFrame()
 
@@ -2150,7 +2153,6 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
         
-        return fig
 
     def build_figure_for_movie(
         self,
@@ -2601,7 +2603,9 @@ class Viz:
         fig_width=10.5,  # figure width in inches
         filename=None,
     ):
-
+        # reshape data:
+        if data.shape != 3:
+            
         # calculates the size of the embedding image
         embedding_image_size = 60
 
@@ -2623,6 +2627,8 @@ class Viz:
 
         # Titles for each row
         row_titles = ['Predicted Parameters', 'LSQF Parameters']
+        
+        string_add = 'a'
 
         for i in range(9):
             clims.append(
@@ -2641,7 +2647,7 @@ class Viz:
                     ),
                 )
             )
-
+            
             axs[0, i].imshow(
                 parms_pred[:, i].reshape(
                     embedding_image_size, embedding_image_size),
@@ -2649,7 +2655,8 @@ class Viz:
                 vmin=clims[i][0],
                 vmax=clims[i][1],
             )
-
+            axs[0,i].set_xticklabels('')
+            axs[0,i].set_yticklabels('')
             axs[1, i].imshow(
                 parms_lsqf[:, i].reshape(
                     embedding_image_size, embedding_image_size),
@@ -2657,6 +2664,8 @@ class Viz:
                 vmin=clims[i][0],
                 vmax=clims[i][1],
             )
+            axs[1,i].set_xticklabels('')
+            axs[1,i].set_yticklabels('')
 
             if colorbars:
                 # Create an axis divider for each subplot
@@ -2667,6 +2676,29 @@ class Viz:
                     axs[1, i].images[0], cax=cax, format="%.1e", orientation='horizontal')
                 # Set the label for each colorbar
                 cbar.set_label(colorbar_labels[i])
+                
+            labelfigs(axs[0,i],
+                    string_add=colorbar_labels[i],
+                    loc ='ct',
+                    size=8,
+                    inset_fraction=(0.2, 0.2)
+                    )
+             # Update the char to the next order
+            ascii_value = ord(string_add)+1
+            string_add = chr(ascii_value)
+            
+        labelfigs(axs[0,0],
+        string_add='a',
+        loc ='tl',
+        size=8,
+        inset_fraction=(0.2, 0.2)
+        )
+        labelfigs(axs[1,0],
+        string_add='b',
+        loc ='tl',
+        size=8,
+        inset_fraction=(0.2, 0.2)
+        )
 
         # Calculate the vertical position for the row titles
         title_y_positions = [0.85, 0.5]  # You may need to adjust these values
@@ -2675,13 +2707,15 @@ class Viz:
         for i, title in enumerate(row_titles):
             fig.text(0.5, title_y_positions[i], title, ha='center',
                      va='center', fontsize=10, transform=fig.transFigure)
+        
 
         # prints the figure
         if self.Printer is not None and filename is not None:
+            print('use printing function')
             self.Printer.savefig(
                 fig, filename, size=6, loc="tl", inset_fraction=(0.2, 0.2)
             )
 
-        fig.show()
+        #fig.show()
 
-        return fig
+        #return fig

@@ -285,6 +285,16 @@ class BE_Dataset:
         """
         with h5py.File(self.file, "r+") as h5_f:
             return h5_f['Measurement_000']['Channel_000']['UDVS'][::2][:, 1][24:120] * -1
+    
+    @property
+    def get_hysteresis_voltage_len(self):
+        """
+        Get the length of the voltage vector for hysteresis measurements.
+
+        Returns:
+            int: Length of the voltage vector.
+        """
+        return self.get_voltage.shape[0]  # Return the length of the voltage vector
 
     def SHO_preprocessing(self):
         """
