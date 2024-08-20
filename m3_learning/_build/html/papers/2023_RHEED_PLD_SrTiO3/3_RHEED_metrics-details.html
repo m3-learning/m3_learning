@@ -1,0 +1,2984 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>RHEED Metrics with Details &#8212; M3 Learning: Multifunctional Materials and Machine Learning</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script type="application/vnd.jupyter.widget-state+json">{"state": {"2d699e0f795244b78c9620f30fc47df0": {"model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": "500px"}}}, "version_major": 2, "version_minor": 0}</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script crossorigin="anonymous" data-jupyter-widgets-cdn="https://cdn.jsdelivr.net/npm/" src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@1.0.6/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'papers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details';</script>
+    <link rel="shortcut icon" href="../../_static/m3_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="AFM and XRD" href="4_AFM_and_XRD.html" />
+    <link rel="prev" title="RHEED Metrics" href="2_RHEED_metrics.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../jupyterbook/Introduction.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/m3_logo.png" class="logo__image only-light" alt="M3 Learning: Multifunctional Materials and Machine Learning - Home"/>
+    <script>document.write(`<img src="../../_static/m3_logo.png" class="logo__image only-dark" alt="M3 Learning: Multifunctional Materials and Machine Learning - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../jupyterbook/Introduction.html">
+                    M3-Learning: Multifunctional Materials and Machine learning
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Data Sets</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../Datasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting.html">Band Excitation Piezoresponse Force Microscopy of <span class="math notranslate nohighlight">\(PbZr_{0.2}Ti_{0.8}O_3\)</span></a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Papers</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/stem_toc.html">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_vortex_VAE.html">VAE demonstration on vortex</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="RHEED_toc.html">Predicting Pulsed-Laser Deposition $SrTiO_3$ Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="1_Abstract.html">Abstract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_RHEED_metrics.html">RHEED Metrics</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">RHEED Metrics with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_AFM_and_XRD.html">AFM_and_XRD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_AFM_and_XRD-details.html">AFM and XRD with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="6_Growth_mechanism.html">Growth Mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="7_Growth_mechanism-details.html">Growth Mechanism with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="8_Characteristic_time.html">Characteristic Time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="9_Characteristic_time-details.html">Characteristic Time with Details</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BF_BTO_toc.html">The effect of chemical environment and temperature on the domain structure of free-standing $BaTiO_3$ via in-situ STEM</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BTO_environmental_demo.html">The effect of chemical environment and temperature on the domain structure of free-standing <span class="math notranslate nohighlight">\(BaTiO_3\)</span> via in-situ STEM</a></li>
+
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Unsupervised_Learning_with_AEs/Unsupervised_Learning_with_Autoencoders.html">Unsupervised Spectral Unmixing with Autoencoders</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Physics_Informed_Autoencoders/Physics_Constrained_Autoencoder.html">Physics Constrained Autoencoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Cycle_Consistent_Spatial_Transformer_Autoencoder/Cycle_Consistent_Spatial_Transformer_Autoencoder.html">Cycle Consistent Spatial Transforming Autoencoder</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/api.html">docs</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://jupyterhub.coe.drexel.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/m3-learning/m3_learning&urlpath=tree/m3_learning/m3_learning/papers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details.ipynb&branch=main" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onJupyterHub"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../../_static/images/logo_jupyterhub.svg">
+  </span>
+<span class="btn__text-container">JupyterHub</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/m3-learning/m3_learning/blob/main/m3_learning/papers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/m3-learning/m3_learning" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/m3-learning/m3_learning/issues/new?title=Issue%20on%20page%20%2Fpapers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/papers/2023_RHEED_PLD_SrTiO3/3_RHEED_metrics-details.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>RHEED Metrics with Details</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#download-datasets-from-zenodo">1. Download datasets from Zenodo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fitting-the-rheed-dataset">2. Fitting the RHEED Dataset</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-treated-213nm">2.1 Sample treated_213nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-dataset">2.1.1 Loading the Dataset</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#locate-the-diffraction-spots">2.1.2 Locate the diffraction spots</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-an-example">2.1.3 Visualize an example</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#exam-the-dataset">2.1.4 Exam the dataset</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-treated-81nm">2.2 Sample treated_81nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.2.1 Loading the Dataset</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.2.2 Locate the diffraction spots</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.2.3 Visualize an example</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.2.4 Exam the dataset</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-untreated-162nm">2.3 Sample untreated_162nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.3.1 Loading the Dataset</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3.2 Locate the diffraction spots</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">2.3.3 Visualize an example</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#examine-the-dataset">2.3.4 Examine the dataset</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="rheed-metrics-with-details">
+<h1>RHEED Metrics with Details<a class="headerlink" href="#rheed-metrics-with-details" title="Permalink to this heading">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../src/&#39;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">m3_learning.nn.random</span> <span class="kn">import</span> <span class="n">random_seed</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.style</span> <span class="kn">import</span> <span class="n">set_style</span>
+<span class="kn">from</span> <span class="nn">m3_learning.util.file_IO</span> <span class="kn">import</span> <span class="n">download_and_unzip</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.printing</span> <span class="kn">import</span> <span class="n">printer</span>
+<span class="kn">from</span> <span class="nn">m3_learning.RHEED.Dataset</span> <span class="kn">import</span> <span class="n">RHEED_spot_Dataset</span><span class="p">,</span> <span class="n">RHEED_parameter_dataset</span>
+<span class="kn">from</span> <span class="nn">m3_learning.RHEED.Viz</span> <span class="kn">import</span> <span class="n">Viz</span>
+<span class="kn">from</span> <span class="nn">m3_learning.RHEED.Fit</span> <span class="kn">import</span> <span class="n">RHEED_image_processer</span><span class="p">,</span> <span class="n">Gaussian</span>
+
+<span class="n">printing_image</span> <span class="o">=</span> <span class="n">printer</span><span class="p">(</span><span class="n">basepath</span> <span class="o">=</span> <span class="s1">&#39;Figures/1.Fit_RHEED_spot/&#39;</span><span class="p">)</span>
+<span class="n">printing_plot</span> <span class="o">=</span> <span class="n">printer</span><span class="p">(</span><span class="n">basepath</span> <span class="o">=</span> <span class="s1">&#39;Figures/1.Fit_RHEED_spot/&#39;</span><span class="p">,</span> <span class="n">fileformats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;png&#39;</span><span class="p">])</span>
+
+<span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;printing&quot;</span><span class="p">)</span>
+<span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-08 13:23:54.463004: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-08 13:23:55.017473: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library &#39;libnvinfer.so.7&#39;; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:/home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:
+2023-06-08 13:23:55.017533: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library &#39;libnvinfer_plugin.so.7&#39;; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:/home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:
+2023-06-08 13:23:55.017537: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>printing set for seaborn
+Pytorch seed was set to 42
+Numpy seed was set to 42
+tensorflow seed was set to 42
+</pre></div>
+</div>
+</div>
+</div>
+<section id="download-datasets-from-zenodo">
+<h2>1. Download datasets from Zenodo<a class="headerlink" href="#download-datasets-from-zenodo" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download the data file from Zenodo</span>
+<span class="n">download</span><span class="o">=</span><span class="kc">False</span>
+<span class="k">if</span> <span class="n">download</span><span class="p">:</span>
+    <span class="c1"># full size version</span>
+    <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;https://zenodo.org/record/7950043/files/STO_STO_test6_06292022-standard.h5?download=1&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;https://zenodo.org/record/7950043/files/STO_STO_test7_06292022-standard.h5?download=1&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;https://zenodo.org/record/7950043/files/STO_STO_test9_07142022-standard.h5?download=1&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;https://zenodo.org/record/7950043/files/test6_gaussian_fit_parameters_all-04232023.h5?download=1&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;https://zenodo.org/record/7950043/files/test7_gaussian_fit_parameters_all-04232023.h5?download=1&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;https://zenodo.org/record/7950043/files/test9_gaussian_fit_parameters_all-04232023.h5?download=1&#39;</span><span class="p">]</span>
+
+    <span class="c1"># compressed version</span>
+    <span class="n">urls_compressed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;https://zenodo.org/record/7948591/files/STO_STO_test6_06292022-standard-compressed.h5?download=1&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;https://zenodo.org/record/7948591/files/STO_STO_test7_06292022-standard-compressed.h5?download=1&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;https://zenodo.org/record/7948591/files/STO_STO_test9_07142022-standard-compressed.h5?download=1&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;https://zenodo.org/record/7948591/files/test6_gaussian_fit_parameters_all-04232023-compressed.h5?download=1&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;https://zenodo.org/record/7948591/files/test7_gaussian_fit_parameters_all-04232023-compressed.h5?download=1&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;https://zenodo.org/record/7948591/files/test9_gaussian_fit_parameters_all-04232023-compressed.h5?download=1&#39;</span><span class="p">]</span>   
+
+    <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+        <span class="c1"># Specify the filename and the path to save the file</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\?&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">url</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">save_path</span> <span class="o">=</span> <span class="s1">&#39;./../2023_RHEED_PLD_SrTiO3/Datasets/&#39;</span>
+
+        <span class="c1"># download the file</span>
+        <span class="n">download_and_unzip</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">save_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="fitting-the-rheed-dataset">
+<h2>2. Fitting the RHEED Dataset<a class="headerlink" href="#fitting-the-rheed-dataset" title="Permalink to this heading">#</a></h2>
+<section id="sample-treated-213nm">
+<h3>2.1 Sample treated_213nm<a class="headerlink" href="#sample-treated-213nm" title="Permalink to this heading">#</a></h3>
+<section id="loading-the-dataset">
+<h4>2.1.1 Loading the Dataset<a class="headerlink" href="#loading-the-dataset" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/STO_STO_test6_06292022-standard.h5&#39;</span>
+<span class="n">D1_spot</span> <span class="o">=</span> <span class="n">RHEED_spot_Dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_213nm&#39;</span><span class="p">)</span>
+<span class="n">D1_spot</span><span class="o">.</span><span class="n">data_info</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Growth: background_with_heater, Size of data: f(2251, 300, 300)
+Growth: background_without_heater, Size of data: f(2942, 300, 300)
+Growth: growth_1, Size of data: f(13189, 300, 300)
+Growth: growth_10, Size of data: f(12336, 300, 300)
+Growth: growth_11, Size of data: f(12799, 300, 300)
+Growth: growth_12, Size of data: f(12563, 300, 300)
+Growth: growth_2, Size of data: f(12858, 300, 300)
+Growth: growth_3, Size of data: f(11392, 300, 300)
+Growth: growth_4, Size of data: f(13067, 300, 300)
+Growth: growth_5, Size of data: f(12619, 300, 300)
+Growth: growth_6, Size of data: f(12610, 300, 300)
+Growth: growth_7, Size of data: f(12431, 300, 300)
+Growth: growth_8, Size of data: f(12553, 300, 300)
+Growth: growth_9, Size of data: f(12568, 300, 300)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="locate-the-diffraction-spots">
+<h4>2.1.2 Locate the diffraction spots<a class="headerlink" href="#locate-the-diffraction-spots" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D1_spot</span><span class="o">.</span><span class="n">viz_RHEED_spot</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_treated_213nm_growth_2_0.png
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_treated_213nm_growth_2_0.svg
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image for growth_2 at index 0.
+</pre></div>
+</div>
+<img alt="../../_images/67f39debd631e285e4cf39f7a64cd20c13f7fb0c1368560a4a1b66fd7f0310ce.png" src="../../_images/67f39debd631e285e4cf39f7a64cd20c13f7fb0c1368560a4a1b66fd7f0310ce.png" />
+</div>
+</div>
+</section>
+<section id="visualize-an-example">
+<h4>2.1.3 Visualize an example<a class="headerlink" href="#visualize-an-example" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crop_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;spot_1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">160</span><span class="p">],</span> 
+             <span class="s1">&#39;spot_2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">137</span><span class="p">,</span> <span class="mi">166</span><span class="p">,</span> <span class="mi">147</span><span class="p">,</span> <span class="mi">195</span><span class="p">],</span> 
+             <span class="s1">&#39;spot_3&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">230</span><span class="p">,</span> <span class="mi">262</span><span class="p">,</span> <span class="mi">115</span><span class="p">,</span> <span class="mi">180</span><span class="p">]}</span>
+
+<span class="n">fit_function</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">()</span><span class="o">.</span><span class="n">recreate_gaussian</span>
+<span class="n">processor</span> <span class="o">=</span> <span class="n">RHEED_image_processer</span><span class="p">(</span><span class="n">D1_spot</span><span class="p">,</span> <span class="n">crop_dict</span><span class="p">,</span> <span class="n">fit_function</span><span class="p">)</span>
+<span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_1&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/78f5238879bc164d55d6d01a9ff615d08104acc75f2382e87b7d1d4442ffd0a5.png" src="../../_images/78f5238879bc164d55d6d01a9ff615d08104acc75f2382e87b7d1d4442ffd0a5.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 0.
+The Gaussian fitted parameters are: img_sum=48241.00, img_max=31.00, img_mean=20.10,
+img_rec_sum=48030.96, img_rec_max=22.65, img_rec_mean=20.01,
+height=22.65, x=22.31, y=26.81, width_x=30.30, width_y_max=57.73.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_12&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_1&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/2e8a8b802f5bdff0526c4afcc9d9981484a474d00e1fa8347146cc21d8cd3d8c.png" src="../../_images/2e8a8b802f5bdff0526c4afcc9d9981484a474d00e1fa8347146cc21d8cd3d8c.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_12 at index 0.
+The Gaussian fitted parameters are: img_sum=45531.00, img_max=23.00, img_mean=18.97,
+img_rec_sum=45440.48, img_rec_max=19.94, img_rec_mean=18.93,
+height=19.94, x=20.29, y=34.92, width_x=42.13, width_y_max=114.21.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/18cf4ce51fbd17e98b80d51c53e2cbcd68524edbe41bb3d1c0c7dea0e675f7d4.png" src="../../_images/18cf4ce51fbd17e98b80d51c53e2cbcd68524edbe41bb3d1c0c7dea0e675f7d4.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 0.
+The Gaussian fitted parameters are: img_sum=120241.00, img_max=255.00, img_mean=86.38,
+img_rec_sum=105894.35, img_rec_max=260.62, img_rec_mean=76.07,
+height=260.95, x=17.81, y=19.75, width_x=7.32, width_y_max=10.65.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_12&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/89ccd78fc9b8028d79b41000387b129db9f41ac749d720bb0cea350b84ced537.png" src="../../_images/89ccd78fc9b8028d79b41000387b129db9f41ac749d720bb0cea350b84ced537.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_12 at index 0.
+The Gaussian fitted parameters are: img_sum=87657.00, img_max=183.00, img_mean=62.97,
+img_rec_sum=82424.84, img_rec_max=139.73, img_rec_mean=59.21,
+height=139.78, x=14.58, y=31.86, width_x=8.56, width_y_max=14.55.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_3&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/59a514d45cf9a82685a3eedc6884edb7b2e1a0db00826cc949901d7fda5eb1b5.png" src="../../_images/59a514d45cf9a82685a3eedc6884edb7b2e1a0db00826cc949901d7fda5eb1b5.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 0.
+The Gaussian fitted parameters are: img_sum=47740.00, img_max=36.00, img_mean=22.95,
+img_rec_sum=47200.00, img_rec_max=27.82, img_rec_mean=22.69,
+height=27.83, x=14.75, y=19.52, width_x=21.56, width_y_max=47.67.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_12&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_3&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/608f02e6f2dd95c141dd03dce3d30b48f82542190aff05f82b1576e116534b3a.png" src="../../_images/608f02e6f2dd95c141dd03dce3d30b48f82542190aff05f82b1576e116534b3a.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_12 at index 0.
+The Gaussian fitted parameters are: img_sum=49480.00, img_max=34.00, img_mean=23.79,
+img_rec_sum=49086.48, img_rec_max=27.89, img_rec_mean=23.60,
+height=27.90, x=13.87, y=44.06, width_x=20.56, width_y_max=62.86.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="exam-the-dataset">
+<h4>2.1.4 Exam the dataset<a class="headerlink" href="#exam-the-dataset" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test6_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D1_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_213nm&#39;</span><span class="p">)</span>
+<span class="c1"># D1_para.data_info   </span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D1_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_treated_213nm_growth_2_spot_2_10000_img,img_rec,differerce.png
+Figures/1.Fit_RHEED_spot/RHEED_treated_213nm_growth_2_spot_2_10000_img,img_rec,differerce.svg
+</pre></div>
+</div>
+<img alt="../../_images/31e352af56244ff97deb7b94ad4aa2d00b7c0b31df8ba1d8f7af14d79bbcf70b.png" src="../../_images/31e352af56244ff97deb7b94ad4aa2d00b7c0b31df8ba1d8f7af14d79bbcf70b.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_2 at index 10000.
+img_sum=61247.00, img_max=87.00, img_mean=44.00
+img_rec_sum=59368.68, img_rec_max=72.97, img_rec_mean=42.65
+height=72.98, x=15.40, y=20.73, width_x=10.33, width_y_max=20.36
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_6&#39;</span><span class="p">,</span> 
+               <span class="s1">&#39;growth_7&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_8&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_9&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_10&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_11&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_12&#39;</span><span class="p">]</span>
+<span class="n">D1_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">head_tail</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">300</span><span class="p">),</span> <span class="n">filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_plot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_treated_213nm_spot_2_metrics.png
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/m3_learning/RHEED/Dataset.py:414: UserWarning: FixedFormatter should only be used together with FixedLocator
+  ax.set_xticklabels([&#39;&#39; for tick in ax.get_xticks()])
+</pre></div>
+</div>
+<img alt="../../_images/a05ba270128a2853c4ee56199008b054ea7a62b391064d8dcfd31c801086e8c0.png" src="../../_images/a05ba270128a2853c4ee56199008b054ea7a62b391064d8dcfd31c801086e8c0.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="sample-treated-81nm">
+<h3>2.2 Sample treated_81nm<a class="headerlink" href="#sample-treated-81nm" title="Permalink to this heading">#</a></h3>
+<section id="id1">
+<h4>2.2.1 Loading the Dataset<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/STO_STO_test7_06292022-standard.h5&#39;</span>
+<span class="n">D2_spot</span> <span class="o">=</span> <span class="n">RHEED_spot_Dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_81nm&#39;</span><span class="p">)</span>
+<span class="n">D2_spot</span><span class="o">.</span><span class="n">data_info</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Growth: background_with_heater, Size of data: f(2651, 300, 600)
+Growth: background_without_heater, Size of data: f(2652, 300, 600)
+Growth: growth_1, Size of data: f(8603, 300, 600)
+Growth: growth_10, Size of data: f(9439, 300, 600)
+Growth: growth_11, Size of data: f(12155, 300, 600)
+Growth: growth_12, Size of data: f(10736, 300, 600)
+Growth: growth_2, Size of data: f(10612, 300, 600)
+Growth: growth_3, Size of data: f(11648, 300, 600)
+Growth: growth_4, Size of data: f(12152, 300, 600)
+Growth: growth_5, Size of data: f(12317, 300, 600)
+Growth: growth_6, Size of data: f(12453, 300, 600)
+Growth: growth_7, Size of data: f(9482, 300, 600)
+Growth: growth_8, Size of data: f(9490, 300, 600)
+Growth: growth_9, Size of data: f(9704, 300, 600)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="id2">
+<h4>2.2.2 Locate the diffraction spots<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D2_spot</span><span class="o">.</span><span class="n">viz_RHEED_spot</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_treated_81nm_growth_2_10.png
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_treated_81nm_growth_2_10.svg
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image for growth_2 at index 10.
+</pre></div>
+</div>
+<img alt="../../_images/a36695a95b629ce16b5c364708e0009b8bc0ed7547dc9dac3137be8fbd25b3e0.png" src="../../_images/a36695a95b629ce16b5c364708e0009b8bc0ed7547dc9dac3137be8fbd25b3e0.png" />
+</div>
+</div>
+</section>
+<section id="id3">
+<h4>2.2.3 Visualize an example<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crop_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;spot_1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">340</span><span class="p">,</span> <span class="mi">450</span><span class="p">],</span> <span class="s1">&#39;spot_2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">143</span><span class="p">,</span> <span class="mi">165</span><span class="p">,</span> <span class="mi">415</span><span class="p">,</span> <span class="mi">455</span><span class="p">],</span> <span class="s1">&#39;spot_3&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">220</span><span class="p">,</span> <span class="mi">260</span><span class="p">,</span> <span class="mi">340</span><span class="p">,</span> <span class="mi">450</span><span class="p">]}</span>
+<span class="n">fit_function</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">()</span><span class="o">.</span><span class="n">recreate_gaussian</span>
+<span class="n">processor</span> <span class="o">=</span> <span class="n">RHEED_image_processer</span><span class="p">(</span><span class="n">D2_spot</span><span class="p">,</span> <span class="n">crop_dict</span><span class="p">,</span> <span class="n">fit_function</span><span class="p">)</span>
+<span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_1&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/9568d9dbbaa42ccd2d675de5b3a924247e7dbd95f8bc02cfb95a7ee5d6cbdaef.png" src="../../_images/9568d9dbbaa42ccd2d675de5b3a924247e7dbd95f8bc02cfb95a7ee5d6cbdaef.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 1000.
+The Gaussian fitted parameters are: img_sum=65540.00, img_max=26.00, img_mean=19.86,
+img_rec_sum=65251.70, img_rec_max=21.53, img_rec_mean=19.77,
+height=21.53, x=14.19, y=51.74, width_x=27.23, width_y_max=127.01.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_12&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_1&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/7c3b68dd9b046ae1961b516817965afda556039ce41f6048841e6132c3363bf9.png" src="../../_images/7c3b68dd9b046ae1961b516817965afda556039ce41f6048841e6132c3363bf9.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_12 at index 1000.
+The Gaussian fitted parameters are: img_sum=62861.00, img_max=26.00, img_mean=19.05,
+img_rec_sum=62570.65, img_rec_max=20.62, img_rec_mean=18.96,
+height=20.62, x=13.23, y=45.64, width_x=29.37, width_y_max=122.00.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/5de5ff0da07d0fcf1a953fcdf70a40967ffe407a349a2022e5ddf2a06ca72610.png" src="../../_images/5de5ff0da07d0fcf1a953fcdf70a40967ffe407a349a2022e5ddf2a06ca72610.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 1000.
+The Gaussian fitted parameters are: img_sum=52423.00, img_max=94.00, img_mean=59.57,
+img_rec_sum=51037.70, img_rec_max=89.54, img_rec_mean=58.00,
+height=89.60, x=11.21, y=19.78, width_x=9.67, width_y_max=17.10.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_12&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/a4a21231be78ec8f9ffca0853d2cbd68750e0be65409334af9ff3d918fd59725.png" src="../../_images/a4a21231be78ec8f9ffca0853d2cbd68750e0be65409334af9ff3d918fd59725.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_12 at index 1000.
+The Gaussian fitted parameters are: img_sum=38092.00, img_max=63.00, img_mean=43.29,
+img_rec_sum=37432.69, img_rec_max=58.39, img_rec_mean=42.54,
+height=58.39, x=11.58, y=22.47, width_x=10.38, width_y_max=23.31.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_3&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/054d800b6b41705a9a353141ef1cc09d7c9939b9627a499e97a1f1351007d526.png" src="../../_images/054d800b6b41705a9a353141ef1cc09d7c9939b9627a499e97a1f1351007d526.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 1000.
+The Gaussian fitted parameters are: img_sum=87305.00, img_max=27.00, img_mean=19.84,
+img_rec_sum=87167.35, img_rec_max=21.47, img_rec_mean=19.81,
+height=21.47, x=24.11, y=49.98, width_x=39.04, width_y_max=130.77.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_12&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_3&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/04672f092fff15f2b6025525f8ef555c18c393478398dcc1c718957777cc67b3.png" src="../../_images/04672f092fff15f2b6025525f8ef555c18c393478398dcc1c718957777cc67b3.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_12 at index 1000.
+The Gaussian fitted parameters are: img_sum=88520.00, img_max=28.00, img_mean=20.12,
+img_rec_sum=88317.24, img_rec_max=22.32, img_rec_mean=20.07,
+height=22.32, x=23.81, y=49.66, width_x=33.31, width_y_max=115.16.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="id4">
+<h4>2.2.4 Exam the dataset<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test7_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D2_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_81nm&#39;</span><span class="p">)</span>
+<span class="c1"># D2_para.data_info</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D2_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_treated_81nm_growth_2_spot_2_10000_img,img_rec,differerce.png
+Figures/1.Fit_RHEED_spot/RHEED_treated_81nm_growth_2_spot_2_10000_img,img_rec,differerce.svg
+</pre></div>
+</div>
+<img alt="../../_images/f473156aae8b98521cfa5188775ed0f0b8c3e978edc39394f7d17db48604e9c5.png" src="../../_images/f473156aae8b98521cfa5188775ed0f0b8c3e978edc39394f7d17db48604e9c5.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_2 at index 10000.
+img_sum=35031.00, img_max=58.00, img_mean=39.81
+img_rec_sum=34451.97, img_rec_max=52.63, img_rec_mean=39.15
+height=52.64, x=11.50, y=22.16, width_x=11.22, width_y_max=22.80
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_6&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_7&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_8&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_9&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_10&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_11&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_12&#39;</span><span class="p">]</span>
+<span class="n">D2_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_plot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_treated_81nm_spot_2_metrics.png
+</pre></div>
+</div>
+<img alt="../../_images/474f4318b12c38b189fa33944a1cfd5ca93be5a53feba35a56a900cc83bade35.png" src="../../_images/474f4318b12c38b189fa33944a1cfd5ca93be5a53feba35a56a900cc83bade35.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="sample-untreated-162nm">
+<h3>2.3 Sample untreated_162nm<a class="headerlink" href="#sample-untreated-162nm" title="Permalink to this heading">#</a></h3>
+<section id="id5">
+<h4>2.3.1 Loading the Dataset<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/STO_STO_test9_07142022-standard.h5&#39;</span>
+<span class="n">D3_spot</span> <span class="o">=</span> <span class="n">RHEED_spot_Dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;untreated_162nm&#39;</span><span class="p">)</span>
+<span class="c1"># D3_spot.data_info</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="id6">
+<h4>2.3.2 Locate the diffraction spots<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D3_spot</span><span class="o">.</span><span class="n">viz_RHEED_spot</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span>  <span class="n">filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_untreated_162nm_growth_2_0.png
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_untreated_162nm_growth_2_0.svg
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image for growth_2 at index 0.
+</pre></div>
+</div>
+<img alt="../../_images/b228f214177688b16393060835e3e1ed9a2b8d19bf915052463195a25af52041.png" src="../../_images/b228f214177688b16393060835e3e1ed9a2b8d19bf915052463195a25af52041.png" />
+</div>
+</div>
+</section>
+<section id="id7">
+<h4>2.3.3 Visualize an example<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># sets where to crop the image to extact the peaks</span>
+<span class="n">crop_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;spot_1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">72</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;spot_2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">143</span><span class="p">,</span> <span class="mi">162</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">190</span><span class="p">],</span> <span class="s1">&#39;spot_3&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">218</span><span class="p">,</span> <span class="mi">262</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">165</span><span class="p">]}</span>
+<span class="n">fit_function</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">()</span><span class="o">.</span><span class="n">recreate_gaussian</span>
+<span class="n">processor</span> <span class="o">=</span> <span class="n">RHEED_image_processer</span><span class="p">(</span><span class="n">D3_spot</span><span class="p">,</span> <span class="n">crop_dict</span><span class="p">,</span> <span class="n">fit_function</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_1&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/49e018404807d0e75caf39cc0200830d103a775518f93e9518e8db91324af625.png" src="../../_images/49e018404807d0e75caf39cc0200830d103a775518f93e9518e8db91324af625.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 1000.
+The Gaussian fitted parameters are: img_sum=23046.00, img_max=33.00, img_mean=20.95,
+img_rec_sum=22881.26, img_rec_max=24.39, img_rec_mean=20.80,
+height=24.39, x=12.31, y=26.93, width_x=16.87, width_y_max=36.30.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_18&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_1&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/0945cba039af1a235843ae3a460c08e01037563ba80cecb1620dbe898b7dd0b7.png" src="../../_images/0945cba039af1a235843ae3a460c08e01037563ba80cecb1620dbe898b7dd0b7.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_18 at index 1000.
+The Gaussian fitted parameters are: img_sum=22782.00, img_max=30.00, img_mean=20.71,
+img_rec_sum=22540.11, img_rec_max=23.95, img_rec_mean=20.49,
+height=23.95, x=10.74, y=23.69, width_x=15.40, width_y_max=40.17.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/40543e48c42a08c272be0fea7a760e7aae407c280fb79e55b7bab80adc63d19c.png" src="../../_images/40543e48c42a08c272be0fea7a760e7aae407c280fb79e55b7bab80adc63d19c.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 1000.
+The Gaussian fitted parameters are: img_sum=58629.00, img_max=172.00, img_mean=77.14,
+img_rec_sum=56051.32, img_rec_max=152.96, img_rec_mean=73.75,
+height=153.25, x=11.26, y=18.91, width_x=7.66, width_y_max=11.11.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_18&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/9f0b51515fdc30a1dce674b78913b0af7674a1d2081fecaf9a5d8559bfd373de.png" src="../../_images/9f0b51515fdc30a1dce674b78913b0af7674a1d2081fecaf9a5d8559bfd373de.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_18 at index 1000.
+The Gaussian fitted parameters are: img_sum=35114.00, img_max=92.00, img_mean=46.20,
+img_rec_sum=33973.47, img_rec_max=75.65, img_rec_mean=44.70,
+height=75.75, x=10.23, y=20.99, width_x=7.94, width_y_max=14.74.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_3&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/c3bbba8c2a5033eb1dd28f36836fbabfe7012dffa417d397502285b6c5912114.png" src="../../_images/c3bbba8c2a5033eb1dd28f36836fbabfe7012dffa417d397502285b6c5912114.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_1 at index 1000.
+The Gaussian fitted parameters are: img_sum=56802.00, img_max=29.00, img_mean=19.86,
+img_rec_sum=56669.50, img_rec_max=21.97, img_rec_mean=19.81,
+height=21.97, x=26.85, y=31.92, width_x=40.82, width_y_max=61.30.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img</span><span class="p">,</span> <span class="n">img_rec</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_18&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_3&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/d0bd9290a9231ab9e5465fb33d549135bf48ddaeb9260b6b782177f019065131.png" src="../../_images/d0bd9290a9231ab9e5465fb33d549135bf48ddaeb9260b6b782177f019065131.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_18 at index 1000.
+The Gaussian fitted parameters are: img_sum=57391.00, img_max=32.00, img_mean=20.07,
+img_rec_sum=57205.76, img_rec_max=23.31, img_rec_mean=20.00,
+height=23.31, x=26.83, y=34.85, width_x=31.40, width_y_max=54.38.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="examine-the-dataset">
+<h4>2.3.4 Examine the dataset<a class="headerlink" href="#examine-the-dataset" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test9_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D3_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;untreated_162nm&#39;</span><span class="p">)</span>
+<span class="n">D3_para</span><span class="o">.</span><span class="n">data_info</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Growth: background_with_heater:
+--spot: spot_1:
+----height:, Size of data: (2023,)
+----height:, Size of data: (2023,)
+----img_max:, Size of data: (2023,)
+----img_max:, Size of data: (2023,)
+----img_mean:, Size of data: (2023,)
+----img_mean:, Size of data: (2023,)
+----img_rec_max:, Size of data: (2023,)
+----img_rec_max:, Size of data: (2023,)
+----img_rec_mean:, Size of data: (2023,)
+----img_rec_mean:, Size of data: (2023,)
+----img_rec_sum:, Size of data: (2023,)
+----img_rec_sum:, Size of data: (2023,)
+----img_sum:, Size of data: (2023,)
+----img_sum:, Size of data: (2023,)
+----raw_image:, Size of data: (2023, 22, 50)
+----raw_image:, Size of data: (2023, 22, 50)
+----reconstructed_image:, Size of data: (2023, 22, 50)
+----reconstructed_image:, Size of data: (2023, 22, 50)
+----width_x:, Size of data: (2023,)
+----width_x:, Size of data: (2023,)
+----width_y:, Size of data: (2023,)
+----width_y:, Size of data: (2023,)
+----x:, Size of data: (2023,)
+----x:, Size of data: (2023,)
+----y:, Size of data: (2023,)
+----y:, Size of data: (2023,)
+--spot: spot_2:
+----height:, Size of data: (2023,)
+----height:, Size of data: (2023,)
+----img_max:, Size of data: (2023,)
+----img_max:, Size of data: (2023,)
+----img_mean:, Size of data: (2023,)
+----img_mean:, Size of data: (2023,)
+----img_rec_max:, Size of data: (2023,)
+----img_rec_max:, Size of data: (2023,)
+----img_rec_mean:, Size of data: (2023,)
+----img_rec_mean:, Size of data: (2023,)
+----img_rec_sum:, Size of data: (2023,)
+----img_rec_sum:, Size of data: (2023,)
+----img_sum:, Size of data: (2023,)
+----img_sum:, Size of data: (2023,)
+----raw_image:, Size of data: (2023, 19, 40)
+----raw_image:, Size of data: (2023, 19, 40)
+----reconstructed_image:, Size of data: (2023, 19, 40)
+----reconstructed_image:, Size of data: (2023, 19, 40)
+----width_x:, Size of data: (2023,)
+----width_x:, Size of data: (2023,)
+----width_y:, Size of data: (2023,)
+----width_y:, Size of data: (2023,)
+----x:, Size of data: (2023,)
+----x:, Size of data: (2023,)
+----y:, Size of data: (2023,)
+----y:, Size of data: (2023,)
+--spot: spot_3:
+----height:, Size of data: (2023,)
+----height:, Size of data: (2023,)
+----img_max:, Size of data: (2023,)
+----img_max:, Size of data: (2023,)
+----img_mean:, Size of data: (2023,)
+----img_mean:, Size of data: (2023,)
+----img_rec_max:, Size of data: (2023,)
+----img_rec_max:, Size of data: (2023,)
+----img_rec_mean:, Size of data: (2023,)
+----img_rec_mean:, Size of data: (2023,)
+----img_rec_sum:, Size of data: (2023,)
+----img_rec_sum:, Size of data: (2023,)
+----img_sum:, Size of data: (2023,)
+----img_sum:, Size of data: (2023,)
+----raw_image:, Size of data: (2023, 44, 65)
+----raw_image:, Size of data: (2023, 44, 65)
+----reconstructed_image:, Size of data: (2023, 44, 65)
+----reconstructed_image:, Size of data: (2023, 44, 65)
+----width_x:, Size of data: (2023,)
+----width_x:, Size of data: (2023,)
+----width_y:, Size of data: (2023,)
+----width_y:, Size of data: (2023,)
+----x:, Size of data: (2023,)
+----x:, Size of data: (2023,)
+----y:, Size of data: (2023,)
+----y:, Size of data: (2023,)
+Growth: background_without_heater:
+--spot: spot_1:
+----height:, Size of data: (3060,)
+----height:, Size of data: (3060,)
+----img_max:, Size of data: (3060,)
+----img_max:, Size of data: (3060,)
+----img_mean:, Size of data: (3060,)
+----img_mean:, Size of data: (3060,)
+----img_rec_max:, Size of data: (3060,)
+----img_rec_max:, Size of data: (3060,)
+----img_rec_mean:, Size of data: (3060,)
+----img_rec_mean:, Size of data: (3060,)
+----img_rec_sum:, Size of data: (3060,)
+----img_rec_sum:, Size of data: (3060,)
+----img_sum:, Size of data: (3060,)
+----img_sum:, Size of data: (3060,)
+----raw_image:, Size of data: (3060, 22, 50)
+----raw_image:, Size of data: (3060, 22, 50)
+----reconstructed_image:, Size of data: (3060, 22, 50)
+----reconstructed_image:, Size of data: (3060, 22, 50)
+----width_x:, Size of data: (3060,)
+----width_x:, Size of data: (3060,)
+----width_y:, Size of data: (3060,)
+----width_y:, Size of data: (3060,)
+----x:, Size of data: (3060,)
+----x:, Size of data: (3060,)
+----y:, Size of data: (3060,)
+----y:, Size of data: (3060,)
+--spot: spot_2:
+----height:, Size of data: (3060,)
+----height:, Size of data: (3060,)
+----img_max:, Size of data: (3060,)
+----img_max:, Size of data: (3060,)
+----img_mean:, Size of data: (3060,)
+----img_mean:, Size of data: (3060,)
+----img_rec_max:, Size of data: (3060,)
+----img_rec_max:, Size of data: (3060,)
+----img_rec_mean:, Size of data: (3060,)
+----img_rec_mean:, Size of data: (3060,)
+----img_rec_sum:, Size of data: (3060,)
+----img_rec_sum:, Size of data: (3060,)
+----img_sum:, Size of data: (3060,)
+----img_sum:, Size of data: (3060,)
+----raw_image:, Size of data: (3060, 19, 40)
+----raw_image:, Size of data: (3060, 19, 40)
+----reconstructed_image:, Size of data: (3060, 19, 40)
+----reconstructed_image:, Size of data: (3060, 19, 40)
+----width_x:, Size of data: (3060,)
+----width_x:, Size of data: (3060,)
+----width_y:, Size of data: (3060,)
+----width_y:, Size of data: (3060,)
+----x:, Size of data: (3060,)
+----x:, Size of data: (3060,)
+----y:, Size of data: (3060,)
+----y:, Size of data: (3060,)
+--spot: spot_3:
+----height:, Size of data: (3060,)
+----height:, Size of data: (3060,)
+----img_max:, Size of data: (3060,)
+----img_max:, Size of data: (3060,)
+----img_mean:, Size of data: (3060,)
+----img_mean:, Size of data: (3060,)
+----img_rec_max:, Size of data: (3060,)
+----img_rec_max:, Size of data: (3060,)
+----img_rec_mean:, Size of data: (3060,)
+----img_rec_mean:, Size of data: (3060,)
+----img_rec_sum:, Size of data: (3060,)
+----img_rec_sum:, Size of data: (3060,)
+----img_sum:, Size of data: (3060,)
+----img_sum:, Size of data: (3060,)
+----raw_image:, Size of data: (3060, 44, 65)
+----raw_image:, Size of data: (3060, 44, 65)
+----reconstructed_image:, Size of data: (3060, 44, 65)
+----reconstructed_image:, Size of data: (3060, 44, 65)
+----width_x:, Size of data: (3060,)
+----width_x:, Size of data: (3060,)
+----width_y:, Size of data: (3060,)
+----width_y:, Size of data: (3060,)
+----x:, Size of data: (3060,)
+----x:, Size of data: (3060,)
+----y:, Size of data: (3060,)
+----y:, Size of data: (3060,)
+Growth: growth_1:
+--spot: spot_1:
+----height:, Size of data: (13510,)
+----height:, Size of data: (13510,)
+----img_max:, Size of data: (13510,)
+----img_max:, Size of data: (13510,)
+----img_mean:, Size of data: (13510,)
+----img_mean:, Size of data: (13510,)
+----img_rec_max:, Size of data: (13510,)
+----img_rec_max:, Size of data: (13510,)
+----img_rec_mean:, Size of data: (13510,)
+----img_rec_mean:, Size of data: (13510,)
+----img_rec_sum:, Size of data: (13510,)
+----img_rec_sum:, Size of data: (13510,)
+----img_sum:, Size of data: (13510,)
+----img_sum:, Size of data: (13510,)
+----raw_image:, Size of data: (13510, 22, 50)
+----raw_image:, Size of data: (13510, 22, 50)
+----reconstructed_image:, Size of data: (13510, 22, 50)
+----reconstructed_image:, Size of data: (13510, 22, 50)
+----width_x:, Size of data: (13510,)
+----width_x:, Size of data: (13510,)
+----width_y:, Size of data: (13510,)
+----width_y:, Size of data: (13510,)
+----x:, Size of data: (13510,)
+----x:, Size of data: (13510,)
+----y:, Size of data: (13510,)
+----y:, Size of data: (13510,)
+--spot: spot_2:
+----height:, Size of data: (13510,)
+----height:, Size of data: (13510,)
+----img_max:, Size of data: (13510,)
+----img_max:, Size of data: (13510,)
+----img_mean:, Size of data: (13510,)
+----img_mean:, Size of data: (13510,)
+----img_rec_max:, Size of data: (13510,)
+----img_rec_max:, Size of data: (13510,)
+----img_rec_mean:, Size of data: (13510,)
+----img_rec_mean:, Size of data: (13510,)
+----img_rec_sum:, Size of data: (13510,)
+----img_rec_sum:, Size of data: (13510,)
+----img_sum:, Size of data: (13510,)
+----img_sum:, Size of data: (13510,)
+----raw_image:, Size of data: (13510, 19, 40)
+----raw_image:, Size of data: (13510, 19, 40)
+----reconstructed_image:, Size of data: (13510, 19, 40)
+----reconstructed_image:, Size of data: (13510, 19, 40)
+----width_x:, Size of data: (13510,)
+----width_x:, Size of data: (13510,)
+----width_y:, Size of data: (13510,)
+----width_y:, Size of data: (13510,)
+----x:, Size of data: (13510,)
+----x:, Size of data: (13510,)
+----y:, Size of data: (13510,)
+----y:, Size of data: (13510,)
+--spot: spot_3:
+----height:, Size of data: (13510,)
+----height:, Size of data: (13510,)
+----img_max:, Size of data: (13510,)
+----img_max:, Size of data: (13510,)
+----img_mean:, Size of data: (13510,)
+----img_mean:, Size of data: (13510,)
+----img_rec_max:, Size of data: (13510,)
+----img_rec_max:, Size of data: (13510,)
+----img_rec_mean:, Size of data: (13510,)
+----img_rec_mean:, Size of data: (13510,)
+----img_rec_sum:, Size of data: (13510,)
+----img_rec_sum:, Size of data: (13510,)
+----img_sum:, Size of data: (13510,)
+----img_sum:, Size of data: (13510,)
+----raw_image:, Size of data: (13510, 44, 65)
+----raw_image:, Size of data: (13510, 44, 65)
+----reconstructed_image:, Size of data: (13510, 44, 65)
+----reconstructed_image:, Size of data: (13510, 44, 65)
+----width_x:, Size of data: (13510,)
+----width_x:, Size of data: (13510,)
+----width_y:, Size of data: (13510,)
+----width_y:, Size of data: (13510,)
+----x:, Size of data: (13510,)
+----x:, Size of data: (13510,)
+----y:, Size of data: (13510,)
+----y:, Size of data: (13510,)
+Growth: growth_10:
+--spot: spot_1:
+----height:, Size of data: (12488,)
+----height:, Size of data: (12488,)
+----img_max:, Size of data: (12488,)
+----img_max:, Size of data: (12488,)
+----img_mean:, Size of data: (12488,)
+----img_mean:, Size of data: (12488,)
+----img_rec_max:, Size of data: (12488,)
+----img_rec_max:, Size of data: (12488,)
+----img_rec_mean:, Size of data: (12488,)
+----img_rec_mean:, Size of data: (12488,)
+----img_rec_sum:, Size of data: (12488,)
+----img_rec_sum:, Size of data: (12488,)
+----img_sum:, Size of data: (12488,)
+----img_sum:, Size of data: (12488,)
+----raw_image:, Size of data: (12488, 22, 50)
+----raw_image:, Size of data: (12488, 22, 50)
+----reconstructed_image:, Size of data: (12488, 22, 50)
+----reconstructed_image:, Size of data: (12488, 22, 50)
+----width_x:, Size of data: (12488,)
+----width_x:, Size of data: (12488,)
+----width_y:, Size of data: (12488,)
+----width_y:, Size of data: (12488,)
+----x:, Size of data: (12488,)
+----x:, Size of data: (12488,)
+----y:, Size of data: (12488,)
+----y:, Size of data: (12488,)
+--spot: spot_2:
+----height:, Size of data: (12488,)
+----height:, Size of data: (12488,)
+----img_max:, Size of data: (12488,)
+----img_max:, Size of data: (12488,)
+----img_mean:, Size of data: (12488,)
+----img_mean:, Size of data: (12488,)
+----img_rec_max:, Size of data: (12488,)
+----img_rec_max:, Size of data: (12488,)
+----img_rec_mean:, Size of data: (12488,)
+----img_rec_mean:, Size of data: (12488,)
+----img_rec_sum:, Size of data: (12488,)
+----img_rec_sum:, Size of data: (12488,)
+----img_sum:, Size of data: (12488,)
+----img_sum:, Size of data: (12488,)
+----raw_image:, Size of data: (12488, 19, 40)
+----raw_image:, Size of data: (12488, 19, 40)
+----reconstructed_image:, Size of data: (12488, 19, 40)
+----reconstructed_image:, Size of data: (12488, 19, 40)
+----width_x:, Size of data: (12488,)
+----width_x:, Size of data: (12488,)
+----width_y:, Size of data: (12488,)
+----width_y:, Size of data: (12488,)
+----x:, Size of data: (12488,)
+----x:, Size of data: (12488,)
+----y:, Size of data: (12488,)
+----y:, Size of data: (12488,)
+--spot: spot_3:
+----height:, Size of data: (12488,)
+----height:, Size of data: (12488,)
+----img_max:, Size of data: (12488,)
+----img_max:, Size of data: (12488,)
+----img_mean:, Size of data: (12488,)
+----img_mean:, Size of data: (12488,)
+----img_rec_max:, Size of data: (12488,)
+----img_rec_max:, Size of data: (12488,)
+----img_rec_mean:, Size of data: (12488,)
+----img_rec_mean:, Size of data: (12488,)
+----img_rec_sum:, Size of data: (12488,)
+----img_rec_sum:, Size of data: (12488,)
+----img_sum:, Size of data: (12488,)
+----img_sum:, Size of data: (12488,)
+----raw_image:, Size of data: (12488, 44, 65)
+----raw_image:, Size of data: (12488, 44, 65)
+----reconstructed_image:, Size of data: (12488, 44, 65)
+----reconstructed_image:, Size of data: (12488, 44, 65)
+----width_x:, Size of data: (12488,)
+----width_x:, Size of data: (12488,)
+----width_y:, Size of data: (12488,)
+----width_y:, Size of data: (12488,)
+----x:, Size of data: (12488,)
+----x:, Size of data: (12488,)
+----y:, Size of data: (12488,)
+----y:, Size of data: (12488,)
+Growth: growth_11:
+--spot: spot_1:
+----height:, Size of data: (12221,)
+----height:, Size of data: (12221,)
+----img_max:, Size of data: (12221,)
+----img_max:, Size of data: (12221,)
+----img_mean:, Size of data: (12221,)
+----img_mean:, Size of data: (12221,)
+----img_rec_max:, Size of data: (12221,)
+----img_rec_max:, Size of data: (12221,)
+----img_rec_mean:, Size of data: (12221,)
+----img_rec_mean:, Size of data: (12221,)
+----img_rec_sum:, Size of data: (12221,)
+----img_rec_sum:, Size of data: (12221,)
+----img_sum:, Size of data: (12221,)
+----img_sum:, Size of data: (12221,)
+----raw_image:, Size of data: (12221, 22, 50)
+----raw_image:, Size of data: (12221, 22, 50)
+----reconstructed_image:, Size of data: (12221, 22, 50)
+----reconstructed_image:, Size of data: (12221, 22, 50)
+----width_x:, Size of data: (12221,)
+----width_x:, Size of data: (12221,)
+----width_y:, Size of data: (12221,)
+----width_y:, Size of data: (12221,)
+----x:, Size of data: (12221,)
+----x:, Size of data: (12221,)
+----y:, Size of data: (12221,)
+----y:, Size of data: (12221,)
+--spot: spot_2:
+----height:, Size of data: (12221,)
+----height:, Size of data: (12221,)
+----img_max:, Size of data: (12221,)
+----img_max:, Size of data: (12221,)
+----img_mean:, Size of data: (12221,)
+----img_mean:, Size of data: (12221,)
+----img_rec_max:, Size of data: (12221,)
+----img_rec_max:, Size of data: (12221,)
+----img_rec_mean:, Size of data: (12221,)
+----img_rec_mean:, Size of data: (12221,)
+----img_rec_sum:, Size of data: (12221,)
+----img_rec_sum:, Size of data: (12221,)
+----img_sum:, Size of data: (12221,)
+----img_sum:, Size of data: (12221,)
+----raw_image:, Size of data: (12221, 19, 40)
+----raw_image:, Size of data: (12221, 19, 40)
+----reconstructed_image:, Size of data: (12221, 19, 40)
+----reconstructed_image:, Size of data: (12221, 19, 40)
+----width_x:, Size of data: (12221,)
+----width_x:, Size of data: (12221,)
+----width_y:, Size of data: (12221,)
+----width_y:, Size of data: (12221,)
+----x:, Size of data: (12221,)
+----x:, Size of data: (12221,)
+----y:, Size of data: (12221,)
+----y:, Size of data: (12221,)
+--spot: spot_3:
+----height:, Size of data: (12221,)
+----height:, Size of data: (12221,)
+----img_max:, Size of data: (12221,)
+----img_max:, Size of data: (12221,)
+----img_mean:, Size of data: (12221,)
+----img_mean:, Size of data: (12221,)
+----img_rec_max:, Size of data: (12221,)
+----img_rec_max:, Size of data: (12221,)
+----img_rec_mean:, Size of data: (12221,)
+----img_rec_mean:, Size of data: (12221,)
+----img_rec_sum:, Size of data: (12221,)
+----img_rec_sum:, Size of data: (12221,)
+----img_sum:, Size of data: (12221,)
+----img_sum:, Size of data: (12221,)
+----raw_image:, Size of data: (12221, 44, 65)
+----raw_image:, Size of data: (12221, 44, 65)
+----reconstructed_image:, Size of data: (12221, 44, 65)
+----reconstructed_image:, Size of data: (12221, 44, 65)
+----width_x:, Size of data: (12221,)
+----width_x:, Size of data: (12221,)
+----width_y:, Size of data: (12221,)
+----width_y:, Size of data: (12221,)
+----x:, Size of data: (12221,)
+----x:, Size of data: (12221,)
+----y:, Size of data: (12221,)
+----y:, Size of data: (12221,)
+Growth: growth_12:
+--spot: spot_1:
+----height:, Size of data: (12526,)
+----height:, Size of data: (12526,)
+----img_max:, Size of data: (12526,)
+----img_max:, Size of data: (12526,)
+----img_mean:, Size of data: (12526,)
+----img_mean:, Size of data: (12526,)
+----img_rec_max:, Size of data: (12526,)
+----img_rec_max:, Size of data: (12526,)
+----img_rec_mean:, Size of data: (12526,)
+----img_rec_mean:, Size of data: (12526,)
+----img_rec_sum:, Size of data: (12526,)
+----img_rec_sum:, Size of data: (12526,)
+----img_sum:, Size of data: (12526,)
+----img_sum:, Size of data: (12526,)
+----raw_image:, Size of data: (12526, 22, 50)
+----raw_image:, Size of data: (12526, 22, 50)
+----reconstructed_image:, Size of data: (12526, 22, 50)
+----reconstructed_image:, Size of data: (12526, 22, 50)
+----width_x:, Size of data: (12526,)
+----width_x:, Size of data: (12526,)
+----width_y:, Size of data: (12526,)
+----width_y:, Size of data: (12526,)
+----x:, Size of data: (12526,)
+----x:, Size of data: (12526,)
+----y:, Size of data: (12526,)
+----y:, Size of data: (12526,)
+--spot: spot_2:
+----height:, Size of data: (12526,)
+----height:, Size of data: (12526,)
+----img_max:, Size of data: (12526,)
+----img_max:, Size of data: (12526,)
+----img_mean:, Size of data: (12526,)
+----img_mean:, Size of data: (12526,)
+----img_rec_max:, Size of data: (12526,)
+----img_rec_max:, Size of data: (12526,)
+----img_rec_mean:, Size of data: (12526,)
+----img_rec_mean:, Size of data: (12526,)
+----img_rec_sum:, Size of data: (12526,)
+----img_rec_sum:, Size of data: (12526,)
+----img_sum:, Size of data: (12526,)
+----img_sum:, Size of data: (12526,)
+----raw_image:, Size of data: (12526, 19, 40)
+----raw_image:, Size of data: (12526, 19, 40)
+----reconstructed_image:, Size of data: (12526, 19, 40)
+----reconstructed_image:, Size of data: (12526, 19, 40)
+----width_x:, Size of data: (12526,)
+----width_x:, Size of data: (12526,)
+----width_y:, Size of data: (12526,)
+----width_y:, Size of data: (12526,)
+----x:, Size of data: (12526,)
+----x:, Size of data: (12526,)
+----y:, Size of data: (12526,)
+----y:, Size of data: (12526,)
+--spot: spot_3:
+----height:, Size of data: (12526,)
+----height:, Size of data: (12526,)
+----img_max:, Size of data: (12526,)
+----img_max:, Size of data: (12526,)
+----img_mean:, Size of data: (12526,)
+----img_mean:, Size of data: (12526,)
+----img_rec_max:, Size of data: (12526,)
+----img_rec_max:, Size of data: (12526,)
+----img_rec_mean:, Size of data: (12526,)
+----img_rec_mean:, Size of data: (12526,)
+----img_rec_sum:, Size of data: (12526,)
+----img_rec_sum:, Size of data: (12526,)
+----img_sum:, Size of data: (12526,)
+----img_sum:, Size of data: (12526,)
+----raw_image:, Size of data: (12526, 44, 65)
+----raw_image:, Size of data: (12526, 44, 65)
+----reconstructed_image:, Size of data: (12526, 44, 65)
+----reconstructed_image:, Size of data: (12526, 44, 65)
+----width_x:, Size of data: (12526,)
+----width_x:, Size of data: (12526,)
+----width_y:, Size of data: (12526,)
+----width_y:, Size of data: (12526,)
+----x:, Size of data: (12526,)
+----x:, Size of data: (12526,)
+----y:, Size of data: (12526,)
+----y:, Size of data: (12526,)
+Growth: growth_13:
+--spot: spot_1:
+----height:, Size of data: (12318,)
+----height:, Size of data: (12318,)
+----img_max:, Size of data: (12318,)
+----img_max:, Size of data: (12318,)
+----img_mean:, Size of data: (12318,)
+----img_mean:, Size of data: (12318,)
+----img_rec_max:, Size of data: (12318,)
+----img_rec_max:, Size of data: (12318,)
+----img_rec_mean:, Size of data: (12318,)
+----img_rec_mean:, Size of data: (12318,)
+----img_rec_sum:, Size of data: (12318,)
+----img_rec_sum:, Size of data: (12318,)
+----img_sum:, Size of data: (12318,)
+----img_sum:, Size of data: (12318,)
+----raw_image:, Size of data: (12318, 22, 50)
+----raw_image:, Size of data: (12318, 22, 50)
+----reconstructed_image:, Size of data: (12318, 22, 50)
+----reconstructed_image:, Size of data: (12318, 22, 50)
+----width_x:, Size of data: (12318,)
+----width_x:, Size of data: (12318,)
+----width_y:, Size of data: (12318,)
+----width_y:, Size of data: (12318,)
+----x:, Size of data: (12318,)
+----x:, Size of data: (12318,)
+----y:, Size of data: (12318,)
+----y:, Size of data: (12318,)
+--spot: spot_2:
+----height:, Size of data: (12318,)
+----height:, Size of data: (12318,)
+----img_max:, Size of data: (12318,)
+----img_max:, Size of data: (12318,)
+----img_mean:, Size of data: (12318,)
+----img_mean:, Size of data: (12318,)
+----img_rec_max:, Size of data: (12318,)
+----img_rec_max:, Size of data: (12318,)
+----img_rec_mean:, Size of data: (12318,)
+----img_rec_mean:, Size of data: (12318,)
+----img_rec_sum:, Size of data: (12318,)
+----img_rec_sum:, Size of data: (12318,)
+----img_sum:, Size of data: (12318,)
+----img_sum:, Size of data: (12318,)
+----raw_image:, Size of data: (12318, 19, 40)
+----raw_image:, Size of data: (12318, 19, 40)
+----reconstructed_image:, Size of data: (12318, 19, 40)
+----reconstructed_image:, Size of data: (12318, 19, 40)
+----width_x:, Size of data: (12318,)
+----width_x:, Size of data: (12318,)
+----width_y:, Size of data: (12318,)
+----width_y:, Size of data: (12318,)
+----x:, Size of data: (12318,)
+----x:, Size of data: (12318,)
+----y:, Size of data: (12318,)
+----y:, Size of data: (12318,)
+--spot: spot_3:
+----height:, Size of data: (12318,)
+----height:, Size of data: (12318,)
+----img_max:, Size of data: (12318,)
+----img_max:, Size of data: (12318,)
+----img_mean:, Size of data: (12318,)
+----img_mean:, Size of data: (12318,)
+----img_rec_max:, Size of data: (12318,)
+----img_rec_max:, Size of data: (12318,)
+----img_rec_mean:, Size of data: (12318,)
+----img_rec_mean:, Size of data: (12318,)
+----img_rec_sum:, Size of data: (12318,)
+----img_rec_sum:, Size of data: (12318,)
+----img_sum:, Size of data: (12318,)
+----img_sum:, Size of data: (12318,)
+----raw_image:, Size of data: (12318, 44, 65)
+----raw_image:, Size of data: (12318, 44, 65)
+----reconstructed_image:, Size of data: (12318, 44, 65)
+----reconstructed_image:, Size of data: (12318, 44, 65)
+----width_x:, Size of data: (12318,)
+----width_x:, Size of data: (12318,)
+----width_y:, Size of data: (12318,)
+----width_y:, Size of data: (12318,)
+----x:, Size of data: (12318,)
+----x:, Size of data: (12318,)
+----y:, Size of data: (12318,)
+----y:, Size of data: (12318,)
+Growth: growth_14:
+--spot: spot_1:
+----height:, Size of data: (12206,)
+----height:, Size of data: (12206,)
+----img_max:, Size of data: (12206,)
+----img_max:, Size of data: (12206,)
+----img_mean:, Size of data: (12206,)
+----img_mean:, Size of data: (12206,)
+----img_rec_max:, Size of data: (12206,)
+----img_rec_max:, Size of data: (12206,)
+----img_rec_mean:, Size of data: (12206,)
+----img_rec_mean:, Size of data: (12206,)
+----img_rec_sum:, Size of data: (12206,)
+----img_rec_sum:, Size of data: (12206,)
+----img_sum:, Size of data: (12206,)
+----img_sum:, Size of data: (12206,)
+----raw_image:, Size of data: (12206, 22, 50)
+----raw_image:, Size of data: (12206, 22, 50)
+----reconstructed_image:, Size of data: (12206, 22, 50)
+----reconstructed_image:, Size of data: (12206, 22, 50)
+----width_x:, Size of data: (12206,)
+----width_x:, Size of data: (12206,)
+----width_y:, Size of data: (12206,)
+----width_y:, Size of data: (12206,)
+----x:, Size of data: (12206,)
+----x:, Size of data: (12206,)
+----y:, Size of data: (12206,)
+----y:, Size of data: (12206,)
+--spot: spot_2:
+----height:, Size of data: (12206,)
+----height:, Size of data: (12206,)
+----img_max:, Size of data: (12206,)
+----img_max:, Size of data: (12206,)
+----img_mean:, Size of data: (12206,)
+----img_mean:, Size of data: (12206,)
+----img_rec_max:, Size of data: (12206,)
+----img_rec_max:, Size of data: (12206,)
+----img_rec_mean:, Size of data: (12206,)
+----img_rec_mean:, Size of data: (12206,)
+----img_rec_sum:, Size of data: (12206,)
+----img_rec_sum:, Size of data: (12206,)
+----img_sum:, Size of data: (12206,)
+----img_sum:, Size of data: (12206,)
+----raw_image:, Size of data: (12206, 19, 40)
+----raw_image:, Size of data: (12206, 19, 40)
+----reconstructed_image:, Size of data: (12206, 19, 40)
+----reconstructed_image:, Size of data: (12206, 19, 40)
+----width_x:, Size of data: (12206,)
+----width_x:, Size of data: (12206,)
+----width_y:, Size of data: (12206,)
+----width_y:, Size of data: (12206,)
+----x:, Size of data: (12206,)
+----x:, Size of data: (12206,)
+----y:, Size of data: (12206,)
+----y:, Size of data: (12206,)
+--spot: spot_3:
+----height:, Size of data: (12206,)
+----height:, Size of data: (12206,)
+----img_max:, Size of data: (12206,)
+----img_max:, Size of data: (12206,)
+----img_mean:, Size of data: (12206,)
+----img_mean:, Size of data: (12206,)
+----img_rec_max:, Size of data: (12206,)
+----img_rec_max:, Size of data: (12206,)
+----img_rec_mean:, Size of data: (12206,)
+----img_rec_mean:, Size of data: (12206,)
+----img_rec_sum:, Size of data: (12206,)
+----img_rec_sum:, Size of data: (12206,)
+----img_sum:, Size of data: (12206,)
+----img_sum:, Size of data: (12206,)
+----raw_image:, Size of data: (12206, 44, 65)
+----raw_image:, Size of data: (12206, 44, 65)
+----reconstructed_image:, Size of data: (12206, 44, 65)
+----reconstructed_image:, Size of data: (12206, 44, 65)
+----width_x:, Size of data: (12206,)
+----width_x:, Size of data: (12206,)
+----width_y:, Size of data: (12206,)
+----width_y:, Size of data: (12206,)
+----x:, Size of data: (12206,)
+----x:, Size of data: (12206,)
+----y:, Size of data: (12206,)
+----y:, Size of data: (12206,)
+Growth: growth_15:
+--spot: spot_1:
+----height:, Size of data: (12269,)
+----height:, Size of data: (12269,)
+----img_max:, Size of data: (12269,)
+----img_max:, Size of data: (12269,)
+----img_mean:, Size of data: (12269,)
+----img_mean:, Size of data: (12269,)
+----img_rec_max:, Size of data: (12269,)
+----img_rec_max:, Size of data: (12269,)
+----img_rec_mean:, Size of data: (12269,)
+----img_rec_mean:, Size of data: (12269,)
+----img_rec_sum:, Size of data: (12269,)
+----img_rec_sum:, Size of data: (12269,)
+----img_sum:, Size of data: (12269,)
+----img_sum:, Size of data: (12269,)
+----raw_image:, Size of data: (12269, 22, 50)
+----raw_image:, Size of data: (12269, 22, 50)
+----reconstructed_image:, Size of data: (12269, 22, 50)
+----reconstructed_image:, Size of data: (12269, 22, 50)
+----width_x:, Size of data: (12269,)
+----width_x:, Size of data: (12269,)
+----width_y:, Size of data: (12269,)
+----width_y:, Size of data: (12269,)
+----x:, Size of data: (12269,)
+----x:, Size of data: (12269,)
+----y:, Size of data: (12269,)
+----y:, Size of data: (12269,)
+--spot: spot_2:
+----height:, Size of data: (12269,)
+----height:, Size of data: (12269,)
+----img_max:, Size of data: (12269,)
+----img_max:, Size of data: (12269,)
+----img_mean:, Size of data: (12269,)
+----img_mean:, Size of data: (12269,)
+----img_rec_max:, Size of data: (12269,)
+----img_rec_max:, Size of data: (12269,)
+----img_rec_mean:, Size of data: (12269,)
+----img_rec_mean:, Size of data: (12269,)
+----img_rec_sum:, Size of data: (12269,)
+----img_rec_sum:, Size of data: (12269,)
+----img_sum:, Size of data: (12269,)
+----img_sum:, Size of data: (12269,)
+----raw_image:, Size of data: (12269, 19, 40)
+----raw_image:, Size of data: (12269, 19, 40)
+----reconstructed_image:, Size of data: (12269, 19, 40)
+----reconstructed_image:, Size of data: (12269, 19, 40)
+----width_x:, Size of data: (12269,)
+----width_x:, Size of data: (12269,)
+----width_y:, Size of data: (12269,)
+----width_y:, Size of data: (12269,)
+----x:, Size of data: (12269,)
+----x:, Size of data: (12269,)
+----y:, Size of data: (12269,)
+----y:, Size of data: (12269,)
+--spot: spot_3:
+----height:, Size of data: (12269,)
+----height:, Size of data: (12269,)
+----img_max:, Size of data: (12269,)
+----img_max:, Size of data: (12269,)
+----img_mean:, Size of data: (12269,)
+----img_mean:, Size of data: (12269,)
+----img_rec_max:, Size of data: (12269,)
+----img_rec_max:, Size of data: (12269,)
+----img_rec_mean:, Size of data: (12269,)
+----img_rec_mean:, Size of data: (12269,)
+----img_rec_sum:, Size of data: (12269,)
+----img_rec_sum:, Size of data: (12269,)
+----img_sum:, Size of data: (12269,)
+----img_sum:, Size of data: (12269,)
+----raw_image:, Size of data: (12269, 44, 65)
+----raw_image:, Size of data: (12269, 44, 65)
+----reconstructed_image:, Size of data: (12269, 44, 65)
+----reconstructed_image:, Size of data: (12269, 44, 65)
+----width_x:, Size of data: (12269,)
+----width_x:, Size of data: (12269,)
+----width_y:, Size of data: (12269,)
+----width_y:, Size of data: (12269,)
+----x:, Size of data: (12269,)
+----x:, Size of data: (12269,)
+----y:, Size of data: (12269,)
+----y:, Size of data: (12269,)
+Growth: growth_16:
+--spot: spot_1:
+----height:, Size of data: (12133,)
+----height:, Size of data: (12133,)
+----img_max:, Size of data: (12133,)
+----img_max:, Size of data: (12133,)
+----img_mean:, Size of data: (12133,)
+----img_mean:, Size of data: (12133,)
+----img_rec_max:, Size of data: (12133,)
+----img_rec_max:, Size of data: (12133,)
+----img_rec_mean:, Size of data: (12133,)
+----img_rec_mean:, Size of data: (12133,)
+----img_rec_sum:, Size of data: (12133,)
+----img_rec_sum:, Size of data: (12133,)
+----img_sum:, Size of data: (12133,)
+----img_sum:, Size of data: (12133,)
+----raw_image:, Size of data: (12133, 22, 50)
+----raw_image:, Size of data: (12133, 22, 50)
+----reconstructed_image:, Size of data: (12133, 22, 50)
+----reconstructed_image:, Size of data: (12133, 22, 50)
+----width_x:, Size of data: (12133,)
+----width_x:, Size of data: (12133,)
+----width_y:, Size of data: (12133,)
+----width_y:, Size of data: (12133,)
+----x:, Size of data: (12133,)
+----x:, Size of data: (12133,)
+----y:, Size of data: (12133,)
+----y:, Size of data: (12133,)
+--spot: spot_2:
+----height:, Size of data: (12133,)
+----height:, Size of data: (12133,)
+----img_max:, Size of data: (12133,)
+----img_max:, Size of data: (12133,)
+----img_mean:, Size of data: (12133,)
+----img_mean:, Size of data: (12133,)
+----img_rec_max:, Size of data: (12133,)
+----img_rec_max:, Size of data: (12133,)
+----img_rec_mean:, Size of data: (12133,)
+----img_rec_mean:, Size of data: (12133,)
+----img_rec_sum:, Size of data: (12133,)
+----img_rec_sum:, Size of data: (12133,)
+----img_sum:, Size of data: (12133,)
+----img_sum:, Size of data: (12133,)
+----raw_image:, Size of data: (12133, 19, 40)
+----raw_image:, Size of data: (12133, 19, 40)
+----reconstructed_image:, Size of data: (12133, 19, 40)
+----reconstructed_image:, Size of data: (12133, 19, 40)
+----width_x:, Size of data: (12133,)
+----width_x:, Size of data: (12133,)
+----width_y:, Size of data: (12133,)
+----width_y:, Size of data: (12133,)
+----x:, Size of data: (12133,)
+----x:, Size of data: (12133,)
+----y:, Size of data: (12133,)
+----y:, Size of data: (12133,)
+--spot: spot_3:
+----height:, Size of data: (12133,)
+----height:, Size of data: (12133,)
+----img_max:, Size of data: (12133,)
+----img_max:, Size of data: (12133,)
+----img_mean:, Size of data: (12133,)
+----img_mean:, Size of data: (12133,)
+----img_rec_max:, Size of data: (12133,)
+----img_rec_max:, Size of data: (12133,)
+----img_rec_mean:, Size of data: (12133,)
+----img_rec_mean:, Size of data: (12133,)
+----img_rec_sum:, Size of data: (12133,)
+----img_rec_sum:, Size of data: (12133,)
+----img_sum:, Size of data: (12133,)
+----img_sum:, Size of data: (12133,)
+----raw_image:, Size of data: (12133, 44, 65)
+----raw_image:, Size of data: (12133, 44, 65)
+----reconstructed_image:, Size of data: (12133, 44, 65)
+----reconstructed_image:, Size of data: (12133, 44, 65)
+----width_x:, Size of data: (12133,)
+----width_x:, Size of data: (12133,)
+----width_y:, Size of data: (12133,)
+----width_y:, Size of data: (12133,)
+----x:, Size of data: (12133,)
+----x:, Size of data: (12133,)
+----y:, Size of data: (12133,)
+----y:, Size of data: (12133,)
+Growth: growth_17:
+--spot: spot_1:
+----height:, Size of data: (12085,)
+----height:, Size of data: (12085,)
+----img_max:, Size of data: (12085,)
+----img_max:, Size of data: (12085,)
+----img_mean:, Size of data: (12085,)
+----img_mean:, Size of data: (12085,)
+----img_rec_max:, Size of data: (12085,)
+----img_rec_max:, Size of data: (12085,)
+----img_rec_mean:, Size of data: (12085,)
+----img_rec_mean:, Size of data: (12085,)
+----img_rec_sum:, Size of data: (12085,)
+----img_rec_sum:, Size of data: (12085,)
+----img_sum:, Size of data: (12085,)
+----img_sum:, Size of data: (12085,)
+----raw_image:, Size of data: (12085, 22, 50)
+----raw_image:, Size of data: (12085, 22, 50)
+----reconstructed_image:, Size of data: (12085, 22, 50)
+----reconstructed_image:, Size of data: (12085, 22, 50)
+----width_x:, Size of data: (12085,)
+----width_x:, Size of data: (12085,)
+----width_y:, Size of data: (12085,)
+----width_y:, Size of data: (12085,)
+----x:, Size of data: (12085,)
+----x:, Size of data: (12085,)
+----y:, Size of data: (12085,)
+----y:, Size of data: (12085,)
+--spot: spot_2:
+----height:, Size of data: (12085,)
+----height:, Size of data: (12085,)
+----img_max:, Size of data: (12085,)
+----img_max:, Size of data: (12085,)
+----img_mean:, Size of data: (12085,)
+----img_mean:, Size of data: (12085,)
+----img_rec_max:, Size of data: (12085,)
+----img_rec_max:, Size of data: (12085,)
+----img_rec_mean:, Size of data: (12085,)
+----img_rec_mean:, Size of data: (12085,)
+----img_rec_sum:, Size of data: (12085,)
+----img_rec_sum:, Size of data: (12085,)
+----img_sum:, Size of data: (12085,)
+----img_sum:, Size of data: (12085,)
+----raw_image:, Size of data: (12085, 19, 40)
+----raw_image:, Size of data: (12085, 19, 40)
+----reconstructed_image:, Size of data: (12085, 19, 40)
+----reconstructed_image:, Size of data: (12085, 19, 40)
+----width_x:, Size of data: (12085,)
+----width_x:, Size of data: (12085,)
+----width_y:, Size of data: (12085,)
+----width_y:, Size of data: (12085,)
+----x:, Size of data: (12085,)
+----x:, Size of data: (12085,)
+----y:, Size of data: (12085,)
+----y:, Size of data: (12085,)
+--spot: spot_3:
+----height:, Size of data: (12085,)
+----height:, Size of data: (12085,)
+----img_max:, Size of data: (12085,)
+----img_max:, Size of data: (12085,)
+----img_mean:, Size of data: (12085,)
+----img_mean:, Size of data: (12085,)
+----img_rec_max:, Size of data: (12085,)
+----img_rec_max:, Size of data: (12085,)
+----img_rec_mean:, Size of data: (12085,)
+----img_rec_mean:, Size of data: (12085,)
+----img_rec_sum:, Size of data: (12085,)
+----img_rec_sum:, Size of data: (12085,)
+----img_sum:, Size of data: (12085,)
+----img_sum:, Size of data: (12085,)
+----raw_image:, Size of data: (12085, 44, 65)
+----raw_image:, Size of data: (12085, 44, 65)
+----reconstructed_image:, Size of data: (12085, 44, 65)
+----reconstructed_image:, Size of data: (12085, 44, 65)
+----width_x:, Size of data: (12085,)
+----width_x:, Size of data: (12085,)
+----width_y:, Size of data: (12085,)
+----width_y:, Size of data: (12085,)
+----x:, Size of data: (12085,)
+----x:, Size of data: (12085,)
+----y:, Size of data: (12085,)
+----y:, Size of data: (12085,)
+Growth: growth_18:
+--spot: spot_1:
+----height:, Size of data: (12113,)
+----height:, Size of data: (12113,)
+----img_max:, Size of data: (12113,)
+----img_max:, Size of data: (12113,)
+----img_mean:, Size of data: (12113,)
+----img_mean:, Size of data: (12113,)
+----img_rec_max:, Size of data: (12113,)
+----img_rec_max:, Size of data: (12113,)
+----img_rec_mean:, Size of data: (12113,)
+----img_rec_mean:, Size of data: (12113,)
+----img_rec_sum:, Size of data: (12113,)
+----img_rec_sum:, Size of data: (12113,)
+----img_sum:, Size of data: (12113,)
+----img_sum:, Size of data: (12113,)
+----raw_image:, Size of data: (12113, 22, 50)
+----raw_image:, Size of data: (12113, 22, 50)
+----reconstructed_image:, Size of data: (12113, 22, 50)
+----reconstructed_image:, Size of data: (12113, 22, 50)
+----width_x:, Size of data: (12113,)
+----width_x:, Size of data: (12113,)
+----width_y:, Size of data: (12113,)
+----width_y:, Size of data: (12113,)
+----x:, Size of data: (12113,)
+----x:, Size of data: (12113,)
+----y:, Size of data: (12113,)
+----y:, Size of data: (12113,)
+--spot: spot_2:
+----height:, Size of data: (12113,)
+----height:, Size of data: (12113,)
+----img_max:, Size of data: (12113,)
+----img_max:, Size of data: (12113,)
+----img_mean:, Size of data: (12113,)
+----img_mean:, Size of data: (12113,)
+----img_rec_max:, Size of data: (12113,)
+----img_rec_max:, Size of data: (12113,)
+----img_rec_mean:, Size of data: (12113,)
+----img_rec_mean:, Size of data: (12113,)
+----img_rec_sum:, Size of data: (12113,)
+----img_rec_sum:, Size of data: (12113,)
+----img_sum:, Size of data: (12113,)
+----img_sum:, Size of data: (12113,)
+----raw_image:, Size of data: (12113, 19, 40)
+----raw_image:, Size of data: (12113, 19, 40)
+----reconstructed_image:, Size of data: (12113, 19, 40)
+----reconstructed_image:, Size of data: (12113, 19, 40)
+----width_x:, Size of data: (12113,)
+----width_x:, Size of data: (12113,)
+----width_y:, Size of data: (12113,)
+----width_y:, Size of data: (12113,)
+----x:, Size of data: (12113,)
+----x:, Size of data: (12113,)
+----y:, Size of data: (12113,)
+----y:, Size of data: (12113,)
+--spot: spot_3:
+----height:, Size of data: (12113,)
+----height:, Size of data: (12113,)
+----img_max:, Size of data: (12113,)
+----img_max:, Size of data: (12113,)
+----img_mean:, Size of data: (12113,)
+----img_mean:, Size of data: (12113,)
+----img_rec_max:, Size of data: (12113,)
+----img_rec_max:, Size of data: (12113,)
+----img_rec_mean:, Size of data: (12113,)
+----img_rec_mean:, Size of data: (12113,)
+----img_rec_sum:, Size of data: (12113,)
+----img_rec_sum:, Size of data: (12113,)
+----img_sum:, Size of data: (12113,)
+----img_sum:, Size of data: (12113,)
+----raw_image:, Size of data: (12113, 44, 65)
+----raw_image:, Size of data: (12113, 44, 65)
+----reconstructed_image:, Size of data: (12113, 44, 65)
+----reconstructed_image:, Size of data: (12113, 44, 65)
+----width_x:, Size of data: (12113,)
+----width_x:, Size of data: (12113,)
+----width_y:, Size of data: (12113,)
+----width_y:, Size of data: (12113,)
+----x:, Size of data: (12113,)
+----x:, Size of data: (12113,)
+----y:, Size of data: (12113,)
+----y:, Size of data: (12113,)
+Growth: growth_2:
+--spot: spot_1:
+----height:, Size of data: (9321,)
+----height:, Size of data: (9321,)
+----img_max:, Size of data: (9321,)
+----img_max:, Size of data: (9321,)
+----img_mean:, Size of data: (9321,)
+----img_mean:, Size of data: (9321,)
+----img_rec_max:, Size of data: (9321,)
+----img_rec_max:, Size of data: (9321,)
+----img_rec_mean:, Size of data: (9321,)
+----img_rec_mean:, Size of data: (9321,)
+----img_rec_sum:, Size of data: (9321,)
+----img_rec_sum:, Size of data: (9321,)
+----img_sum:, Size of data: (9321,)
+----img_sum:, Size of data: (9321,)
+----raw_image:, Size of data: (9321, 22, 50)
+----raw_image:, Size of data: (9321, 22, 50)
+----reconstructed_image:, Size of data: (9321, 22, 50)
+----reconstructed_image:, Size of data: (9321, 22, 50)
+----width_x:, Size of data: (9321,)
+----width_x:, Size of data: (9321,)
+----width_y:, Size of data: (9321,)
+----width_y:, Size of data: (9321,)
+----x:, Size of data: (9321,)
+----x:, Size of data: (9321,)
+----y:, Size of data: (9321,)
+----y:, Size of data: (9321,)
+--spot: spot_2:
+----height:, Size of data: (9321,)
+----height:, Size of data: (9321,)
+----img_max:, Size of data: (9321,)
+----img_max:, Size of data: (9321,)
+----img_mean:, Size of data: (9321,)
+----img_mean:, Size of data: (9321,)
+----img_rec_max:, Size of data: (9321,)
+----img_rec_max:, Size of data: (9321,)
+----img_rec_mean:, Size of data: (9321,)
+----img_rec_mean:, Size of data: (9321,)
+----img_rec_sum:, Size of data: (9321,)
+----img_rec_sum:, Size of data: (9321,)
+----img_sum:, Size of data: (9321,)
+----img_sum:, Size of data: (9321,)
+----raw_image:, Size of data: (9321, 19, 40)
+----raw_image:, Size of data: (9321, 19, 40)
+----reconstructed_image:, Size of data: (9321, 19, 40)
+----reconstructed_image:, Size of data: (9321, 19, 40)
+----width_x:, Size of data: (9321,)
+----width_x:, Size of data: (9321,)
+----width_y:, Size of data: (9321,)
+----width_y:, Size of data: (9321,)
+----x:, Size of data: (9321,)
+----x:, Size of data: (9321,)
+----y:, Size of data: (9321,)
+----y:, Size of data: (9321,)
+--spot: spot_3:
+----height:, Size of data: (9321,)
+----height:, Size of data: (9321,)
+----img_max:, Size of data: (9321,)
+----img_max:, Size of data: (9321,)
+----img_mean:, Size of data: (9321,)
+----img_mean:, Size of data: (9321,)
+----img_rec_max:, Size of data: (9321,)
+----img_rec_max:, Size of data: (9321,)
+----img_rec_mean:, Size of data: (9321,)
+----img_rec_mean:, Size of data: (9321,)
+----img_rec_sum:, Size of data: (9321,)
+----img_rec_sum:, Size of data: (9321,)
+----img_sum:, Size of data: (9321,)
+----img_sum:, Size of data: (9321,)
+----raw_image:, Size of data: (9321, 44, 65)
+----raw_image:, Size of data: (9321, 44, 65)
+----reconstructed_image:, Size of data: (9321, 44, 65)
+----reconstructed_image:, Size of data: (9321, 44, 65)
+----width_x:, Size of data: (9321,)
+----width_x:, Size of data: (9321,)
+----width_y:, Size of data: (9321,)
+----width_y:, Size of data: (9321,)
+----x:, Size of data: (9321,)
+----x:, Size of data: (9321,)
+----y:, Size of data: (9321,)
+----y:, Size of data: (9321,)
+Growth: growth_3:
+--spot: spot_1:
+----height:, Size of data: (12008,)
+----height:, Size of data: (12008,)
+----img_max:, Size of data: (12008,)
+----img_max:, Size of data: (12008,)
+----img_mean:, Size of data: (12008,)
+----img_mean:, Size of data: (12008,)
+----img_rec_max:, Size of data: (12008,)
+----img_rec_max:, Size of data: (12008,)
+----img_rec_mean:, Size of data: (12008,)
+----img_rec_mean:, Size of data: (12008,)
+----img_rec_sum:, Size of data: (12008,)
+----img_rec_sum:, Size of data: (12008,)
+----img_sum:, Size of data: (12008,)
+----img_sum:, Size of data: (12008,)
+----raw_image:, Size of data: (12008, 22, 50)
+----raw_image:, Size of data: (12008, 22, 50)
+----reconstructed_image:, Size of data: (12008, 22, 50)
+----reconstructed_image:, Size of data: (12008, 22, 50)
+----width_x:, Size of data: (12008,)
+----width_x:, Size of data: (12008,)
+----width_y:, Size of data: (12008,)
+----width_y:, Size of data: (12008,)
+----x:, Size of data: (12008,)
+----x:, Size of data: (12008,)
+----y:, Size of data: (12008,)
+----y:, Size of data: (12008,)
+--spot: spot_2:
+----height:, Size of data: (12008,)
+----height:, Size of data: (12008,)
+----img_max:, Size of data: (12008,)
+----img_max:, Size of data: (12008,)
+----img_mean:, Size of data: (12008,)
+----img_mean:, Size of data: (12008,)
+----img_rec_max:, Size of data: (12008,)
+----img_rec_max:, Size of data: (12008,)
+----img_rec_mean:, Size of data: (12008,)
+----img_rec_mean:, Size of data: (12008,)
+----img_rec_sum:, Size of data: (12008,)
+----img_rec_sum:, Size of data: (12008,)
+----img_sum:, Size of data: (12008,)
+----img_sum:, Size of data: (12008,)
+----raw_image:, Size of data: (12008, 19, 40)
+----raw_image:, Size of data: (12008, 19, 40)
+----reconstructed_image:, Size of data: (12008, 19, 40)
+----reconstructed_image:, Size of data: (12008, 19, 40)
+----width_x:, Size of data: (12008,)
+----width_x:, Size of data: (12008,)
+----width_y:, Size of data: (12008,)
+----width_y:, Size of data: (12008,)
+----x:, Size of data: (12008,)
+----x:, Size of data: (12008,)
+----y:, Size of data: (12008,)
+----y:, Size of data: (12008,)
+--spot: spot_3:
+----height:, Size of data: (12008,)
+----height:, Size of data: (12008,)
+----img_max:, Size of data: (12008,)
+----img_max:, Size of data: (12008,)
+----img_mean:, Size of data: (12008,)
+----img_mean:, Size of data: (12008,)
+----img_rec_max:, Size of data: (12008,)
+----img_rec_max:, Size of data: (12008,)
+----img_rec_mean:, Size of data: (12008,)
+----img_rec_mean:, Size of data: (12008,)
+----img_rec_sum:, Size of data: (12008,)
+----img_rec_sum:, Size of data: (12008,)
+----img_sum:, Size of data: (12008,)
+----img_sum:, Size of data: (12008,)
+----raw_image:, Size of data: (12008, 44, 65)
+----raw_image:, Size of data: (12008, 44, 65)
+----reconstructed_image:, Size of data: (12008, 44, 65)
+----reconstructed_image:, Size of data: (12008, 44, 65)
+----width_x:, Size of data: (12008,)
+----width_x:, Size of data: (12008,)
+----width_y:, Size of data: (12008,)
+----width_y:, Size of data: (12008,)
+----x:, Size of data: (12008,)
+----x:, Size of data: (12008,)
+----y:, Size of data: (12008,)
+----y:, Size of data: (12008,)
+Growth: growth_4:
+--spot: spot_1:
+----height:, Size of data: (13125,)
+----height:, Size of data: (13125,)
+----img_max:, Size of data: (13125,)
+----img_max:, Size of data: (13125,)
+----img_mean:, Size of data: (13125,)
+----img_mean:, Size of data: (13125,)
+----img_rec_max:, Size of data: (13125,)
+----img_rec_max:, Size of data: (13125,)
+----img_rec_mean:, Size of data: (13125,)
+----img_rec_mean:, Size of data: (13125,)
+----img_rec_sum:, Size of data: (13125,)
+----img_rec_sum:, Size of data: (13125,)
+----img_sum:, Size of data: (13125,)
+----img_sum:, Size of data: (13125,)
+----raw_image:, Size of data: (13125, 22, 50)
+----raw_image:, Size of data: (13125, 22, 50)
+----reconstructed_image:, Size of data: (13125, 22, 50)
+----reconstructed_image:, Size of data: (13125, 22, 50)
+----width_x:, Size of data: (13125,)
+----width_x:, Size of data: (13125,)
+----width_y:, Size of data: (13125,)
+----width_y:, Size of data: (13125,)
+----x:, Size of data: (13125,)
+----x:, Size of data: (13125,)
+----y:, Size of data: (13125,)
+----y:, Size of data: (13125,)
+--spot: spot_2:
+----height:, Size of data: (13125,)
+----height:, Size of data: (13125,)
+----img_max:, Size of data: (13125,)
+----img_max:, Size of data: (13125,)
+----img_mean:, Size of data: (13125,)
+----img_mean:, Size of data: (13125,)
+----img_rec_max:, Size of data: (13125,)
+----img_rec_max:, Size of data: (13125,)
+----img_rec_mean:, Size of data: (13125,)
+----img_rec_mean:, Size of data: (13125,)
+----img_rec_sum:, Size of data: (13125,)
+----img_rec_sum:, Size of data: (13125,)
+----img_sum:, Size of data: (13125,)
+----img_sum:, Size of data: (13125,)
+----raw_image:, Size of data: (13125, 19, 40)
+----raw_image:, Size of data: (13125, 19, 40)
+----reconstructed_image:, Size of data: (13125, 19, 40)
+----reconstructed_image:, Size of data: (13125, 19, 40)
+----width_x:, Size of data: (13125,)
+----width_x:, Size of data: (13125,)
+----width_y:, Size of data: (13125,)
+----width_y:, Size of data: (13125,)
+----x:, Size of data: (13125,)
+----x:, Size of data: (13125,)
+----y:, Size of data: (13125,)
+----y:, Size of data: (13125,)
+--spot: spot_3:
+----height:, Size of data: (13125,)
+----height:, Size of data: (13125,)
+----img_max:, Size of data: (13125,)
+----img_max:, Size of data: (13125,)
+----img_mean:, Size of data: (13125,)
+----img_mean:, Size of data: (13125,)
+----img_rec_max:, Size of data: (13125,)
+----img_rec_max:, Size of data: (13125,)
+----img_rec_mean:, Size of data: (13125,)
+----img_rec_mean:, Size of data: (13125,)
+----img_rec_sum:, Size of data: (13125,)
+----img_rec_sum:, Size of data: (13125,)
+----img_sum:, Size of data: (13125,)
+----img_sum:, Size of data: (13125,)
+----raw_image:, Size of data: (13125, 44, 65)
+----raw_image:, Size of data: (13125, 44, 65)
+----reconstructed_image:, Size of data: (13125, 44, 65)
+----reconstructed_image:, Size of data: (13125, 44, 65)
+----width_x:, Size of data: (13125,)
+----width_x:, Size of data: (13125,)
+----width_y:, Size of data: (13125,)
+----width_y:, Size of data: (13125,)
+----x:, Size of data: (13125,)
+----x:, Size of data: (13125,)
+----y:, Size of data: (13125,)
+----y:, Size of data: (13125,)
+Growth: growth_5:
+--spot: spot_1:
+----height:, Size of data: (12982,)
+----height:, Size of data: (12982,)
+----img_max:, Size of data: (12982,)
+----img_max:, Size of data: (12982,)
+----img_mean:, Size of data: (12982,)
+----img_mean:, Size of data: (12982,)
+----img_rec_max:, Size of data: (12982,)
+----img_rec_max:, Size of data: (12982,)
+----img_rec_mean:, Size of data: (12982,)
+----img_rec_mean:, Size of data: (12982,)
+----img_rec_sum:, Size of data: (12982,)
+----img_rec_sum:, Size of data: (12982,)
+----img_sum:, Size of data: (12982,)
+----img_sum:, Size of data: (12982,)
+----raw_image:, Size of data: (12982, 22, 50)
+----raw_image:, Size of data: (12982, 22, 50)
+----reconstructed_image:, Size of data: (12982, 22, 50)
+----reconstructed_image:, Size of data: (12982, 22, 50)
+----width_x:, Size of data: (12982,)
+----width_x:, Size of data: (12982,)
+----width_y:, Size of data: (12982,)
+----width_y:, Size of data: (12982,)
+----x:, Size of data: (12982,)
+----x:, Size of data: (12982,)
+----y:, Size of data: (12982,)
+----y:, Size of data: (12982,)
+--spot: spot_2:
+----height:, Size of data: (12982,)
+----height:, Size of data: (12982,)
+----img_max:, Size of data: (12982,)
+----img_max:, Size of data: (12982,)
+----img_mean:, Size of data: (12982,)
+----img_mean:, Size of data: (12982,)
+----img_rec_max:, Size of data: (12982,)
+----img_rec_max:, Size of data: (12982,)
+----img_rec_mean:, Size of data: (12982,)
+----img_rec_mean:, Size of data: (12982,)
+----img_rec_sum:, Size of data: (12982,)
+----img_rec_sum:, Size of data: (12982,)
+----img_sum:, Size of data: (12982,)
+----img_sum:, Size of data: (12982,)
+----raw_image:, Size of data: (12982, 19, 40)
+----raw_image:, Size of data: (12982, 19, 40)
+----reconstructed_image:, Size of data: (12982, 19, 40)
+----reconstructed_image:, Size of data: (12982, 19, 40)
+----width_x:, Size of data: (12982,)
+----width_x:, Size of data: (12982,)
+----width_y:, Size of data: (12982,)
+----width_y:, Size of data: (12982,)
+----x:, Size of data: (12982,)
+----x:, Size of data: (12982,)
+----y:, Size of data: (12982,)
+----y:, Size of data: (12982,)
+--spot: spot_3:
+----height:, Size of data: (12982,)
+----height:, Size of data: (12982,)
+----img_max:, Size of data: (12982,)
+----img_max:, Size of data: (12982,)
+----img_mean:, Size of data: (12982,)
+----img_mean:, Size of data: (12982,)
+----img_rec_max:, Size of data: (12982,)
+----img_rec_max:, Size of data: (12982,)
+----img_rec_mean:, Size of data: (12982,)
+----img_rec_mean:, Size of data: (12982,)
+----img_rec_sum:, Size of data: (12982,)
+----img_rec_sum:, Size of data: (12982,)
+----img_sum:, Size of data: (12982,)
+----img_sum:, Size of data: (12982,)
+----raw_image:, Size of data: (12982, 44, 65)
+----raw_image:, Size of data: (12982, 44, 65)
+----reconstructed_image:, Size of data: (12982, 44, 65)
+----reconstructed_image:, Size of data: (12982, 44, 65)
+----width_x:, Size of data: (12982,)
+----width_x:, Size of data: (12982,)
+----width_y:, Size of data: (12982,)
+----width_y:, Size of data: (12982,)
+----x:, Size of data: (12982,)
+----x:, Size of data: (12982,)
+----y:, Size of data: (12982,)
+----y:, Size of data: (12982,)
+Growth: growth_6:
+--spot: spot_1:
+----height:, Size of data: (12776,)
+----height:, Size of data: (12776,)
+----img_max:, Size of data: (12776,)
+----img_max:, Size of data: (12776,)
+----img_mean:, Size of data: (12776,)
+----img_mean:, Size of data: (12776,)
+----img_rec_max:, Size of data: (12776,)
+----img_rec_max:, Size of data: (12776,)
+----img_rec_mean:, Size of data: (12776,)
+----img_rec_mean:, Size of data: (12776,)
+----img_rec_sum:, Size of data: (12776,)
+----img_rec_sum:, Size of data: (12776,)
+----img_sum:, Size of data: (12776,)
+----img_sum:, Size of data: (12776,)
+----raw_image:, Size of data: (12776, 22, 50)
+----raw_image:, Size of data: (12776, 22, 50)
+----reconstructed_image:, Size of data: (12776, 22, 50)
+----reconstructed_image:, Size of data: (12776, 22, 50)
+----width_x:, Size of data: (12776,)
+----width_x:, Size of data: (12776,)
+----width_y:, Size of data: (12776,)
+----width_y:, Size of data: (12776,)
+----x:, Size of data: (12776,)
+----x:, Size of data: (12776,)
+----y:, Size of data: (12776,)
+----y:, Size of data: (12776,)
+--spot: spot_2:
+----height:, Size of data: (12776,)
+----height:, Size of data: (12776,)
+----img_max:, Size of data: (12776,)
+----img_max:, Size of data: (12776,)
+----img_mean:, Size of data: (12776,)
+----img_mean:, Size of data: (12776,)
+----img_rec_max:, Size of data: (12776,)
+----img_rec_max:, Size of data: (12776,)
+----img_rec_mean:, Size of data: (12776,)
+----img_rec_mean:, Size of data: (12776,)
+----img_rec_sum:, Size of data: (12776,)
+----img_rec_sum:, Size of data: (12776,)
+----img_sum:, Size of data: (12776,)
+----img_sum:, Size of data: (12776,)
+----raw_image:, Size of data: (12776, 19, 40)
+----raw_image:, Size of data: (12776, 19, 40)
+----reconstructed_image:, Size of data: (12776, 19, 40)
+----reconstructed_image:, Size of data: (12776, 19, 40)
+----width_x:, Size of data: (12776,)
+----width_x:, Size of data: (12776,)
+----width_y:, Size of data: (12776,)
+----width_y:, Size of data: (12776,)
+----x:, Size of data: (12776,)
+----x:, Size of data: (12776,)
+----y:, Size of data: (12776,)
+----y:, Size of data: (12776,)
+--spot: spot_3:
+----height:, Size of data: (12776,)
+----height:, Size of data: (12776,)
+----img_max:, Size of data: (12776,)
+----img_max:, Size of data: (12776,)
+----img_mean:, Size of data: (12776,)
+----img_mean:, Size of data: (12776,)
+----img_rec_max:, Size of data: (12776,)
+----img_rec_max:, Size of data: (12776,)
+----img_rec_mean:, Size of data: (12776,)
+----img_rec_mean:, Size of data: (12776,)
+----img_rec_sum:, Size of data: (12776,)
+----img_rec_sum:, Size of data: (12776,)
+----img_sum:, Size of data: (12776,)
+----img_sum:, Size of data: (12776,)
+----raw_image:, Size of data: (12776, 44, 65)
+----raw_image:, Size of data: (12776, 44, 65)
+----reconstructed_image:, Size of data: (12776, 44, 65)
+----reconstructed_image:, Size of data: (12776, 44, 65)
+----width_x:, Size of data: (12776,)
+----width_x:, Size of data: (12776,)
+----width_y:, Size of data: (12776,)
+----width_y:, Size of data: (12776,)
+----x:, Size of data: (12776,)
+----x:, Size of data: (12776,)
+----y:, Size of data: (12776,)
+----y:, Size of data: (12776,)
+Growth: growth_7:
+--spot: spot_1:
+----height:, Size of data: (12670,)
+----height:, Size of data: (12670,)
+----img_max:, Size of data: (12670,)
+----img_max:, Size of data: (12670,)
+----img_mean:, Size of data: (12670,)
+----img_mean:, Size of data: (12670,)
+----img_rec_max:, Size of data: (12670,)
+----img_rec_max:, Size of data: (12670,)
+----img_rec_mean:, Size of data: (12670,)
+----img_rec_mean:, Size of data: (12670,)
+----img_rec_sum:, Size of data: (12670,)
+----img_rec_sum:, Size of data: (12670,)
+----img_sum:, Size of data: (12670,)
+----img_sum:, Size of data: (12670,)
+----raw_image:, Size of data: (12670, 22, 50)
+----raw_image:, Size of data: (12670, 22, 50)
+----reconstructed_image:, Size of data: (12670, 22, 50)
+----reconstructed_image:, Size of data: (12670, 22, 50)
+----width_x:, Size of data: (12670,)
+----width_x:, Size of data: (12670,)
+----width_y:, Size of data: (12670,)
+----width_y:, Size of data: (12670,)
+----x:, Size of data: (12670,)
+----x:, Size of data: (12670,)
+----y:, Size of data: (12670,)
+----y:, Size of data: (12670,)
+--spot: spot_2:
+----height:, Size of data: (12670,)
+----height:, Size of data: (12670,)
+----img_max:, Size of data: (12670,)
+----img_max:, Size of data: (12670,)
+----img_mean:, Size of data: (12670,)
+----img_mean:, Size of data: (12670,)
+----img_rec_max:, Size of data: (12670,)
+----img_rec_max:, Size of data: (12670,)
+----img_rec_mean:, Size of data: (12670,)
+----img_rec_mean:, Size of data: (12670,)
+----img_rec_sum:, Size of data: (12670,)
+----img_rec_sum:, Size of data: (12670,)
+----img_sum:, Size of data: (12670,)
+----img_sum:, Size of data: (12670,)
+----raw_image:, Size of data: (12670, 19, 40)
+----raw_image:, Size of data: (12670, 19, 40)
+----reconstructed_image:, Size of data: (12670, 19, 40)
+----reconstructed_image:, Size of data: (12670, 19, 40)
+----width_x:, Size of data: (12670,)
+----width_x:, Size of data: (12670,)
+----width_y:, Size of data: (12670,)
+----width_y:, Size of data: (12670,)
+----x:, Size of data: (12670,)
+----x:, Size of data: (12670,)
+----y:, Size of data: (12670,)
+----y:, Size of data: (12670,)
+--spot: spot_3:
+----height:, Size of data: (12670,)
+----height:, Size of data: (12670,)
+----img_max:, Size of data: (12670,)
+----img_max:, Size of data: (12670,)
+----img_mean:, Size of data: (12670,)
+----img_mean:, Size of data: (12670,)
+----img_rec_max:, Size of data: (12670,)
+----img_rec_max:, Size of data: (12670,)
+----img_rec_mean:, Size of data: (12670,)
+----img_rec_mean:, Size of data: (12670,)
+----img_rec_sum:, Size of data: (12670,)
+----img_rec_sum:, Size of data: (12670,)
+----img_sum:, Size of data: (12670,)
+----img_sum:, Size of data: (12670,)
+----raw_image:, Size of data: (12670, 44, 65)
+----raw_image:, Size of data: (12670, 44, 65)
+----reconstructed_image:, Size of data: (12670, 44, 65)
+----reconstructed_image:, Size of data: (12670, 44, 65)
+----width_x:, Size of data: (12670,)
+----width_x:, Size of data: (12670,)
+----width_y:, Size of data: (12670,)
+----width_y:, Size of data: (12670,)
+----x:, Size of data: (12670,)
+----x:, Size of data: (12670,)
+----y:, Size of data: (12670,)
+----y:, Size of data: (12670,)
+Growth: growth_8:
+--spot: spot_1:
+----height:, Size of data: (12441,)
+----height:, Size of data: (12441,)
+----img_max:, Size of data: (12441,)
+----img_max:, Size of data: (12441,)
+----img_mean:, Size of data: (12441,)
+----img_mean:, Size of data: (12441,)
+----img_rec_max:, Size of data: (12441,)
+----img_rec_max:, Size of data: (12441,)
+----img_rec_mean:, Size of data: (12441,)
+----img_rec_mean:, Size of data: (12441,)
+----img_rec_sum:, Size of data: (12441,)
+----img_rec_sum:, Size of data: (12441,)
+----img_sum:, Size of data: (12441,)
+----img_sum:, Size of data: (12441,)
+----raw_image:, Size of data: (12441, 22, 50)
+----raw_image:, Size of data: (12441, 22, 50)
+----reconstructed_image:, Size of data: (12441, 22, 50)
+----reconstructed_image:, Size of data: (12441, 22, 50)
+----width_x:, Size of data: (12441,)
+----width_x:, Size of data: (12441,)
+----width_y:, Size of data: (12441,)
+----width_y:, Size of data: (12441,)
+----x:, Size of data: (12441,)
+----x:, Size of data: (12441,)
+----y:, Size of data: (12441,)
+----y:, Size of data: (12441,)
+--spot: spot_2:
+----height:, Size of data: (12441,)
+----height:, Size of data: (12441,)
+----img_max:, Size of data: (12441,)
+----img_max:, Size of data: (12441,)
+----img_mean:, Size of data: (12441,)
+----img_mean:, Size of data: (12441,)
+----img_rec_max:, Size of data: (12441,)
+----img_rec_max:, Size of data: (12441,)
+----img_rec_mean:, Size of data: (12441,)
+----img_rec_mean:, Size of data: (12441,)
+----img_rec_sum:, Size of data: (12441,)
+----img_rec_sum:, Size of data: (12441,)
+----img_sum:, Size of data: (12441,)
+----img_sum:, Size of data: (12441,)
+----raw_image:, Size of data: (12441, 19, 40)
+----raw_image:, Size of data: (12441, 19, 40)
+----reconstructed_image:, Size of data: (12441, 19, 40)
+----reconstructed_image:, Size of data: (12441, 19, 40)
+----width_x:, Size of data: (12441,)
+----width_x:, Size of data: (12441,)
+----width_y:, Size of data: (12441,)
+----width_y:, Size of data: (12441,)
+----x:, Size of data: (12441,)
+----x:, Size of data: (12441,)
+----y:, Size of data: (12441,)
+----y:, Size of data: (12441,)
+--spot: spot_3:
+----height:, Size of data: (12441,)
+----height:, Size of data: (12441,)
+----img_max:, Size of data: (12441,)
+----img_max:, Size of data: (12441,)
+----img_mean:, Size of data: (12441,)
+----img_mean:, Size of data: (12441,)
+----img_rec_max:, Size of data: (12441,)
+----img_rec_max:, Size of data: (12441,)
+----img_rec_mean:, Size of data: (12441,)
+----img_rec_mean:, Size of data: (12441,)
+----img_rec_sum:, Size of data: (12441,)
+----img_rec_sum:, Size of data: (12441,)
+----img_sum:, Size of data: (12441,)
+----img_sum:, Size of data: (12441,)
+----raw_image:, Size of data: (12441, 44, 65)
+----raw_image:, Size of data: (12441, 44, 65)
+----reconstructed_image:, Size of data: (12441, 44, 65)
+----reconstructed_image:, Size of data: (12441, 44, 65)
+----width_x:, Size of data: (12441,)
+----width_x:, Size of data: (12441,)
+----width_y:, Size of data: (12441,)
+----width_y:, Size of data: (12441,)
+----x:, Size of data: (12441,)
+----x:, Size of data: (12441,)
+----y:, Size of data: (12441,)
+----y:, Size of data: (12441,)
+Growth: growth_9:
+--spot: spot_1:
+----height:, Size of data: (12222,)
+----height:, Size of data: (12222,)
+----img_max:, Size of data: (12222,)
+----img_max:, Size of data: (12222,)
+----img_mean:, Size of data: (12222,)
+----img_mean:, Size of data: (12222,)
+----img_rec_max:, Size of data: (12222,)
+----img_rec_max:, Size of data: (12222,)
+----img_rec_mean:, Size of data: (12222,)
+----img_rec_mean:, Size of data: (12222,)
+----img_rec_sum:, Size of data: (12222,)
+----img_rec_sum:, Size of data: (12222,)
+----img_sum:, Size of data: (12222,)
+----img_sum:, Size of data: (12222,)
+----raw_image:, Size of data: (12222, 22, 50)
+----raw_image:, Size of data: (12222, 22, 50)
+----reconstructed_image:, Size of data: (12222, 22, 50)
+----reconstructed_image:, Size of data: (12222, 22, 50)
+----width_x:, Size of data: (12222,)
+----width_x:, Size of data: (12222,)
+----width_y:, Size of data: (12222,)
+----width_y:, Size of data: (12222,)
+----x:, Size of data: (12222,)
+----x:, Size of data: (12222,)
+----y:, Size of data: (12222,)
+----y:, Size of data: (12222,)
+--spot: spot_2:
+----height:, Size of data: (12222,)
+----height:, Size of data: (12222,)
+----img_max:, Size of data: (12222,)
+----img_max:, Size of data: (12222,)
+----img_mean:, Size of data: (12222,)
+----img_mean:, Size of data: (12222,)
+----img_rec_max:, Size of data: (12222,)
+----img_rec_max:, Size of data: (12222,)
+----img_rec_mean:, Size of data: (12222,)
+----img_rec_mean:, Size of data: (12222,)
+----img_rec_sum:, Size of data: (12222,)
+----img_rec_sum:, Size of data: (12222,)
+----img_sum:, Size of data: (12222,)
+----img_sum:, Size of data: (12222,)
+----raw_image:, Size of data: (12222, 19, 40)
+----raw_image:, Size of data: (12222, 19, 40)
+----reconstructed_image:, Size of data: (12222, 19, 40)
+----reconstructed_image:, Size of data: (12222, 19, 40)
+----width_x:, Size of data: (12222,)
+----width_x:, Size of data: (12222,)
+----width_y:, Size of data: (12222,)
+----width_y:, Size of data: (12222,)
+----x:, Size of data: (12222,)
+----x:, Size of data: (12222,)
+----y:, Size of data: (12222,)
+----y:, Size of data: (12222,)
+--spot: spot_3:
+----height:, Size of data: (12222,)
+----height:, Size of data: (12222,)
+----img_max:, Size of data: (12222,)
+----img_max:, Size of data: (12222,)
+----img_mean:, Size of data: (12222,)
+----img_mean:, Size of data: (12222,)
+----img_rec_max:, Size of data: (12222,)
+----img_rec_max:, Size of data: (12222,)
+----img_rec_mean:, Size of data: (12222,)
+----img_rec_mean:, Size of data: (12222,)
+----img_rec_sum:, Size of data: (12222,)
+----img_rec_sum:, Size of data: (12222,)
+----img_sum:, Size of data: (12222,)
+----img_sum:, Size of data: (12222,)
+----raw_image:, Size of data: (12222, 44, 65)
+----raw_image:, Size of data: (12222, 44, 65)
+----reconstructed_image:, Size of data: (12222, 44, 65)
+----reconstructed_image:, Size of data: (12222, 44, 65)
+----width_x:, Size of data: (12222,)
+----width_x:, Size of data: (12222,)
+----width_y:, Size of data: (12222,)
+----width_y:, Size of data: (12222,)
+----x:, Size of data: (12222,)
+----x:, Size of data: (12222,)
+----y:, Size of data: (12222,)
+----y:, Size of data: (12222,)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D3_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_untreated_162nm_growth_2_spot_2_100_img,img_rec,differerce.png
+Figures/1.Fit_RHEED_spot/RHEED_untreated_162nm_growth_2_spot_2_100_img,img_rec,differerce.svg
+</pre></div>
+</div>
+<img alt="../../_images/d96dac04adede3f1bb56f8c0e893962caec0fb0a83c688624ce769a91fa51dab.png" src="../../_images/d96dac04adede3f1bb56f8c0e893962caec0fb0a83c688624ce769a91fa51dab.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_2 at index 100.
+img_sum=45893.00, img_max=114.00, img_mean=60.39
+img_rec_sum=44505.52, img_rec_max=101.14, img_rec_mean=58.56
+height=101.29, x=10.95, y=19.21, width_x=8.27, width_y_max=13.94
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_6&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_7&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_8&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_9&#39;</span><span class="p">,</span> 
+               <span class="s1">&#39;growth_10&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_11&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_12&#39;</span> <span class="p">,</span> <span class="s1">&#39;growth_13&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_14&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_15&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_16&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_17&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_18&#39;</span><span class="p">]</span>
+<span class="n">D3_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_plot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/1.Fit_RHEED_spot/RHEED_untreated_162nm_spot_2_metrics.png
+</pre></div>
+</div>
+<img alt="../../_images/758bf20c96d8891c1a27b24284a18ced23ce7e77cdf994cc97930c6d4664751b.png" src="../../_images/758bf20c96d8891c1a27b24284a18ced23ce7e77cdf994cc97930c6d4664751b.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./papers/2023_RHEED_PLD_SrTiO3"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="2_RHEED_metrics.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">RHEED Metrics</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="4_AFM_and_XRD.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">AFM and XRD</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#download-datasets-from-zenodo">1. Download datasets from Zenodo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fitting-the-rheed-dataset">2. Fitting the RHEED Dataset</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-treated-213nm">2.1 Sample treated_213nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-dataset">2.1.1 Loading the Dataset</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#locate-the-diffraction-spots">2.1.2 Locate the diffraction spots</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-an-example">2.1.3 Visualize an example</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#exam-the-dataset">2.1.4 Exam the dataset</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-treated-81nm">2.2 Sample treated_81nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.2.1 Loading the Dataset</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.2.2 Locate the diffraction spots</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.2.3 Visualize an example</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.2.4 Exam the dataset</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-untreated-162nm">2.3 Sample untreated_162nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.3.1 Loading the Dataset</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3.2 Locate the diffraction spots</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">2.3.3 Visualize an example</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#examine-the-dataset">2.3.4 Examine the dataset</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Joshua C. Agar, Assistant Professor Drexel University
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

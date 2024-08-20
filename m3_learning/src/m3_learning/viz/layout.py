@@ -9,11 +9,33 @@ from matplotlib import (
     patches,
     patheffects,
 )
+import PIL
+import io
 
 Path = path.Path
 PathPatch = patches.PathPatch
 
+def plot_into_graph(axg,fig,colorbar_=True,clim=None,**kwargs):
+    """Given an axes and figure, it will convert the figure to an image and plot it in
 
+    Args:
+        axg (matplotlib.axes.Axes): where you want to plot the figure
+        fig (matplotlib.pyplot.figure()): figure you want to put into axes
+    """        
+    img_buf = io.BytesIO();
+    fig.savefig(img_buf,bbox_inches='tight',format='png');
+    im = PIL.Image.open(img_buf);
+    
+    if clim!=None: ax_im = axg.imshow(im,clim=clim);
+    else: ax_im = axg.imshow(im);
+    
+    if colorbar_:
+        divider = make_axes_locatable(axg)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cbar = plt.colorbar(ax_im, cax=cax,**kwargs)
+    
+    img_buf.close()
+    
 def subfigures(nrows, ncols, size=(1.25, 1.25), gaps=(.8, .33), figsize=None, **kwargs):
     """
     Create subfigures with specified number of rows and columns.
@@ -373,7 +395,8 @@ def embedding_maps(data, image, colorbar_shown=True, c_lim=None, mod=None, title
     fig.tight_layout()
 
 
-def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_format="%.1e", **kwargs):
+def imagemap(ax, data, colorbars=True, clim=None, divider_=True, 
+             cbar_number_format="%.1e", cmap_ = 'viridis', **kwargs):
     """pretty way to plot image maps with standard formats
 
     Args:
@@ -389,12 +412,12 @@ def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_for
                 int), np.sqrt(data.shape[0]).astype(int)
         )
 
-    cmap = plt.get_cmap("viridis")
+    cmap = plt.get_cmap(cmap_)
 
     if clim is None:
         im = ax.imshow(data, cmap=cmap)
     else:
-        im = ax.imshow(data, clim=clim, cmap=cmap)
+        im = ax.imshow(data, vmin=clim[0], vmax=clim[1], clim=clim, cmap=cmap)
 
     ax.set_yticklabels("")
     ax.set_xticklabels("")
@@ -408,7 +431,7 @@ def imagemap(ax, data, colorbars=True, clim=None, divider_=True, cbar_number_for
             cax = divider.append_axes("right", size="10%", pad=0.05)
             cbar = plt.colorbar(im, cax=cax, format=cbar_number_format)
         else:
-            cb = plt.colorbar(im, fraction=0.046, pad=0.04)
+            cb = plt.colorbar(im, fraction=0.046, pad=0.04,format=cbar_number_format)
             cb.ax.tick_params(labelsize=6, width=0.05)
 
 

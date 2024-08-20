@@ -1,0 +1,8 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: Joshua 
+  given-names: Agar
+title:m3-learning/m3_learning
+version: 1.0.0
+date-released: 2024-05-14

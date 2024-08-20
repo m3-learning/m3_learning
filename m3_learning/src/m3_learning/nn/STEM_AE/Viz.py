@@ -7,7 +7,8 @@ from tqdm import tqdm
 from ...viz.layout import layout_fig, imagemap, labelfigs, find_nearest, add_scalebar
 from os.path import join as pjoin
 from m3_learning.viz.nn import embeddings as embeddings_
-
+import h5py
+import glob
 class Viz:
 
     """Visualization class for the STEM_AE class
@@ -65,7 +66,7 @@ class Viz:
             channels (list): channels that are visualized
         """
 
-        if channels == None:
+        if channels is not None:
             # if none is given, all channels are visualized
             try:
                 self._channels = range(self.model.embedding.shape[1])
@@ -176,6 +177,8 @@ class Viz:
                          averaging_number=100,
                          graph_layout=[2, 2],
                          shape_=[256, 256, 256, 256],
+                         using_h5_file = '',
+                         using_h5_dataset = '',
                          **kwargs
                          ):
         """Generates images as the variables traverse the latent space
@@ -200,7 +203,9 @@ class Viz:
 
         # gets the embedding if a specific embedding is not provided
         if embedding is None:
-            embedding = self.model.embedding
+            if len(using_h5_dataset)+len(using_h5_dataset) == 0:
+                embedding = self.model.embedding
+                    
 
         # makes the folder to save the images
         folder = make_folder(
@@ -208,7 +213,7 @@ class Viz:
 
         # loops around the number of iterations to generate
         for i in tqdm(range(generator_iters)):
-
+            plt.ioff()
             # builds the figure
             fig, ax = layout_fig(graph_layout[0], graph_layout[1], **kwargs)
             ax = ax.reshape(-1)
@@ -256,8 +261,9 @@ class Viz:
                 self.printer.savefig(fig,
                                      f'{i:04d}_maps', tight_layout=False, basepath=folder)
 
-            plt.close(fig)
-            
+            plt.close('all')
+            plt.clf()
+                   
     def embeddings(self, **kwargs):
         """function to plot the embeddings of the data
         """        
@@ -267,4 +273,52 @@ class Viz:
                    labelfigs_ = self.labelfigs_,
                    printer = self.printer, 
                    **kwargs)
+      
+    def multi_embeddings(self, h5_filename, output_folder='./', embedding_names=None, **kwargs):
+        """function to plot the embeddings of the data
+
+        Args:
+            h5_filename (str): name (including path) of h5 file where embeddings are saved
+            output_folder (str, optional): Where output images are written to after the printer basepath. Defaults to './.
+            embedding_names (List, optional): List of names of h5 datasets to make images of. Defaults to None.
+        """
+        with h5py.File(h5_filename,'a') as h:
+            if embedding_names is None:
+                embedding_names = list(h.keys())
+                
+            make_folder(f"{self.printer.basepath}/{output_folder}/")
+            
+            for embedding in tqdm(embedding_names):
+                plt.ioff();
+                embeddings_(h[embedding], 
+                        channels=self.channels, 
+                        labelfigs_ = self.labelfigs_,
+                        printer = self.printer, 
+                        name=f"{output_folder}/ep_{h[embedding].attrs['epoch']}_beta_{h[embedding].attrs['beta']}",
+                        **kwargs)
+                plt.close('all')
+                plt.clf()
+            
+            
+    def multi_generate_from_zero(self, input_folder, output_folder='generated0', **kwargs):
         
+        checkpoint_pathlist = glob.glob(f'{input_folder}/*.pkl')
+        checkpoint_pathlist.sort()
+        make_folder(f'{self.printer.basepath}/{output_folder}/')
+        for checkpoint_path in tqdm(checkpoint_pathlist):
+            plt.ioff();
+            check_name = checkpoint_path.split('/')[-1].split('.pkl')[0]
+            # print(check_name)
+            
+            checkpoint = self.model.load_weights(checkpoint_path, return_checkpoint=True)
+            start_epoch = checkpoint['epoch']
+            beta = checkpoint['beta']
+        
+            # calculate diffraction from all zeros
+            res = self.model.decoder( torch.zeros(1,32).to(self.model.device))
+            fig1,ax1 = plt.subplots(1,figsize=(4,4))
+            imagemap(ax1, res.detach().cpu().reshape(256,256))
+            
+            self.printer.savefig(fig1,f'{output_folder}/Ep_{start_epoch}_beta_{beta:.4f}')
+            plt.close('all')
+            plt.clf()

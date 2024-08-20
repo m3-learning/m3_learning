@@ -1,0 +1,1495 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Characteristic Time with Details &#8212; M3 Learning: Multifunctional Materials and Machine Learning</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script type="application/vnd.jupyter.widget-state+json">{"state": {"75ce1ec32ea04810bd4fa2319643719f": {"model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": "500px"}}}, "version_major": 2, "version_minor": 0}</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script crossorigin="anonymous" data-jupyter-widgets-cdn="https://cdn.jsdelivr.net/npm/" src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@1.0.6/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details';</script>
+    <link rel="shortcut icon" href="../../_static/m3_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="The effect of chemical environment and temperature on the domain structure of free-standing \(BaTiO_3\) via in-situ STEM" href="../2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BF_BTO_toc.html" />
+    <link rel="prev" title="Characteristic Time with Details" href="8_Characteristic_time.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../jupyterbook/Introduction.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/m3_logo.png" class="logo__image only-light" alt="M3 Learning: Multifunctional Materials and Machine Learning - Home"/>
+    <script>document.write(`<img src="../../_static/m3_logo.png" class="logo__image only-dark" alt="M3 Learning: Multifunctional Materials and Machine Learning - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../jupyterbook/Introduction.html">
+                    M3-Learning: Multifunctional Materials and Machine learning
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Data Sets</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../Datasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting.html">Band Excitation Piezoresponse Force Microscopy of <span class="math notranslate nohighlight">\(PbZr_{0.2}Ti_{0.8}O_3\)</span></a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Papers</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/stem_toc.html">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_vortex_VAE.html">VAE demonstration on vortex</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="RHEED_toc.html">Predicting Pulsed-Laser Deposition $SrTiO_3$ Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="1_Abstract.html">Abstract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_RHEED_metrics.html">RHEED Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_RHEED_metrics-details.html">RHEED Metrics with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_AFM_and_XRD.html">AFM_and_XRD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_AFM_and_XRD-details.html">AFM and XRD with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="6_Growth_mechanism.html">Growth Mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="7_Growth_mechanism-details.html">Growth Mechanism with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="8_Characteristic_time.html">Characteristic Time</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Characteristic Time with Details</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BF_BTO_toc.html">The effect of chemical environment and temperature on the domain structure of free-standing $BaTiO_3$ via in-situ STEM</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BTO_environmental_demo.html">The effect of chemical environment and temperature on the domain structure of free-standing <span class="math notranslate nohighlight">\(BaTiO_3\)</span> via in-situ STEM</a></li>
+
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Unsupervised_Learning_with_AEs/Unsupervised_Learning_with_Autoencoders.html">Unsupervised Spectral Unmixing with Autoencoders</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Physics_Informed_Autoencoders/Physics_Constrained_Autoencoder.html">Physics Constrained Autoencoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Cycle_Consistent_Spatial_Transformer_Autoencoder/Cycle_Consistent_Spatial_Transformer_Autoencoder.html">Cycle Consistent Spatial Transforming Autoencoder</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/api.html">docs</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://jupyterhub.coe.drexel.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/m3-learning/m3_learning&urlpath=tree/m3_learning/m3_learning/papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details.ipynb&branch=main" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onJupyterHub"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../../_static/images/logo_jupyterhub.svg">
+  </span>
+<span class="btn__text-container">JupyterHub</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/m3-learning/m3_learning/blob/main/m3_learning/papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/m3-learning/m3_learning" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/m3-learning/m3_learning/issues/new?title=Issue%20on%20page%20%2Fpapers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/papers/2023_RHEED_PLD_SrTiO3/9_Characteristic_time-details.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Characteristic Time with Details</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-of-fitted-rheed-intenstity-curve">1. Examples of Fitted RHEED Intenstity Curve</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analyze-the-decay-curve">2. Analyze the Decay Curve</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-1-treated-213nm">2.1 Sample 1 - treated_213nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#fitting-process">2.1.1 Fitting Process</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#fitted-parameters">2.1.2 Fitted parameters</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#remove-outliers">2.1.3 Remove Outliers</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-with-background">2.1.4 Plot with Background</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-2-treated-81nm">2.2 Sample 2 - treated_81nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.2.1 Fitting process</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.2.2 Fitted parameters</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.2.3 Remove Outliers</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.2.4 Plot with Background</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-3-untreated-162nm">2.3 Sample 3 - untreated_162nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.3.1 Fitting Process</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3.2 Fitted parameters</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">2.3.3</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">2.3.4 Plot with Background</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-figures">3. Summary of Figures</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plots-of-characteristic-times-with-rheed-intensity">3.1 Plots of Characteristic Times with RHEED intensity</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">3.1.1 Sample 1 - treated_213nm</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">3.1.2 Sample 2 - treated_81nm</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">3.1.3 Sample 3 - untreated_162nm</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#violin-plot">3.2 Violin Plot</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-figure">3.3 Summary Figure</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="characteristic-time-with-details">
+<h1>Characteristic Time with Details<a class="headerlink" href="#characteristic-time-with-details" title="Permalink to this heading">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../src&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">m3_learning.nn.random</span> <span class="kn">import</span> <span class="n">random_seed</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.style</span> <span class="kn">import</span> <span class="n">set_style</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.printing</span> <span class="kn">import</span> <span class="n">printer</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.layout</span> <span class="kn">import</span> <span class="n">layout_fig</span>
+<span class="kn">from</span> <span class="nn">m3_learning.RHEED.Dataset</span> <span class="kn">import</span> <span class="n">RHEED_parameter_dataset</span>
+<span class="kn">from</span> <span class="nn">m3_learning.RHEED.Viz</span> <span class="kn">import</span> <span class="n">Viz</span>
+<span class="kn">from</span> <span class="nn">m3_learning.RHEED.Analysis</span> <span class="kn">import</span> <span class="n">analyze_curves</span><span class="p">,</span> <span class="n">remove_outlier</span><span class="p">,</span> <span class="n">smooth</span>
+<span class="kn">from</span> <span class="nn">m3_learning.RHEED.Packed_functions</span> <span class="kn">import</span> <span class="n">visualize_characteristic_time</span><span class="p">,</span> <span class="n">violinplot_characteristic_time</span>
+
+<span class="n">printing</span> <span class="o">=</span> <span class="n">printer</span><span class="p">(</span><span class="n">basepath</span> <span class="o">=</span> <span class="s1">&#39;Figures/4.Characteristic_time/&#39;</span><span class="p">)</span>
+<span class="n">printing_plot</span> <span class="o">=</span> <span class="n">printer</span><span class="p">(</span><span class="n">basepath</span> <span class="o">=</span> <span class="s1">&#39;Figures/4.Characteristic_time/&#39;</span><span class="p">,</span> <span class="n">fileformats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;png&#39;</span><span class="p">])</span>
+
+<span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;printing&quot;</span><span class="p">)</span>
+<span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">colors</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+
+<span class="n">seq_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#00429d&#39;</span><span class="p">,</span><span class="s1">&#39;#2e59a8&#39;</span><span class="p">,</span><span class="s1">&#39;#4771b2&#39;</span><span class="p">,</span><span class="s1">&#39;#5d8abd&#39;</span><span class="p">,</span><span class="s1">&#39;#73a2c6&#39;</span><span class="p">,</span><span class="s1">&#39;#8abccf&#39;</span><span class="p">,</span><span class="s1">&#39;#a5d5d8&#39;</span><span class="p">,</span><span class="s1">&#39;#c5eddf&#39;</span><span class="p">,</span><span class="s1">&#39;#ffffe0&#39;</span><span class="p">]</span>
+<span class="n">bgc1</span><span class="p">,</span> <span class="n">bgc2</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">hex2color</span><span class="p">(</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">colors</span><span class="o">.</span><span class="n">hex2color</span><span class="p">(</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+<span class="n">color_blue</span> <span class="o">=</span> <span class="p">(</span><span class="mi">44</span><span class="o">/</span><span class="mi">255</span><span class="p">,</span><span class="mi">123</span><span class="o">/</span><span class="mi">255</span><span class="p">,</span><span class="mi">182</span><span class="o">/</span><span class="mi">255</span><span class="p">)</span>
+<span class="n">color_orange</span> <span class="o">=</span> <span class="p">(</span><span class="mi">217</span><span class="o">/</span><span class="mi">255</span><span class="p">,</span><span class="mi">95</span><span class="o">/</span><span class="mi">255</span><span class="p">,</span><span class="mi">2</span><span class="o">/</span><span class="mi">255</span><span class="p">)</span>
+<span class="n">color_purple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">117</span><span class="o">/</span><span class="mi">255</span><span class="p">,</span><span class="mi">112</span><span class="o">/</span><span class="mi">255</span><span class="p">,</span><span class="mi">179</span><span class="o">/</span><span class="mi">255</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-08 21:05:59.546820: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-08 21:06:00.100057: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library &#39;libnvinfer.so.7&#39;; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:/home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:
+2023-06-08 21:06:00.100119: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library &#39;libnvinfer_plugin.so.7&#39;; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:/home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:
+2023-06-08 21:06:00.100135: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>printing set for seaborn
+Pytorch seed was set to 42
+Numpy seed was set to 42
+tensorflow seed was set to 42
+</pre></div>
+</div>
+</div>
+</div>
+<section id="examples-of-fitted-rheed-intenstity-curve">
+<h2>1. Examples of Fitted RHEED Intenstity Curve<a class="headerlink" href="#examples-of-fitted-rheed-intenstity-curve" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spot</span> <span class="o">=</span> <span class="s1">&#39;spot_2&#39;</span>
+<span class="n">metric</span> <span class="o">=</span> <span class="s1">&#39;img_sum&#39;</span>
+<span class="n">camera_freq</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">fit_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;savgol_window_order&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s1">&#39;pca_component&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;I_diff&#39;</span><span class="p">:</span> <span class="mi">15000</span><span class="p">,</span> 
+                <span class="s1">&#39;unify&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;bounds&#39;</span><span class="p">:[</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;p_init&#39;</span><span class="p">:[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="analyze-the-decay-curve">
+<h2>2. Analyze the Decay Curve<a class="headerlink" href="#analyze-the-decay-curve" title="Permalink to this heading">#</a></h2>
+<section id="sample-1-treated-213nm">
+<h3>2.1 Sample 1 - treated_213nm<a class="headerlink" href="#sample-1-treated-213nm" title="Permalink to this heading">#</a></h3>
+<section id="fitting-process">
+<h4>2.1.1 Fitting Process<a class="headerlink" href="#fitting-process" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test6_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D1_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_213nm&#39;</span><span class="p">)</span>
+
+<span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">]</span>
+<span class="n">D1_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">metric_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;img_sum&#39;</span><span class="p">],</span> <span class="n">head_tail</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">300</span><span class="p">),</span> <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/7291bc0546c91c23b3808fbf2c7c1bec3d558b0c8790648e3937d763c1e3434d.png" src="../../_images/7291bc0546c91c23b3808fbf2c7c1bec3d558b0c8790648e3937d763c1e3434d.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;growth_1&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">}</span>
+<span class="n">x_all</span><span class="p">,</span> <span class="n">y_all</span> <span class="o">=</span> <span class="n">D1_para</span><span class="o">.</span><span class="n">load_multiple_curves</span><span class="p">(</span><span class="n">growth_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">spot</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">x_start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">parameters_all</span><span class="p">,</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">analyze_curves</span><span class="p">(</span><span class="n">D1_para</span><span class="p">,</span> <span class="n">growth_dict</span><span class="p">,</span> <span class="n">spot</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fit_settings</span><span class="o">=</span><span class="n">fit_settings</span><span class="p">)</span>
+<span class="p">[</span><span class="n">xs_all</span><span class="p">,</span> <span class="n">ys_all</span><span class="p">,</span> <span class="n">ys_fit_all</span><span class="p">,</span> <span class="n">ys_nor_all</span><span class="p">,</span> <span class="n">ys_nor_fit_all</span><span class="p">,</span> <span class="n">ys_nor_fit_failed_all</span><span class="p">,</span> <span class="n">labels_all</span><span class="p">,</span> <span class="n">losses_all</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+
+<span class="c1"># define two color regime</span>
+<span class="n">x_y1</span> <span class="o">=</span> <span class="n">x_coor_all</span><span class="p">[</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">x_y2</span> <span class="o">=</span> <span class="n">x_coor_all</span><span class="p">[</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">Viz</span><span class="o">.</span><span class="n">two_color_array</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">x_y1</span><span class="p">,</span> <span class="n">x_y2</span><span class="p">,</span> <span class="n">bgc1</span><span class="p">,</span> <span class="n">bgc2</span><span class="p">,</span> <span class="n">transparency</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">color_array</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_fit_details</span><span class="p">(</span><span class="n">xs_all</span><span class="p">,</span> <span class="n">ys_nor_all</span><span class="p">,</span> <span class="n">ys_nor_fit_all</span><span class="p">,</span> <span class="n">ys_nor_fit_failed_all</span><span class="p">,</span> <span class="n">index_list</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_all</span><span class="p">)),</span> 
+                     <span class="n">save_name</span><span class="o">=</span><span class="s1">&#39;fitting_details_treated_213nm&#39;</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_plot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_treated_213nm-1.png
+</pre></div>
+</div>
+<img alt="../../_images/704578ab659725e9259fd28af366271be0342f6fc3f9a6a24c5851de405f8066.png" src="../../_images/704578ab659725e9259fd28af366271be0342f6fc3f9a6a24c5851de405f8066.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_treated_213nm-2.png
+</pre></div>
+</div>
+<img alt="../../_images/99bba2689630115316205ff4185265fb288713ed0e6d4e0c02aceeaf4d0377c2.png" src="../../_images/99bba2689630115316205ff4185265fb288713ed0e6d4e0c02aceeaf4d0377c2.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_treated_213nm-3.png
+</pre></div>
+</div>
+<img alt="../../_images/8c06f40517bfa8e1a618ab2d48ee2339c5a1deeebe6903c1a49a6f438cd58c56.png" src="../../_images/8c06f40517bfa8e1a618ab2d48ee2339c5a1deeebe6903c1a49a6f438cd58c56.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_treated_213nm-4.png
+</pre></div>
+</div>
+<img alt="../../_images/fb20640d00716efe482c868208e4a21820ad49d57ce0953755735fad00334197.png" src="../../_images/fb20640d00716efe482c868208e4a21820ad49d57ce0953755735fad00334197.png" />
+</div>
+</div>
+</section>
+<section id="fitted-parameters">
+<h4>2.1.2 Fitted parameters<a class="headerlink" href="#fitted-parameters" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">layout_fig</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.5</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_all</span><span class="p">,</span> <span class="n">y_all</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">),</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;sci&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Fitted a (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Fitted b (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">))</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;treated_213nm-a_b_tau&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/treated_213nm-a_b_tau.png
+</pre></div>
+</div>
+<img alt="../../_images/4629afb13a99b0eedfbfe8239f3e16ad00cad4046bc128c7d26414348d3d433d.png" src="../../_images/4629afb13a99b0eedfbfe8239f3e16ad00cad4046bc128c7d26414348d3d433d.png" />
+</div>
+</div>
+</section>
+<section id="remove-outliers">
+<h4>2.1.3 Remove Outliers<a class="headerlink" href="#remove-outliers" title="Permalink to this heading">#</a></h4>
+<p>Because there is hard boundary when characteristic &gt;= 1, so we can assume the characteristic data that &gt;= 0.95 are outliers and remove from plot. And we also process the data with less noise to observe the trend.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_clean</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="n">x_coor_all_clean_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x_coor_all_clean</span><span class="p">)</span>
+<span class="n">tau_clean_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">)</span>
+<span class="n">tau_smooth_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tau_smooth</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">x_coor_all_clean_sample1</span><span class="p">,</span> <span class="n">tau_clean_sample1</span><span class="p">,</span> <span class="n">curve_y_fit</span><span class="o">=</span><span class="n">tau_smooth_sample1</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> 
+            <span class="n">plot_colors</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;#bc5090&#39;</span><span class="p">],</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> 
+            <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/9c01d1ba5cb58690881e46dfae3b05d83c1a97661710fa39a273da3004fdc1d4.png" src="../../_images/9c01d1ba5cb58690881e46dfae3b05d83c1a97661710fa39a273da3004fdc1d4.png" />
+</div>
+</div>
+</section>
+<section id="plot-with-background">
+<h4>2.1.4 Plot with Background<a class="headerlink" href="#plot-with-background" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_clean</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="n">x_FineStep</span><span class="p">,</span> <span class="n">colors_all</span> <span class="o">=</span> <span class="n">Viz</span><span class="o">.</span><span class="n">make_fine_step</span><span class="p">(</span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_smooth</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_blue</span><span class="p">,</span> <span class="n">saturation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">savgol_filter_level</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_FineStep</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">colors_all</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">x_all_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x_all</span><span class="p">)</span>
+<span class="n">y_all_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">y_all</span><span class="p">)</span>
+<span class="n">color_array_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">color_array</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">color_array_sample1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_all_sample1</span><span class="p">,</span> <span class="n">y_all_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">dpi</span> <span class="o">=</span> <span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/46df39e0678ca1f5ec631f47b1f7eecc81f99ae7c78efecd515f44679bc0cd62.png" src="../../_images/46df39e0678ca1f5ec631f47b1f7eecc81f99ae7c78efecd515f44679bc0cd62.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_213nm-fitting_results(sklearn).npy&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">parameters_all</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_213nm-bg_tau.npy&#39;</span><span class="p">,</span> <span class="n">color_array_sample1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="sample-2-treated-81nm">
+<h3>2.2 Sample 2 - treated_81nm<a class="headerlink" href="#sample-2-treated-81nm" title="Permalink to this heading">#</a></h3>
+<section id="id1">
+<h4>2.2.1 Fitting process<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test7_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D2_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_81nm&#39;</span><span class="p">)</span>
+
+<span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">]</span>
+<span class="n">D2_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">metric_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;img_sum&#39;</span><span class="p">],</span> <span class="n">head_tail</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">300</span><span class="p">),</span> <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/c8f5664badb804de05d50c7e87a703c1e56763e3b02529d524025c179a1fb4ee.png" src="../../_images/c8f5664badb804de05d50c7e87a703c1e56763e3b02529d524025c179a1fb4ee.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;growth_1&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">}</span>
+<span class="n">x_all</span><span class="p">,</span> <span class="n">y_all</span> <span class="o">=</span> <span class="n">D2_para</span><span class="o">.</span><span class="n">load_multiple_curves</span><span class="p">(</span><span class="n">growth_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">spot</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">x_start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">parameters_all</span><span class="p">,</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">analyze_curves</span><span class="p">(</span><span class="n">D2_para</span><span class="p">,</span> <span class="n">growth_dict</span><span class="p">,</span> <span class="n">spot</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fit_settings</span><span class="o">=</span><span class="n">fit_settings</span><span class="p">)</span>
+<span class="p">[</span><span class="n">xs_all</span><span class="p">,</span> <span class="n">ys_all</span><span class="p">,</span> <span class="n">ys_fit_all</span><span class="p">,</span> <span class="n">ys_nor_all</span><span class="p">,</span> <span class="n">ys_nor_fit_all</span><span class="p">,</span> <span class="n">ys_nor_fit_failed_all</span><span class="p">,</span> <span class="n">labels_all</span><span class="p">,</span> <span class="n">losses_all</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+
+<span class="c1"># define two color regime</span>
+<span class="n">x_y1</span> <span class="o">=</span> <span class="n">x_coor_all</span><span class="p">[</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">x_y2</span> <span class="o">=</span> <span class="n">x_coor_all</span><span class="p">[</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">Viz</span><span class="o">.</span><span class="n">two_color_array</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">x_y1</span><span class="p">,</span> <span class="n">x_y2</span><span class="p">,</span> <span class="n">bgc1</span><span class="p">,</span> <span class="n">bgc2</span><span class="p">,</span> <span class="n">transparency</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">color_array</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_fit_details</span><span class="p">(</span><span class="n">xs_all</span><span class="p">,</span> <span class="n">ys_nor_all</span><span class="p">,</span> <span class="n">ys_nor_fit_all</span><span class="p">,</span> <span class="n">ys_nor_fit_failed_all</span><span class="p">,</span> <span class="n">index_list</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_all</span><span class="p">)),</span> 
+                     <span class="n">save_name</span><span class="o">=</span><span class="s1">&#39;fitting_details_treated_81nm&#39;</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_plot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_treated_81nm-1.png
+</pre></div>
+</div>
+<img alt="../../_images/a7807382ce1f019c08f5b15cb27ebec6f9351642126cdeb38b805f8629805c3e.png" src="../../_images/a7807382ce1f019c08f5b15cb27ebec6f9351642126cdeb38b805f8629805c3e.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_treated_81nm-2.png
+</pre></div>
+</div>
+<img alt="../../_images/3b48a38c0239391824459283fd74adf49eed80074343056f3bb7e6e752f1707e.png" src="../../_images/3b48a38c0239391824459283fd74adf49eed80074343056f3bb7e6e752f1707e.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_treated_81nm-3.png
+</pre></div>
+</div>
+<img alt="../../_images/19d9f5b8e37d5e8132983f5b567acb0245f94fd78a4711f11dba2a559fa4d178.png" src="../../_images/19d9f5b8e37d5e8132983f5b567acb0245f94fd78a4711f11dba2a559fa4d178.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_treated_81nm-4.png
+</pre></div>
+</div>
+<img alt="../../_images/e74f5f5a6348fb14a815d761fc474d9b09b84a7f3a36ba2adb11feab1b16c1e2.png" src="../../_images/e74f5f5a6348fb14a815d761fc474d9b09b84a7f3a36ba2adb11feab1b16c1e2.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="id2">
+<h3>2.2.2 Fitted parameters<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">layout_fig</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_all</span><span class="p">,</span> <span class="n">y_all</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">),</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;sci&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Fitted a (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Fitted b (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">))</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;treated_81nm-a_b_tau&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/treated_81nm-a_b_tau.png
+</pre></div>
+</div>
+<img alt="../../_images/33222e743ac3da550bf7630e711adeeb876c65b5946fe54ecb87694bb2bffe58.png" src="../../_images/33222e743ac3da550bf7630e711adeeb876c65b5946fe54ecb87694bb2bffe58.png" />
+</div>
+</div>
+<section id="id3">
+<h4>2.2.3 Remove Outliers<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h4>
+<p>Because there is hard boundary when characteristic &gt;= 1, so we can assume the characteristic data that &gt;= 0.95 are outliers and remove from plot. And we also process the data with less noise to observe the trend.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_clean</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="n">x_coor_all_clean_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x_coor_all_clean</span><span class="p">)</span>
+<span class="n">tau_clean_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">)</span>
+<span class="n">tau_smooth_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tau_smooth</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">x_coor_all_clean_sample2</span><span class="p">,</span> <span class="n">tau_clean_sample2</span><span class="p">,</span> <span class="n">curve_y_fit</span><span class="o">=</span><span class="n">tau_smooth_sample2</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> 
+           <span class="n">plot_colors</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;#bc5090&#39;</span><span class="p">],</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> 
+           <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/ac6c9336365b483f867deb9c87d113e7e27cf3d2538c1c536c7da86976c7979a.png" src="../../_images/ac6c9336365b483f867deb9c87d113e7e27cf3d2538c1c536c7da86976c7979a.png" />
+</div>
+</div>
+</section>
+<section id="id4">
+<h4>2.2.4 Plot with Background<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_clean</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="n">x_FineStep</span><span class="p">,</span> <span class="n">colors_all</span> <span class="o">=</span> <span class="n">Viz</span><span class="o">.</span><span class="n">make_fine_step</span><span class="p">(</span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_smooth</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_blue</span><span class="p">,</span> <span class="n">saturation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">savgol_filter_level</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_FineStep</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">colors_all</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">x_all_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x_all</span><span class="p">)</span>
+<span class="n">y_all_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">y_all</span><span class="p">)</span>
+<span class="n">color_array_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">color_array</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">color_array_sample2</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_all_sample2</span><span class="p">,</span> <span class="n">y_all_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/126cec489d44278ad91a066957c78ffa0cf045a863170f3894eff299c3f6b30c.png" src="../../_images/126cec489d44278ad91a066957c78ffa0cf045a863170f3894eff299c3f6b30c.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_81nm-fitting_results(sklearn).npy&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">parameters_all</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_81nm-bg_tau.npy&#39;</span><span class="p">,</span> <span class="n">color_array_sample2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="sample-3-untreated-162nm">
+<h3>2.3 Sample 3 - untreated_162nm<a class="headerlink" href="#sample-3-untreated-162nm" title="Permalink to this heading">#</a></h3>
+<section id="id5">
+<h4>2.3.1 Fitting Process<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test9_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D3_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;untreated_162nm&#39;</span><span class="p">)</span>
+
+<span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">]</span>
+<span class="n">D3_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">metric_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;img_sum&#39;</span><span class="p">],</span> <span class="n">head_tail</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">300</span><span class="p">),</span> <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/34f89c3d2e056c4a9852e57fafaf55847f925df6ac1e1c8ede9f49e9867fbc77.png" src="../../_images/34f89c3d2e056c4a9852e57fafaf55847f925df6ac1e1c8ede9f49e9867fbc77.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;growth_1&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">}</span>
+<span class="n">x_all</span><span class="p">,</span> <span class="n">y_all</span> <span class="o">=</span> <span class="n">D3_para</span><span class="o">.</span><span class="n">load_multiple_curves</span><span class="p">(</span><span class="n">growth_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">spot</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">x_start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">parameters_all</span><span class="p">,</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">analyze_curves</span><span class="p">(</span><span class="n">D3_para</span><span class="p">,</span> <span class="n">growth_dict</span><span class="p">,</span> <span class="n">spot</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fit_settings</span><span class="o">=</span><span class="n">fit_settings</span><span class="p">)</span>
+<span class="p">[</span><span class="n">xs_all</span><span class="p">,</span> <span class="n">ys_all</span><span class="p">,</span> <span class="n">ys_fit_all</span><span class="p">,</span> <span class="n">ys_nor_all</span><span class="p">,</span> <span class="n">ys_nor_fit_all</span><span class="p">,</span> <span class="n">ys_nor_fit_failed_all</span><span class="p">,</span> <span class="n">labels_all</span><span class="p">,</span> <span class="n">losses_all</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+
+<span class="c1"># define two color regime</span>
+<span class="n">x_y1</span> <span class="o">=</span> <span class="n">x_coor_all</span><span class="p">[</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">x_y2</span> <span class="o">=</span> <span class="n">x_coor_all</span><span class="p">[</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="n">losses_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">Viz</span><span class="o">.</span><span class="n">two_color_array</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">x_y1</span><span class="p">,</span> <span class="n">x_y2</span><span class="p">,</span> <span class="n">bgc1</span><span class="p">,</span> <span class="n">bgc2</span><span class="p">,</span> <span class="n">transparency</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">color_array</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_fit_details</span><span class="p">(</span><span class="n">xs_all</span><span class="p">,</span> <span class="n">ys_nor_all</span><span class="p">,</span> <span class="n">ys_nor_fit_all</span><span class="p">,</span> <span class="n">ys_nor_fit_failed_all</span><span class="p">,</span> <span class="n">index_list</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_all</span><span class="p">)),</span> 
+                     <span class="n">save_name</span><span class="o">=</span><span class="s1">&#39;fitting_details_untreated_162nm&#39;</span><span class="p">,</span> <span class="n">printing</span><span class="o">=</span><span class="n">printing_plot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_untreated_162nm-1.png
+</pre></div>
+</div>
+<img alt="../../_images/b08c7925e61bce185ace716c0814fce901b7be45dbe8d3a917bee013b3ceef7a.png" src="../../_images/b08c7925e61bce185ace716c0814fce901b7be45dbe8d3a917bee013b3ceef7a.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_untreated_162nm-2.png
+</pre></div>
+</div>
+<img alt="../../_images/f070b7ec5b72da741819039ab973771777f57cb7c326bc958a6beccd05a27851.png" src="../../_images/f070b7ec5b72da741819039ab973771777f57cb7c326bc958a6beccd05a27851.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_untreated_162nm-3.png
+</pre></div>
+</div>
+<img alt="../../_images/6047434d52790da31df67957ffef677e8f26ab0121031714424d69c2ac5dd38a.png" src="../../_images/6047434d52790da31df67957ffef677e8f26ab0121031714424d69c2ac5dd38a.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_untreated_162nm-4.png
+</pre></div>
+</div>
+<img alt="../../_images/beab89b3382e9eca43bb7234076c7659979a7620f26ba8c3c4ef18c8d026f1e5.png" src="../../_images/beab89b3382e9eca43bb7234076c7659979a7620f26ba8c3c4ef18c8d026f1e5.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/fitting_details_untreated_162nm-5.png
+</pre></div>
+</div>
+<img alt="../../_images/e2642ff48cb65e5e0e535cb44ac2ceedb65786cbe879d55829e48f77c33b9212.png" src="../../_images/e2642ff48cb65e5e0e535cb44ac2ceedb65786cbe879d55829e48f77c33b9212.png" />
+</div>
+</div>
+</section>
+<section id="id6">
+<h4>2.3.2 Fitted parameters<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">layout_fig</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_all</span><span class="p">,</span> <span class="n">y_all</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">125</span><span class="p">),</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;sci&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Fitted a (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">125</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Fitted b (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">125</span><span class="p">))</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">125</span><span class="p">))</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;untreated_162nm-a_b_tau&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/untreated_162nm-a_b_tau.png
+</pre></div>
+</div>
+<img alt="../../_images/eb968b27d16d41e8bc1fdec134b84f58ff48f924fa21b6becc9bb359c7247455.png" src="../../_images/eb968b27d16d41e8bc1fdec134b84f58ff48f924fa21b6becc9bb359c7247455.png" />
+</div>
+</div>
+</section>
+<section id="id7">
+<h4>2.3.3<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h4>
+<p>Because there is hard boundary when characteristic &gt;= 1, so we can assume the characteristic data that &gt;= 0.95 are outliers and remove from plot. And we also process the data with less noise to observe the trend.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_clean</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="n">x_coor_all_clean_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x_coor_all_clean</span><span class="p">)</span>
+<span class="n">tau_clean_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">)</span>
+<span class="n">tau_smooth_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tau_smooth</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">plot_curve</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">x_coor_all_clean_sample3</span><span class="p">,</span> <span class="n">tau_clean_sample3</span><span class="p">,</span> <span class="n">curve_y_fit</span><span class="o">=</span><span class="n">tau_smooth_sample3</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> 
+           <span class="n">plot_colors</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;#bc5090&#39;</span><span class="p">],</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> 
+           <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">125</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/2ec206b2691907ae4eadeb6d6e5d64288dded4b31b4c96e4710ab466d30216e5.png" src="../../_images/2ec206b2691907ae4eadeb6d6e5d64288dded4b31b4c96e4710ab466d30216e5.png" />
+</div>
+</div>
+</section>
+<section id="id8">
+<h4>2.3.4 Plot with Background<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_clean</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="n">parameters_all</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="n">x_FineStep</span><span class="p">,</span> <span class="n">colors_all</span> <span class="o">=</span> <span class="n">Viz</span><span class="o">.</span><span class="n">make_fine_step</span><span class="p">(</span><span class="n">x_coor_all_clean</span><span class="p">,</span> <span class="n">tau_smooth</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_blue</span><span class="p">,</span> <span class="n">saturation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">savgol_filter_level</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">color_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_FineStep</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">colors_all</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">x_all_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x_all</span><span class="p">)</span>
+<span class="n">y_all_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">y_all</span><span class="p">)</span>
+<span class="n">color_array_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">color_array</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">color_array_sample3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_all_sample3</span><span class="p">,</span> <span class="n">y_all_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">125</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/236e8ad63155b206047abd4bda745682e3b9018638c827447e5dd15c1a04ebc6.png" src="../../_images/236e8ad63155b206047abd4bda745682e3b9018638c827447e5dd15c1a04ebc6.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;Saved_data/untreated_162nm-fitting_results(sklearn).npy&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_coor_all</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">parameters_all</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;Saved_data/untreated_162nm-bg_tau.npy&#39;</span><span class="p">,</span> <span class="n">color_array_sample3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="summary-of-figures">
+<h2>3. Summary of Figures<a class="headerlink" href="#summary-of-figures" title="Permalink to this heading">#</a></h2>
+<section id="plots-of-characteristic-times-with-rheed-intensity">
+<h3>3.1 Plots of Characteristic Times with RHEED intensity<a class="headerlink" href="#plots-of-characteristic-times-with-rheed-intensity" title="Permalink to this heading">#</a></h3>
+<section id="id9">
+<h4>3.1.1 Sample 1 - treated_213nm<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_all_sample1</span><span class="p">,</span> <span class="n">y_all_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_213nm-x_all.npy&#39;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_213nm-y_all.npy&#39;</span><span class="p">)</span>
+<span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_sklearn_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_213nm-fitting_results(sklearn).npy&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_clean_sample1</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_sklearn_sample1</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth_sample1</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean_sample1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="n">bg_growth_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_213nm-bg_growth.npy&#39;</span><span class="p">)</span>
+<span class="n">bg_tau_sample1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_213nm-bg_tau.npy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample1</span><span class="p">,</span> <span class="n">y_all_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_clean_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_smooth_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># colors.hex2color(seq_colors[0])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="c1"># ax2.tick_params(axis=&quot;y&quot;, color=&#39;k&#39;, labelcolor=seq_colors[0])</span>
+<span class="c1"># ax2.set_ylabel(&#39;Characteristic Time (s)&#39;, color=seq_colors[0])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;treated_213nm-no_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/treated_213nm-no_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/bdd33370ffab5878fb24e0139898cf222816765e54b35ddd9d0eefb73b8e510c.png" src="../../_images/bdd33370ffab5878fb24e0139898cf222816765e54b35ddd9d0eefb73b8e510c.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">bg_tau_sample1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample1</span><span class="p">,</span> <span class="n">y_all_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_clean_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_smooth_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;treated_213nm-tau_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/treated_213nm-tau_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/c518de26dc219f0a2ccccd64b5e4d3e711ee4f14c76d6da60814f229cbbb818e.png" src="../../_images/c518de26dc219f0a2ccccd64b5e4d3e711ee4f14c76d6da60814f229cbbb818e.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">bg_growth_sample1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample1</span><span class="p">,</span> <span class="n">y_all_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">130</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_clean_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample1</span><span class="p">,</span> <span class="n">tau_smooth_sample1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;treated_213nm-growth_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/treated_213nm-growth_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/949545cd3d7b04145cbadf69ed379807091ec22d8ba48d213773adcee0ef743a.png" src="../../_images/949545cd3d7b04145cbadf69ed379807091ec22d8ba48d213773adcee0ef743a.png" />
+</div>
+</div>
+</section>
+<section id="id10">
+<h4>3.1.2 Sample 2 - treated_81nm<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_all_sample2</span><span class="p">,</span> <span class="n">y_all_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_81nm-x_all.npy&#39;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_81nm-y_all.npy&#39;</span><span class="p">)</span>
+
+<span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_sklearn_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_81nm-fitting_results(sklearn).npy&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_clean_sample2</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_sklearn_sample2</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth_sample2</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean_sample2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="n">bg_growth_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_81nm-bg_growth.npy&#39;</span><span class="p">)</span>
+<span class="n">bg_tau_sample2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/treated_81nm-bg_tau.npy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample2</span><span class="p">,</span> <span class="n">y_all_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_clean_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_smooth_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;treated_81nm-no_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/treated_81nm-no_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/a9ee35c86fabbbd41441c93270fefb34f354c9dc1556b90c5a93e06304309966.png" src="../../_images/a9ee35c86fabbbd41441c93270fefb34f354c9dc1556b90c5a93e06304309966.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">bg_tau_sample2</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample2</span><span class="p">,</span> <span class="n">y_all_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_clean_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_smooth_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;treated_81nm-tau_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/treated_81nm-tau_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/a48feb171ff7740eb1099503113547d98f0679b2fb1f45eca9d248ec438e5b37.png" src="../../_images/a48feb171ff7740eb1099503113547d98f0679b2fb1f45eca9d248ec438e5b37.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">bg_growth_sample2</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample2</span><span class="p">,</span> <span class="n">y_all_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">115</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_clean_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample2</span><span class="p">,</span> <span class="n">tau_smooth_sample2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;treated_81nm-growth_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/treated_81nm-growth_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/416c1da292c34c21de56956d2d95f551b2a2468ae7a575f52a23de49b57451f0.png" src="../../_images/416c1da292c34c21de56956d2d95f551b2a2468ae7a575f52a23de49b57451f0.png" />
+</div>
+</div>
+</section>
+<section id="id11">
+<h4>3.1.3 Sample 3 - untreated_162nm<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_all_sample3</span><span class="p">,</span> <span class="n">y_all_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/untreated_162nm-x_all.npy&#39;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/untreated_162nm-y_all.npy&#39;</span><span class="p">)</span>
+
+<span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_sklearn_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/untreated_162nm-fitting_results(sklearn).npy&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_clean_sample3</span> <span class="o">=</span> <span class="n">remove_outlier</span><span class="p">(</span><span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_sklearn_sample3</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">tau_smooth_sample3</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">tau_clean_sample3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="n">bg_growth_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/untreated_162nm-bg_growth.npy&#39;</span><span class="p">)</span>
+<span class="n">bg_tau_sample3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Saved_data/untreated_162nm-bg_tau.npy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample3</span><span class="p">,</span> <span class="n">y_all_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_clean_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_smooth_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;untreated_162nm-no_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/untreated_162nm-no_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/d39182740eeefd9c1094a6a95bc4c8ef5c50c5b6bdbfc0f2e64044f3bcf8ac82.png" src="../../_images/d39182740eeefd9c1094a6a95bc4c8ef5c50c5b6bdbfc0f2e64044f3bcf8ac82.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">bg_tau_sample3</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample3</span><span class="p">,</span> <span class="n">y_all_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">125</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_clean_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_smooth_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;untreated_162nm-tau_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/untreated_162nm-tau_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/83970e7000602e83ed4d4298ab8fe6c27dd6feacb7ebdcbea27977b7efa6b66c.png" src="../../_images/83970e7000602e83ed4d4298ab8fe6c27dd6feacb7ebdcbea27977b7efa6b66c.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">draw_background_colors</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">bg_growth_sample3</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_all_sample3</span><span class="p">,</span> <span class="n">y_all_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Intensity (a.u.)&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">125</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_clean_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1"># ax2.plot(x_sklearn_sample3, tau_smooth_sample3, color=&#39;#bc5090&#39;, markersize=3)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_sklearn_sample3</span><span class="p">,</span> <span class="n">tau_smooth_sample3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#bc5090&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;lineplot&#39;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">seq_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+<span class="n">printing_plot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;untreated_162nm-growth_bg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/untreated_162nm-growth_bg.png
+</pre></div>
+</div>
+<img alt="../../_images/cce1afb9860975fa4f4d5863842b48c391cfdd3e6b7b03fd2e7d68f9889499df.png" src="../../_images/cce1afb9860975fa4f4d5863842b48c391cfdd3e6b7b03fd2e7d68f9889499df.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="violin-plot">
+<h3>3.2 Violin Plot<a class="headerlink" href="#violin-plot" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;compressed&#39;</span><span class="p">)</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Treated substrate</span><span class="se">\n</span><span class="s1">(step width=213±88nm)&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;Treated substrate</span><span class="se">\n</span><span class="s1">(step width=81±44nm)&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;Untreated substrate</span><span class="se">\n</span><span class="s1">(step width=162±83μm)&#39;</span><span class="p">]</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">tau_clean_sample1</span><span class="p">,</span> <span class="n">tau_clean_sample2</span><span class="p">,</span> <span class="n">tau_clean_sample3</span><span class="p">],</span> 
+                    <span class="n">palette</span><span class="o">=</span><span class="p">[</span><span class="n">color_blue</span><span class="p">,</span> <span class="n">color_orange</span><span class="p">,</span> <span class="n">color_purple</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Characteristic Time (s)&#39;</span><span class="p">,</span> <span class="n">ticks_both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">yaxis_style</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+<span class="n">Viz</span><span class="o">.</span><span class="n">label_violinplot</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="p">[</span><span class="n">tau_clean_sample1</span><span class="p">,</span> <span class="n">tau_clean_sample2</span><span class="p">,</span> <span class="n">tau_clean_sample3</span><span class="p">],</span> <span class="n">label_type</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">,</span> <span class="n">text_pos</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">titles</span><span class="p">)</span>
+<span class="n">printing</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s1">&#39;violinplot_plot&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/violinplot_plot.png
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Figures/4.Characteristic_time/violinplot_plot.svg
+</pre></div>
+</div>
+<img alt="../../_images/1e5a701dccddcdce561b7a0c791f24dd0b45f3a7664e1a6f4497fe9793a47fb3.png" src="../../_images/1e5a701dccddcdce561b7a0c791f24dd0b45f3a7664e1a6f4497fe9793a47fb3.png" />
+</div>
+</div>
+</section>
+<section id="summary-figure">
+<h3>3.3 Summary Figure<a class="headerlink" href="#summary-figure" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">visualize_characteristic_time</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/ec394eced792558d665d8631f9de52347694ea0b10eb46e73b620eaa3fd37a2c.png" src="../../_images/ec394eced792558d665d8631f9de52347694ea0b10eb46e73b620eaa3fd37a2c.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./papers/2023_RHEED_PLD_SrTiO3"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="8_Characteristic_time.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Characteristic Time with Details</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BF_BTO_toc.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">The effect of chemical environment and temperature on the domain structure of free-standing <span class="math notranslate nohighlight">\(BaTiO_3\)</span> via in-situ STEM</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-of-fitted-rheed-intenstity-curve">1. Examples of Fitted RHEED Intenstity Curve</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analyze-the-decay-curve">2. Analyze the Decay Curve</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-1-treated-213nm">2.1 Sample 1 - treated_213nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#fitting-process">2.1.1 Fitting Process</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#fitted-parameters">2.1.2 Fitted parameters</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#remove-outliers">2.1.3 Remove Outliers</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-with-background">2.1.4 Plot with Background</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-2-treated-81nm">2.2 Sample 2 - treated_81nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.2.1 Fitting process</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.2.2 Fitted parameters</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.2.3 Remove Outliers</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.2.4 Plot with Background</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-3-untreated-162nm">2.3 Sample 3 - untreated_162nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.3.1 Fitting Process</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3.2 Fitted parameters</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">2.3.3</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">2.3.4 Plot with Background</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-figures">3. Summary of Figures</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plots-of-characteristic-times-with-rheed-intensity">3.1 Plots of Characteristic Times with RHEED intensity</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">3.1.1 Sample 1 - treated_213nm</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">3.1.2 Sample 2 - treated_81nm</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">3.1.3 Sample 3 - untreated_162nm</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#violin-plot">3.2 Violin Plot</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-figure">3.3 Summary Figure</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Joshua C. Agar, Assistant Professor Drexel University
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

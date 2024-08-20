@@ -1,0 +1,845 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>RHEED Metrics &#8212; M3 Learning: Multifunctional Materials and Machine Learning</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script type="application/vnd.jupyter.widget-state+json">{"state": {"35412aed00e5445fb612963fc23c1731": {"model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": "500px"}}}, "version_major": 2, "version_minor": 0}</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script crossorigin="anonymous" data-jupyter-widgets-cdn="https://cdn.jsdelivr.net/npm/" src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@1.0.6/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'papers/2023_RHEED_PLD_SrTiO3/2_RHEED_metrics';</script>
+    <link rel="shortcut icon" href="../../_static/m3_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="RHEED Metrics with Details" href="3_RHEED_metrics-details.html" />
+    <link rel="prev" title="Predicting Pulsed-Laser Deposition SrTiO3 Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction" href="1_Abstract.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../jupyterbook/Introduction.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/m3_logo.png" class="logo__image only-light" alt="M3 Learning: Multifunctional Materials and Machine Learning - Home"/>
+    <script>document.write(`<img src="../../_static/m3_logo.png" class="logo__image only-dark" alt="M3 Learning: Multifunctional Materials and Machine Learning - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../jupyterbook/Introduction.html">
+                    M3-Learning: Multifunctional Materials and Machine learning
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Data Sets</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../Datasets/Mixed_phase_pzt_BEPFM/1_SHO_Fitting.html">Band Excitation Piezoresponse Force Microscopy of <span class="math notranslate nohighlight">\(PbZr_{0.2}Ti_{0.8}O_3\)</span></a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Papers</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/stem_toc.html">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_Domains.html">Imaging and structure analysis of ferroelectric domains, domain walls, and vortices by scanning electron diffraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2023_Imaging_ferroelectric_domains_by_scanning_electron_diffraction/STEM_vortex_VAE.html">VAE demonstration on vortex</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="RHEED_toc.html">Predicting Pulsed-Laser Deposition $SrTiO_3$ Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="1_Abstract.html">Abstract</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">RHEED Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_RHEED_metrics-details.html">RHEED Metrics with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_AFM_and_XRD.html">AFM_and_XRD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_AFM_and_XRD-details.html">AFM and XRD with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="6_Growth_mechanism.html">Growth Mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="7_Growth_mechanism-details.html">Growth Mechanism with Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="8_Characteristic_time.html">Characteristic Time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="9_Characteristic_time-details.html">Characteristic Time with Details</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BF_BTO_toc.html">The effect of chemical environment and temperature on the domain structure of free-standing $BaTiO_3$ via in-situ STEM</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2023_the_effect_of_chemical_environment_and_temperature_on_the_domain_structure_of_freestanding_BaTiO3_via_in_situ_STEM/BTO_environmental_demo.html">The effect of chemical environment and temperature on the domain structure of free-standing <span class="math notranslate nohighlight">\(BaTiO_3\)</span> via in-situ STEM</a></li>
+
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Unsupervised_Learning_with_AEs/Unsupervised_Learning_with_Autoencoders.html">Unsupervised Spectral Unmixing with Autoencoders</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Physics_Informed_Autoencoders/Physics_Constrained_Autoencoder.html">Physics Constrained Autoencoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/Cycle_Consistent_Spatial_Transformer_Autoencoder/Cycle_Consistent_Spatial_Transformer_Autoencoder.html">Cycle Consistent Spatial Transforming Autoencoder</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/api.html">docs</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://jupyterhub.coe.drexel.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/m3-learning/m3_learning&urlpath=tree/m3_learning/m3_learning/papers/2023_RHEED_PLD_SrTiO3/2_RHEED_metrics.ipynb&branch=main" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onJupyterHub"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../../_static/images/logo_jupyterhub.svg">
+  </span>
+<span class="btn__text-container">JupyterHub</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/m3-learning/m3_learning/blob/main/m3_learning/papers/2023_RHEED_PLD_SrTiO3/2_RHEED_metrics.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/m3-learning/m3_learning" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/m3-learning/m3_learning/issues/new?title=Issue%20on%20page%20%2Fpapers/2023_RHEED_PLD_SrTiO3/2_RHEED_metrics.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/papers/2023_RHEED_PLD_SrTiO3/2_RHEED_metrics.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>RHEED Metrics</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-treated-213nm">1. Sample treated_213nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-dataset">Loading the Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#information-of-gaussian-fit-parameters-dataset">Information of Gaussian fit parameters dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-of-gaussian-fit-parameters">Plot of Gaussian fit parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-treated-81nm">2. Sample treated_81nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Loading the Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Information of Gaussian fit parameters dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Plot of Gaussian fit parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-untreated-162nm">3. Sample untreated_162nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Loading the Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Information of Gaussian fit parameters dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Plot of Gaussian fit parameters</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="rheed-metrics">
+<h1>RHEED Metrics<a class="headerlink" href="#rheed-metrics" title="Permalink to this heading">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../src/&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">m3_learning.nn.random</span> <span class="kn">import</span> <span class="n">random_seed</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.style</span> <span class="kn">import</span> <span class="n">set_style</span>
+<span class="kn">from</span> <span class="nn">m3_learning.viz.printing</span> <span class="kn">import</span> <span class="n">printer</span>
+<span class="kn">from</span> <span class="nn">m3_learning.RHEED.Dataset</span> <span class="kn">import</span> <span class="n">RHEED_spot_Dataset</span><span class="p">,</span> <span class="n">RHEED_parameter_dataset</span>
+
+<span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;printing&quot;</span><span class="p">)</span>
+<span class="n">random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-08 13:23:46.148981: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-08 13:23:46.709350: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library &#39;libnvinfer.so.7&#39;; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:/home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:
+2023-06-08 13:23:46.709407: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library &#39;libnvinfer_plugin.so.7&#39;; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:/home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/cv2/../../lib64:
+2023-06-08 13:23:46.709411: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>printing set for seaborn
+Pytorch seed was set to 42
+Numpy seed was set to 42
+tensorflow seed was set to 42
+</pre></div>
+</div>
+</div>
+</div>
+<section id="sample-treated-213nm">
+<h2>1. Sample treated_213nm<a class="headerlink" href="#sample-treated-213nm" title="Permalink to this heading">#</a></h2>
+<section id="loading-the-dataset">
+<h3>Loading the Dataset<a class="headerlink" href="#loading-the-dataset" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/STO_STO_test6_06292022-standard.h5&#39;</span>
+<span class="n">D1_spot</span> <span class="o">=</span> <span class="n">RHEED_spot_Dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_213nm&#39;</span><span class="p">)</span>
+<span class="n">D1_spot</span><span class="o">.</span><span class="n">viz_RHEED_spot</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image for growth_2 at index 0.
+</pre></div>
+</div>
+<img alt="../../_images/67f39debd631e285e4cf39f7a64cd20c13f7fb0c1368560a4a1b66fd7f0310ce.png" src="../../_images/67f39debd631e285e4cf39f7a64cd20c13f7fb0c1368560a4a1b66fd7f0310ce.png" />
+</div>
+</div>
+</section>
+<section id="information-of-gaussian-fit-parameters-dataset">
+<h3>Information of Gaussian fit parameters dataset<a class="headerlink" href="#information-of-gaussian-fit-parameters-dataset" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test6_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D1_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_213nm&#39;</span><span class="p">)</span>
+<span class="n">D1_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/8c8a0d8ffa91624247a6d70ffc7d4f3bcd70067cc72c9229ea094eb539503859.png" src="../../_images/8c8a0d8ffa91624247a6d70ffc7d4f3bcd70067cc72c9229ea094eb539503859.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_2 at index 10000.
+img_sum=61247.00, img_max=87.00, img_mean=44.00
+img_rec_sum=59368.68, img_rec_max=72.97, img_rec_mean=42.65
+height=72.98, x=15.40, y=20.73, width_x=10.33, width_y_max=20.36
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-of-gaussian-fit-parameters">
+<h3>Plot of Gaussian fit parameters<a class="headerlink" href="#plot-of-gaussian-fit-parameters" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_6&#39;</span><span class="p">,</span> 
+               <span class="s1">&#39;growth_7&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_8&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_9&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_10&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_11&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_12&#39;</span><span class="p">]</span>
+<span class="n">D1_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">head_tail</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">500</span><span class="p">),</span> <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/ferroelectric/micromamba/envs/m3-RHEED/lib/python3.10/site-packages/m3_learning/RHEED/Dataset.py:414: UserWarning: FixedFormatter should only be used together with FixedLocator
+  ax.set_xticklabels([&#39;&#39; for tick in ax.get_xticks()])
+</pre></div>
+</div>
+<img alt="../../_images/b4b5df4deeedb78b4fe9c1fdd911d900fa1fc579963a90be23af312bed9b5043.png" src="../../_images/b4b5df4deeedb78b4fe9c1fdd911d900fa1fc579963a90be23af312bed9b5043.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="sample-treated-81nm">
+<h2>2. Sample treated_81nm<a class="headerlink" href="#sample-treated-81nm" title="Permalink to this heading">#</a></h2>
+<section id="id1">
+<h3>Loading the Dataset<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/STO_STO_test7_06292022-standard.h5&#39;</span>
+<span class="n">D2_spot</span> <span class="o">=</span> <span class="n">RHEED_spot_Dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_81nm&#39;</span><span class="p">)</span>
+<span class="n">D2_spot</span><span class="o">.</span><span class="n">viz_RHEED_spot</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image for growth_2 at index 10.
+</pre></div>
+</div>
+<img alt="../../_images/a36695a95b629ce16b5c364708e0009b8bc0ed7547dc9dac3137be8fbd25b3e0.png" src="../../_images/a36695a95b629ce16b5c364708e0009b8bc0ed7547dc9dac3137be8fbd25b3e0.png" />
+</div>
+</div>
+</section>
+<section id="id2">
+<h3>Information of Gaussian fit parameters dataset<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test7_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D2_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;treated_81nm&#39;</span><span class="p">)</span>
+<span class="n">D2_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/81ec284961a92bcf62a1ca1dbbcd33865edc892deb4bf417b296f64f23b4a765.png" src="../../_images/81ec284961a92bcf62a1ca1dbbcd33865edc892deb4bf417b296f64f23b4a765.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_2 at index 10000.
+img_sum=35031.00, img_max=58.00, img_mean=39.81
+img_rec_sum=34451.97, img_rec_max=52.63, img_rec_mean=39.15
+height=52.64, x=11.50, y=22.16, width_x=11.22, width_y_max=22.80
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="id3">
+<h3>Plot of Gaussian fit parameters<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_6&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_7&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_8&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_9&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_10&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_11&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_12&#39;</span><span class="p">]</span>
+<span class="n">D2_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/474f4318b12c38b189fa33944a1cfd5ca93be5a53feba35a56a900cc83bade35.png" src="../../_images/474f4318b12c38b189fa33944a1cfd5ca93be5a53feba35a56a900cc83bade35.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="sample-untreated-162nm">
+<h2>3. Sample untreated_162nm<a class="headerlink" href="#sample-untreated-162nm" title="Permalink to this heading">#</a></h2>
+<section id="id4">
+<h3>Loading the Dataset<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/STO_STO_test9_07142022-standard.h5&#39;</span>
+<span class="n">D3_spot</span> <span class="o">=</span> <span class="n">RHEED_spot_Dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;untreated_162nm&#39;</span><span class="p">)</span>
+<span class="n">D3_spot</span><span class="o">.</span><span class="n">viz_RHEED_spot</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image for growth_2 at index 0.
+</pre></div>
+</div>
+<img alt="../../_images/b228f214177688b16393060835e3e1ed9a2b8d19bf915052463195a25af52041.png" src="../../_images/b228f214177688b16393060835e3e1ed9a2b8d19bf915052463195a25af52041.png" />
+</div>
+</div>
+</section>
+<section id="id5">
+<h3>Information of Gaussian fit parameters dataset<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;./Datasets/test9_gaussian_fit_parameters_all-04232023.h5&#39;</span>
+<span class="n">D3_para</span> <span class="o">=</span> <span class="n">RHEED_parameter_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">camera_freq</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sample_name</span><span class="o">=</span><span class="s1">&#39;untreated_162nm&#39;</span><span class="p">)</span>
+<span class="n">D3_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/35cd16d9f6cd480782336bb81af54a643e8a3ffcd865aa8375698090f8a85f8b.png" src="../../_images/35cd16d9f6cd480782336bb81af54a643e8a3ffcd865aa8375698090f8a85f8b.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold">Fig.</span> a: RHEED spot image, b: reconstructed RHEED spot image, c: difference between original and reconstructed image for growth_2 at index 100.
+img_sum=45893.00, img_max=114.00, img_mean=60.39
+img_rec_sum=44505.52, img_rec_max=101.14, img_rec_mean=58.56
+height=101.29, x=10.95, y=19.21, width_x=8.27, width_y_max=13.94
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="id6">
+<h3>Plot of Gaussian fit parameters<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;growth_1&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_2&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_3&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_4&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_5&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_6&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_7&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_8&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_9&#39;</span><span class="p">,</span> 
+               <span class="s1">&#39;growth_10&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_11&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_12&#39;</span> <span class="p">,</span> <span class="s1">&#39;growth_13&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_14&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_15&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_16&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_17&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_18&#39;</span><span class="p">]</span>
+<span class="n">D3_para</span><span class="o">.</span><span class="n">viz_RHEED_parameter_trend</span><span class="p">(</span><span class="n">growth_list</span><span class="p">,</span> <span class="n">spot</span><span class="o">=</span><span class="s1">&#39;spot_2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/758bf20c96d8891c1a27b24284a18ced23ce7e77cdf994cc97930c6d4664751b.png" src="../../_images/758bf20c96d8891c1a27b24284a18ced23ce7e77cdf994cc97930c6d4664751b.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gaussian fitted parameters in time: <span class=" -Color -Color-Bold">Fig.</span> a: sum of original image, b: sum of reconstructed image, c: spot center in spot x coordinate, d: spot center in y coordinate, e: spot width in x coordinate, f: spot width in y coordinate.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./papers/2023_RHEED_PLD_SrTiO3"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="1_Abstract.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Predicting Pulsed-Laser Deposition SrTiO3 Homoepitaxy Growth Dynamics using High-Speed Reflection High-Energy Electron Diffraction</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="3_RHEED_metrics-details.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">RHEED Metrics with Details</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-treated-213nm">1. Sample treated_213nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-dataset">Loading the Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#information-of-gaussian-fit-parameters-dataset">Information of Gaussian fit parameters dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-of-gaussian-fit-parameters">Plot of Gaussian fit parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-treated-81nm">2. Sample treated_81nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Loading the Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Information of Gaussian fit parameters dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Plot of Gaussian fit parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-untreated-162nm">3. Sample untreated_162nm</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Loading the Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Information of Gaussian fit parameters dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Plot of Gaussian fit parameters</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Joshua C. Agar, Assistant Professor Drexel University
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
