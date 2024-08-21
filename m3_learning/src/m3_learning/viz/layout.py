@@ -43,7 +43,7 @@ def subfigures(nrows, ncols, size=(1.25, 1.25), gaps=(.8, .33), figsize=None, **
     Parameters:
     nrows (int): Number of rows.
     ncols (int): Number of columns.
-    size (tuple, optional): Size of each subfigure. Defaults to (1.25, 1.25).
+    size (tuple, optional): Size of each subfigures. Defaults to (1.25, 1.25).
     gaps (tuple, optional): Gaps between subfigures. Defaults to (.8, .33).
     figsize (tuple, optional): Size of the figure. Defaults to None.
     **kwargs: Additional keyword arguments.
@@ -724,7 +724,7 @@ def get_axis_pos_inches(fig, ax):
 
     Args:
         fig (matplotlib.Figure): figure where the plot is located
-        ax (maplotlib.axes): axes on the plot
+        ax (matplotlib.axes): axes on the plot
 
     Returns:
         array: the position of the center bottom of the axis in inches
