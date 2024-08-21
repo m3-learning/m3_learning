@@ -3,7 +3,7 @@ numpy
 autopep8
 BGlib
 gdown==4.5.3
-h5py==3.7.0
+h5py
 imageio==2.22.3
 jupyter
 matplotlib==3.6.2
