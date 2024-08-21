@@ -2603,8 +2603,8 @@ class Viz:
         fig_width=10.5,  # figure width in inches
         filename=None,
     ):
-        # reshape data:
-        if data.shape != 3:
+        # # reshape data:
+        # if data.shape != 3:
             
         # calculates the size of the embedding image
         embedding_image_size = 60
