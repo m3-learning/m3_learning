@@ -3,7 +3,6 @@ from pygments.lexers import PythonLexer
 from pygments.formatters import TerminalFormatter
 import inspect
 
-
 def print_code(func):
     """
     print_code A function to print the source code of a function with syntax highlighting and line numbers.

@@ -5,7 +5,6 @@ Created on Sun Jan 24 16:34:00 2021
 @author: Alibek Kaliyev
 """
 
-
 class GlobalScaler:
     """Class that computes the global scaler of a dataset.
     This assumes that all values are considered as part of the scaling.

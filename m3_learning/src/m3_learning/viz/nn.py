@@ -60,7 +60,7 @@ def latent_generator(
     image,
     number,
     average_number,
-    indx=None,
+    index=None,
     ranges=None,
     x_values=None,
     y_scale=[-2.2, 4],
@@ -75,7 +75,7 @@ def latent_generator(
         image (array): Original image, this is used to extract the size of the embedding
         number (int): number of divisions to plot
         average_number (int): number of samples to average in the generation process
-        indx (list, optional): embedding indexes to use. Defaults to None.
+        index (list, optional): embedding indexes to use. Defaults to None.
         ranges (float, array, optional): set the ranges for the embeddings. Defaults to None.
         x_values (array, optional): allows addition of x_values. Defaults to None.
         y_scale (list, optional): Scale of the y-axis. Defaults to [-2.2, 4].
@@ -85,10 +85,10 @@ def latent_generator(
     # sets the colormap
     cmap = plt.cm.viridis
 
-    if indx is None:
+    if index is None:
         embedding_small = embeddings.squeeze()
     else:
-        embedding_small = embeddings[:, indx].squeeze()
+        embedding_small = embeddings[:, index].squeeze()
 
     # creates the figures and axes in a pretty way
     fig, ax = layout_fig(embedding_small.shape[1] * 2, mod=3, **kwargs)

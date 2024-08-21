@@ -10,23 +10,34 @@ from scipy.signal import savgol_filter
 
 class afm_substrate():
     """
-    This class is designed to facilitate the analysis of an atomic force microscopy (AFM) substrate image. 
+    This class is designed to facilitate the analysis of an atomic force microscopy (AFM) substrate image. 
     The class includes methods for image rotation, coordinate transformation, peak detection, and step parameter calculation.
     """ 
     def __init__(self, img, pixels, size):
-        '''
-        img: the image to be analyzed
-        pixels: the number of pixels in the image
-        size: the size of the image in meters
-        '''
+        """
+        Initializes the AFM substrate object.
+
+        Args:
+            img (numpy.ndarray): The image to be analyzed.
+            pixels (int): The number of pixels in the image.
+            size (float): The size of the image in meters.
+        """
         self.img = img
         self.pixels = pixels
         self.size = size
     
     def rotate_image(self, angle, colorbar_range=None, demo=True):
-        '''
-        angle: the angle to rotate the image in degrees
-        '''
+        """
+        Rotates the image by the given angle.
+
+        Args:
+            angle (float): The angle to rotate the image in degrees.
+            colorbar_range (tuple, optional): The range for the colorbar. Defaults to None.
+            demo (bool, optional): If True, displays the rotated image. Defaults to True.
+
+        Returns:
+            tuple: The rotated image and its new size.
+        """
         rad = np.radians(angle)
         scale = 1/(np.abs(np.sin(rad)) + np.abs(np.cos(rad)))
         size_rot = self.size * scale
@@ -48,23 +59,35 @@ class afm_substrate():
 
 
     def rotate_xz(self, x, z, xz_angle):
-        '''
-        x: the x coordinates of the image
-        z: the z coordinates of the image
-        xz_angle: the angle to rotate the xz plane
-        '''
+        """
+        Rotates the xz plane by the specified angle.
+
+        Args:
+            x (numpy.ndarray): The x coordinates of the image.
+            z (numpy.ndarray): The z coordinates of the image.
+            xz_angle (float): The angle to rotate the xz plane in degrees.
+
+        Returns:
+            tuple: Rotated x and z coordinates.
+        """
         theta = np.radians(xz_angle)
         x_rot = x * np.cos(theta) - z * np.sin(theta)
         z_rot = x * np.sin(theta) + z * np.cos(theta)
         return x_rot, z_rot
 
     def show_peaks(self, x, z, peaks=None, valleys=None):
-        '''
-        x: the x-axis data
-        z: the z-axis data - height
-        peaks: the indices of the peaks
-        valleys: the indices of the valleys
-        '''
+        """
+        Displays peaks and valleys on the plot of x and z data.
+
+        Args:
+            x (numpy.ndarray): The x-axis data.
+            z (numpy.ndarray): The z-axis data (height).
+            peaks (numpy.ndarray, optional): The indices of the peaks. Defaults to None.
+            valleys (numpy.ndarray, optional): The indices of the valleys. Defaults to None.
+
+        Returns:
+            None
+        """
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=x, y=z, mode='lines+markers', name='Original Plot'))
         if isinstance(peaks, np.ndarray):
@@ -76,12 +99,21 @@ class afm_substrate():
         fig.show()
 
     def slice_rotate(self, img_rot, size, j, prominence, width, xz_angle=0, demo=False):
-        '''
-        img_rot: the rotated image
-        size: the size of the image in meters
-        j: the column to slice
-        xz_angle: the angle between the x and z axes in degrees
-        '''
+        """
+        Slices and rotates the image at a specified column and angle.
+
+        Args:
+            img_rot (numpy.ndarray): The rotated image.
+            size (float): The size of the image in meters.
+            j (int): The column to slice.
+            prominence (float): The prominence of peaks to detect.
+            width (float): The width of peaks to detect.
+            xz_angle (float, optional): The angle between the x and z axes in degrees. Defaults to 0.
+            demo (bool, optional): If True, displays the slice with peaks and valleys. Defaults to False.
+
+        Returns:
+            tuple: x, z coordinates and indices of peaks and valleys.
+        """
         i = np.linspace(0, self.pixels-1, self.pixels)
         x = i / self.pixels * size
         z = img_rot[np.argwhere(img_rot[:, j]!=0).flatten(), j]
@@ -97,7 +129,7 @@ class afm_substrate():
             peak_indices, _ = signal.find_peaks(z_norm, prominence=prominence, width=width)
             valley_indices, _ = signal.find_peaks(-z_norm, prominence=prominence, width=width)
 
-            # rotate the xz plane to level the step
+            # Rotate the xz plane to level the step
             x_norm_rot, z_norm_rot = self.rotate_xz(x_norm, z_norm, xz_angle)
             x, z = x_norm_rot * (x_max - x_min) + x_min, z_norm_rot * (z_max - z_min) + z_min
         
@@ -107,16 +139,19 @@ class afm_substrate():
 
 
     def calculate_simple(self, x, z, peak_indices, fixed_height=None, demo=False):
-        '''
-        Calculate the height, width, and miscut of the steps in a straight forward way.
-        Calculate the height and width of each step from the rotated line profile.
-        x: the x-axis data
-        z: the z-axis data - height
-        peak_indices: the indices of the peaks
-        fixed_height: the height of the steps
-        '''
+        """
+        Calculates the height, width, and miscut of the steps in a straightforward way.
 
-        # find the level of z and step height and width
+        Args:
+            x (numpy.ndarray): The x-axis data.
+            z (numpy.ndarray): The z-axis data (height).
+            peak_indices (numpy.ndarray): The indices of the peaks.
+            fixed_height (float, optional): The fixed height of the steps. Defaults to None.
+            demo (bool, optional): If True, prints the calculated step properties. Defaults to False.
+
+        Returns:
+            tuple: step_heights, step_widths, miscut angles.
+        """
         step_widths = np.diff(x[peak_indices])
         if fixed_height:
             step_heights = np.full(len(step_widths), fixed_height)
@@ -134,51 +169,53 @@ class afm_substrate():
         return step_heights, step_widths, miscut
 
     def calculate_fit(self, x, z, peak_indices, valley_indices, fixed_height, demo=False):
-        '''
-        calculate the step height, width and miscut angle. 
-        The step height is calculated by the perpendicular distance between lower step bottom point (valley) and the fitting function of higher step edge (line between left peak and right peak). 
-        x: the x-axis data
-        z: the z-axis data - height
-        peak_indices: the indices of the peaks
-        valley_indices: the indices of the valleys
-        fixed_height: the fixed step height
-        demo: whether to show the demo plot
-        '''
-        # print(valley_indices)
+        """
+        Calculates the step height, width, and miscut angle using linear fitting.
+
+        Args:
+            x (numpy.ndarray): The x-axis data.
+            z (numpy.ndarray): The z-axis data (height).
+            peak_indices (numpy.ndarray): The indices of the peaks.
+            valley_indices (numpy.ndarray): The indices of the valleys.
+            fixed_height (float): The fixed step height.
+            demo (bool, optional): If True, prints the calculated step properties. Defaults to False.
+
+        Returns:
+            tuple: step_heights, step_widths, miscut angles.
+        """
         step_widths = []
         for i, v_ind in enumerate(valley_indices):
             x_valley, z_valley = x[v_ind], z[v_ind]
 
-            # ignore if there's no peak on the left
+            # Ignore if there's no peak on the left
             if x_valley < np.min(x[peak_indices]): continue
-            # if there's no peak on the right, then the valley is the last one
+            # If there's no peak on the right, then the valley is the last one
             if x_valley > np.max(x[peak_indices]): continue
 
-            # find the nearest peak on the left of the valley v_ind
+            # Find the nearest peak on the left of the valley v_ind
             peaks_lhs = peak_indices[np.where(x[peak_indices] < x_valley)]
             left_peak_indice = peaks_lhs[np.argmax(peaks_lhs)]
             x_left_peak, z_left_peak = x[left_peak_indice], z[left_peak_indice]
 
-            # find the nearest peak on the right of the valley v_ind
+            # Find the nearest peak on the right of the valley v_ind
             peaks_rhs = peak_indices[np.where(x[peak_indices] > x_valley)]
             right_peak_indice = peaks_rhs[np.argmin(peaks_rhs)]
             x_right_peak, z_right_peak = x[right_peak_indice], z[right_peak_indice]
 
-            # ignore if can't make a peak, valley, peak sequence
+            # Ignore if can't make a peak, valley, peak sequence
             if i!=0 and i!=len(valley_indices)-1:
                 if  x[valley_indices[i-1]] > x_left_peak or x[valley_indices[i+1]] < x_right_peak:
                     continue
             
-            # fit the linear function between the right peak and the valley
+            # Fit the linear function between the right peak and the valley
             m, b = scipy.stats.linregress(x=[x_right_peak, x_valley], y=[z_right_peak, z_valley])[0:2]
             m = (z_right_peak-z_valley)/(x_right_peak-x_valley)
             b = z_valley - m*x_valley
 
-            # calculate the euclidean distance between the left peak and fitted linear function
+            # Calculate the euclidean distance between the left peak and fitted linear function
             step_width = np.abs((m * x_left_peak - z_left_peak + b)) / (np.sqrt(m**2 + 1))
             step_widths.append(step_width)
             
-            # print left peak, valley, right peak
             if demo:
                 print(f'step {i}: step_width: {step_width:.2e}, left_peak: ({x_left_peak:.2e}, {z_left_peak:.2e}), valley: ({x_valley:.2e}, {z_valley:.2e}), right_peak: ({x_right_peak:.2e}, {z_right_peak:.2e})')
                 
@@ -193,14 +230,20 @@ class afm_substrate():
         return step_heights, step_widths, miscut
 
     def clean_data(self, step_heights, step_widths, miscut, std_range=1, demo=False):
-        '''
-        step_heights: the heights of the steps
-        step_widths: the widths of the steps
-        miscut: the miscut of the steps
-        std_range: the range of standard deviation to remove outliers
-        demo: whether to show the cleaned results
-        '''
-        # remove outliers
+        """
+        Cleans the data by removing outliers based on the specified standard deviation range.
+
+        Args:
+            step_heights (numpy.ndarray): The heights of the steps.
+            step_widths (numpy.ndarray): The widths of the steps.
+            miscut (numpy.ndarray): The miscut angles of the steps.
+            std_range (float, optional): The range of standard deviation to remove outliers. Defaults to 1.
+            demo (bool, optional): If True, prints the cleaned results. Defaults to False.
+
+        Returns:
+            tuple: Cleaned step heights, step widths, and miscut angles.
+        """
+        # Remove outliers
         miscut = miscut[np.abs(miscut-np.mean(miscut))<std_range*np.std(miscut)]
         step_heights = step_heights[np.abs(step_heights-np.mean(step_heights))<std_range*np.std(step_heights)]
         step_widths = step_widths[np.abs(step_widths-np.mean(step_widths))<std_range*np.std(step_widths)]
@@ -212,14 +255,22 @@ class afm_substrate():
         return step_heights, step_widths, miscut
 
     def calculate_substrate_properties(self, image_rot, size_rot, xz_angle, prominence=1e-11, width=2, style='simple', fixed_height=None, std_range=1, demo=False):
-        '''
-        image_rot: the rotated image
-        size_rot: the size of the rotated image in meters
-        prominence: the prominence of the peaks
-        width: the width of the peaks
-        fixed_height: the height of the step, provide if can be acquired from literature
-        std_range: the range of standard deviation to remove outliers
-        '''
+        """
+        Calculates the properties of the substrate including step height, width, and miscut.
+
+        Args:
+            image_rot (numpy.ndarray): The rotated image.
+            size_rot (float): The size of the rotated image in meters.
+            prominence (float, optional): The prominence of peaks. Defaults to 1e-11.
+            width (float, optional): The width of peaks. Defaults to 2.
+            fixed_height (float, optional): The height of the step, provided if available from literature. Defaults to None.
+            std_range (float, optional): The range of standard deviation to remove outliers. Defaults to 1.
+            style (str, optional): The style of calculation ('simple' or 'fit'). Defaults to 'simple'.
+            demo (bool, optional): If True, prints the calculated substrate properties. Defaults to False.
+
+        Returns:
+            dict: Dictionary containing step heights, step widths, and miscut angles.
+        """
         step_heights_list, step_widths_list, miscut_list = [], [], []
         for j in range(self.pixels//4, self.pixels*3//4, 10):
             x, z, peak_indices, valley_indices = self.slice_rotate(image_rot, size_rot, j, prominence, width, xz_angle=xz_angle, demo=demo)
@@ -243,17 +294,21 @@ class afm_substrate():
         return substrate_properties
 
 def visualize_afm_image(img, colorbar_range, figsize=(6,4), scalebar_dict=None, filename=None, printing=None, **kwargs):
-    '''
-    Visualize AFM image with scalebar and colorbar.
-    -----------
-    Parameters:
-        img: 2D numpy array, AFM image;
-        colorbar_range: tuple, Range of colorbar;
-        scalebar_dict: dict, Dictionary of scalebar parameters;
-        filename: str, Filename to save the image;
-    -----------
-    Returns: None;
-    '''
+    """
+    Visualizes AFM image with scalebar and colorbar.
+
+    Args:
+        img (numpy.ndarray): AFM image as a 2D numpy array.
+        colorbar_range (tuple): Range of the colorbar.
+        figsize (tuple, optional): Size of the figure. Defaults to (6,4).
+        scalebar_dict (dict, optional): Dictionary of scalebar parameters. Defaults to None.
+        filename (str, optional): Filename to save the image. Defaults to None.
+        printing (matplotlib.backends.backend_pdf.PdfPages, optional): PdfPages object for saving. Defaults to None.
+        **kwargs: Additional keyword arguments for saving the image.
+
+    Returns:
+        None
+    """
 
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     im = ax.imshow(img)
@@ -271,7 +326,7 @@ def visualize_afm_image(img, colorbar_range, figsize=(6,4), scalebar_dict=None, 
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
 
-    # prints the figure
+    # Prints the figure
     if printing is not None and filename is not None:
         printing.savefig(fig, filename, **kwargs)  
     plt.show()
@@ -291,61 +346,56 @@ cmap = plt.get_cmap('viridis')
 
 def path_maker(axes, locations, facecolor, edgecolor, linestyle, lineweight):
     """
-    Adds path to figure
-    Parameters
-    ----------
-    axes : matplotlib axes
-        axes which to add the plot to
-    locations : numpy array
-        location to position the path
-    facecolor : str, optional
-        facecolor of the path
-    edgecolor : str, optional
-        edgecolor of the path
-    linestyle : str, optional
-        sets the style of the line, using conventional matplotlib styles
-    lineweight : float, optional
-        thickness of the line
+    Adds a path to the figure.
+
+    Args:
+        axes (matplotlib.axes.Axes): The axes to which the plot is added.
+        locations (numpy.ndarray): The location to position the path.
+        facecolor (str): The facecolor of the path.
+        edgecolor (str): The edgecolor of the path.
+        linestyle (str): The style of the line, using conventional matplotlib styles.
+        lineweight (float): The thickness of the line.
+
+    Returns:
+        None
     """
     vertices = []
     codes = []
     codes = [Path.MOVETO] + [Path.LINETO] * 3 + [Path.CLOSEPOLY]
-    # extracts the vertices used to construct the path
+    # Extracts the vertices used to construct the path
     vertices = [(locations[0], locations[2]),
                 (locations[1], locations[2]),
                 (locations[1], locations[3]),
                 (locations[0], locations[3]),
                 (0, 0)]
     vertices = np.array(vertices, float)
-    #  makes a path from the vertices
+    # Makes a path from the vertices
     path = Path(vertices, codes)
     pathpatch = PathPatch(path, facecolor=facecolor, edgecolor=edgecolor,
                           ls=linestyle, lw=lineweight)
-    # adds path to axes
+    # Adds path to axes
     axes.add_patch(pathpatch)
 
 def scalebar(axes, image_size, scale_size, units='nm', loc='br'):
     """
-    Adds scalebar to figures
-    Parameters
-    ----------
-    axes : matplotlib axes
-        axes which to add the plot to
-    image_size : int
-        size of the image in nm
-    scale_size : str, optional
-        size of the scalebar in units of nm
-    units : str, optional
-        sets the units for the label
-    loc : str, optional
-        sets the location of the label
+    Adds a scalebar to figures.
+
+    Args:
+        axes (matplotlib.axes.Axes): The axes to which the plot is added.
+        image_size (int): The size of the image in nm.
+        scale_size (str): The size of the scalebar in units of nm.
+        units (str, optional): The units for the label. Defaults to 'nm'.
+        loc (str, optional): The location of the label. Defaults to 'br'.
+
+    Returns:
+        None
     """
 
-    # gets the size of the image
+    # Gets the size of the image
     x_lim, y_lim = axes.get_xlim(), axes.get_ylim()
     x_size, y_size = np.abs(
         np.int32(np.floor(x_lim[1] - x_lim[0]))), np.abs(np.int32(np.floor(y_lim[1] - y_lim[0])))
-    # computes the fraction of the image for the scalebar
+    # Computes the fraction of the image for the scalebar
     fract = scale_size / image_size
 
     x_point = np.linspace(x_lim[0], x_lim[1],
@@ -353,7 +403,7 @@ def scalebar(axes, image_size, scale_size, units='nm', loc='br'):
     y_point = np.linspace(y_lim[0], y_lim[1],
                           np.int32(np.floor(image_size)))
 
-    # sets the location of the scalebar"
+    # Sets the location of the scalebar
     if loc == 'br':
         x_start = x_point[np.int32(.9 * image_size // 1)]
         x_end = x_point[np.int32((.9 - fract) * image_size // 1)]
@@ -367,10 +417,10 @@ def scalebar(axes, image_size, scale_size, units='nm', loc='br'):
         y_end = y_point[np.int32((.9 - .025) * image_size // 1)]
         y_label_height = y_point[np.int32((.9 - .075) * image_size // 1)]
 
-    # makes the path for the scalebar
+    # Makes the path for the scalebar
     path_maker(axes, [x_start, x_end, y_start, y_end], 'w', 'k', '-', 1)
 
-    # adds the text label for the scalebar
+    # Adds the text label for the scalebar
     axes.text((x_start + x_end) / 2,
               y_label_height,
               '{0} {1}'.format(scale_size, units),
@@ -378,5 +428,3 @@ def scalebar(axes, image_size, scale_size, units='nm', loc='br'):
               va='center', color='w',
               path_effects=[patheffects.withStroke(linewidth=1.5,
                                                    foreground="k")])
-    
-    
