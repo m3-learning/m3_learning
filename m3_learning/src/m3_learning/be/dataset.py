@@ -2124,7 +2124,7 @@ class BE_Dataset:
                 raise ValueError(
                     "The data shape is not compatible with the number of rows and columns")
                 
-    def get_LSQF_hysteresis_fits(self, compare=False):
+    def get_LSQF_hysteresis_fits(self, compare=False, index=True):
         """
         Retrieves the least squares quadratic fit hysteresis loops.
         Args:
@@ -2136,12 +2136,17 @@ class BE_Dataset:
                                     If compare is False, returns only the fitted loops.
         """
         raw_hysteresis_loops, voltage = self.get_hysteresis(scaled=True, loop_interpolated = True)
-        raw_hysteresis_loops = raw_hysteresis_loops.reshape(-1,96)
+        
+        if index == True:
+            raw_hysteresis_loops = raw_hysteresis_loops.reshape(-1,96)
         
         params = self.LSQF_hysteresis_params().reshape(-1, 9)
         
         loops = loop_fitting_function_torch(params, voltage[:,0].squeeze()).to(
                 'cpu').detach().numpy().squeeze()
+        
+        if index == False:
+            loops = loops.reshape(raw_hysteresis_loops.shape)
         
         if compare:
             return loops, raw_hysteresis_loops, voltage
