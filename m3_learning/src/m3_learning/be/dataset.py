@@ -2166,9 +2166,18 @@ class BE_Dataset:
         return torch.atleast_3d(torch.tensor(data.reshape(-1, self.get_hysteresis_voltage_len)))
     
     def print_hysteresis_mse(self, model, data, labels):
-        
+        """
+        print_hysteresis_mse utility function that prints the mean squared error (MSE) for hysteresis data using a given model
+
+        Args:
+            model (object): the model to use for prediction
+            data (list): list of hysteresis data
+            labels (list): list of corresponding labels
+
+        Returns:
+            None
+        """
         data = tuple(self.hysteresis_tensor(item) for item in data)
         
         model.print_mse(data, labels, is_SHO=False)
-            
             

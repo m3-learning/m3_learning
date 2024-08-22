@@ -2716,7 +2716,7 @@ class Viz:
                 fig, filename, size=6, loc="tl", inset_fraction=(0.2, 0.2)
             )
     
-    def ranked_mse(true, sample_a, other_samples=None):
+    def ranked_mse(self, true, sample_a, other_samples=None):
         """
         Compute Mean Squared Error (MSE) between two datasets of samples.
 
