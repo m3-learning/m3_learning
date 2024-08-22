@@ -2086,9 +2086,6 @@ class Viz:
         return fig
 
     def violin_plot_comparison_hysteresis(self, model, X_data, filename):
-        
-        if X_data.shape !=3:
-            X_data = self.dataset.hysteresis_tensor(X_data).float()
 
         df = pd.DataFrame()
 
@@ -2118,8 +2115,7 @@ class Viz:
         # adds the labels to the dataframe
         names = [true_scaled, scaled_param]
         names_str = ["NN", "LSQF"]
-        # ["Amplitude", "Resonance", "Q-Factor", "Phase"]
-        # labels = ["A", "\u03C9", "Q", "\u03C6"]
+
         labels = ["a0", "a1", "a2", "a3", "a4", "b0", "b1", "b2", "b3"]
 
         # adds the labels to the dataframe
@@ -2155,7 +2151,7 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
-        
+            
 
     def build_figure_for_movie(
         self,
