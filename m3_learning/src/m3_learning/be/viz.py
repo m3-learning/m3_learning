@@ -2140,7 +2140,7 @@ class Viz:
         df = df.reset_index(drop=False)
 
         sns.violinplot(
-            data=df, x="parameter", y="value", hue="dataset", split=True, ax=ax
+            data=df, x="parameter", y="value", hue="dataset", split=True, ax=ax, linewidth=.1,
         )
 
         # labels the figure and does some styling
@@ -2389,12 +2389,6 @@ class Viz:
 
         # gets the DC voltage data - this is for only the on state or else it would all be 0
         voltage = self.dataset.dc_voltage
-
-        # TODO could implement this functionality
-        # # gets just part of the loop
-        # if hasattr(self.dataset, 'cycle') and self.dataset.cycle is not None:
-        #     # gets the cycle of interest
-        #     voltage = self.dataset.get_cycle(voltage)
 
         # loops around each voltage step in the measurement
         for z, voltage in enumerate(voltage):

@@ -256,8 +256,8 @@ class BE_Dataset:
         cleaned_hysteresis = clean_interpolate(hysteresis)
 
         # instantiates and computes the global scaler
-        self.hystersis_scaler = GlobalScaler()
-        self.hystersis_scaler.fit_transform(cleaned_hysteresis)
+        self.hysteresis_scaler_ = GlobalScaler()
+        self.hysteresis_scaler_.fit_transform(cleaned_hysteresis)
 
         try:
             self.LoopParmScaler()
@@ -273,7 +273,7 @@ class BE_Dataset:
             scaler: scaler for the hysteresis loops
         """
 
-        return self.hystersis_scaler
+        return self.hysteresis_scaler_
 
     @property
     def get_voltage(self):
@@ -1978,7 +1978,7 @@ class BE_Dataset:
 
             # transforms the data with the scaler if necessary.
             if self.scaled:
-                hysteresis_data = self.hystersis_scaler.transform(
+                hysteresis_data = self.hysteresis_scaler_.transform(
                     hysteresis_data)
 
             # sets the data to the correct output shape
