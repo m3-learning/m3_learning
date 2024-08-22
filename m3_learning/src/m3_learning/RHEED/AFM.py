@@ -7,6 +7,8 @@ import scipy
 from scipy import special
 from scipy import signal
 from scipy.signal import savgol_filter
+from scipy import special
+from matplotlib import animation, colors, ticker, path, patches, patheffects
 
 class afm_substrate():
     """
@@ -330,14 +332,6 @@ def visualize_afm_image(img, colorbar_range, figsize=(6,4), scalebar_dict=None, 
     if printing is not None and filename is not None:
         printing.savefig(fig, filename, **kwargs)  
     plt.show()
-
-
-"""
-Created on Tue Oct 09 16:39:00 2018
-@author: Joshua C. Agar
-"""
-from scipy import special
-from matplotlib import animation, colors, ticker, path, patches, patheffects
 
 Path = path.Path
 PathPatch = patches.PathPatch

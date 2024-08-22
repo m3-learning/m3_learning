@@ -1,15 +1,12 @@
 import os
 import h5py
-import sys
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.signal import butter, lfilter, sosfilt, freqz
+from scipy.signal import butter, lfilter, sosfilt
 from scipy import optimize
 from joblib import Parallel, delayed
 import sys
 from m3_learning.viz.layout import layout_fig, labelfigs, imagemap
-from m3_learning.RHEED.Viz import Viz
 
 
 def NormalizeData(data, lb=0, ub=1):

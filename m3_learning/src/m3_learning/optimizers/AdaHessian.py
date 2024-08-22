@@ -57,7 +57,7 @@ class AdaHessian(torch.optim.Optimizer):
 
     def zero_hessian(self):
         """
-        Zeros out the accumalated hessian traces.
+        Zeros out the accumulated hessian traces.
         """
 
         for p in self.get_params():
@@ -113,7 +113,7 @@ class AdaHessian(torch.optim.Optimizer):
                 if self.average_conv_kernel and p.dim() == 4:
                     p.hess = torch.abs(p.hess).mean(dim=[2, 3], keepdim=True).expand_as(p.hess).clone()
 
-                # Perform correct stepweight decay as in AdamW
+                # Perform correct step weight decay as in AdamW
                 p.mul_(1 - group['lr'] * group['weight_decay'])
 
                 state = self.state[p]

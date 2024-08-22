@@ -90,7 +90,7 @@ def normalize_0_1(y, I_start, I_end, I_diff=None, unify=True):
         I_diff = I_end-I_start
     
     # use I/I0, I0 is saturation intensity (last value) and scale to 0-1 based 
-    if I_end - I_start == 0: # avoid devide by 0
+    if I_end - I_start == 0: # avoid divide by 0
         y_nor = (y-I_start)
     elif unify:
         if I_end < I_start:
@@ -124,7 +124,7 @@ def de_normalize_0_1(y_nor_fit, I_start, I_end, I_diff=None, unify=True):
         I_diff = np.abs(I_diff)
     
     # use I/I0, I0 is saturation intensity (last value) and scale to 0-1 based 
-    if I_end - I_start == 0: # avoid devide by 0
+    if I_end - I_start == 0: # avoid divide by 0
         y_nor = (y-I_start)
     elif unify:
         if I_end < I_start:

@@ -5,7 +5,6 @@ import torch
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from ...viz.layout import layout_fig, imagemap, labelfigs, find_nearest, add_scalebar
-from os.path import join as pjoin
 from m3_learning.viz.nn import embeddings as embeddings_
 import h5py
 import glob

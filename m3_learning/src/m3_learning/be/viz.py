@@ -2133,6 +2133,12 @@ class Viz:
         fig, ax = plt.subplots(figsize=(4, 4))
 
         # plots the data
+        print('df colums',df.columns[df.columns.duplicated()])
+        print('df index',df.index[df.index.duplicated()])
+ #       return df, df.index[df.index.duplicated()]
+    #    df = df.loc[:, ~df.columns.duplicated()]
+    #    df = df.reset_index(drop=False)
+    #    return df, df.index[df.index.duplicated()]
         sns.violinplot(
             data=df, x="parameter", y="value", hue="dataset", split=True, ax=ax
         )
@@ -2152,6 +2158,7 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
             
+ #       return df, df.index[df.index.duplicated()]  
 
     def build_figure_for_movie(
         self,

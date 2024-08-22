@@ -372,7 +372,7 @@ class RHEED_parameter_dataset():
             labelfigs(ax, i)
 
         if filename is True: 
-            filename = f"RHEED_{self.sample_name}_{growth}_{spot}_{index}_img,img_rec,differerce"
+            filename = f"RHEED_{self.sample_name}_{growth}_{spot}_{index}_img,img_rec,difference"
                 
         # prints the figure
         if printing is not None and filename is not None:

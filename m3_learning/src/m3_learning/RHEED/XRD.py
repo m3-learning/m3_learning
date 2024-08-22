@@ -1,4 +1,3 @@
-# pip install xrayutilities
 import numpy as np
 import matplotlib.pyplot as plt
 import xrayutilities as xu
@@ -41,8 +40,6 @@ def plot_xrd(ax, files, labels, title=None, xrange=(0,90), diff=1e3, pad_sequenc
                 Ys[i] = np.pad(Ys[i], pad_sequence[i], mode='median')
     X = Xs[np.argmax(length_list)]
         
-    # fig, axes = plt.subplots(figsize=figsize)
-    
     for i, Y in enumerate(Ys):
         Y[Y==0] = 1  # remove all 0 value
         if diff:
@@ -56,7 +53,6 @@ def plot_xrd(ax, files, labels, title=None, xrange=(0,90), diff=1e3, pad_sequenc
     ax.set_yscale('log',base=10) 
     ax.set_xlim(xrange)
     if title: ax.set_title(title)
-    # ax.set_xticks(np.arange(*xrange, 1))
 
 
 def plot_rsm(ax, file, reciprocal_space=True, title=None):
