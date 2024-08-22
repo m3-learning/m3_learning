@@ -2135,10 +2135,10 @@ class Viz:
         # plots the data
         print('df colums',df.columns[df.columns.duplicated()])
         print('df index',df.index[df.index.duplicated()])
- #       return df, df.index[df.index.duplicated()]
-    #    df = df.loc[:, ~df.columns.duplicated()]
-    #    df = df.reset_index(drop=False)
-    #    return df, df.index[df.index.duplicated()]
+
+        # df = df.loc[:, ~df.columns.duplicated()]
+        df = df.reset_index(drop=False)
+
         sns.violinplot(
             data=df, x="parameter", y="value", hue="dataset", split=True, ax=ax
         )
@@ -2152,13 +2152,11 @@ class Viz:
         legend = ax.get_legend()
         legend.set_title("")
 
-        # ax.set_aspect(1)
-
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
-            
- #       return df, df.index[df.index.duplicated()]  
+
+
 
     def build_figure_for_movie(
         self,
