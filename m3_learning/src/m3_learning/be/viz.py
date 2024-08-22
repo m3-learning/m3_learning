@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from m3_learning.be.nn import SHO_Model
 from m3_learning.be.loop_fitter import loop_fitting_function_torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from m3_learning.nn.Fitter1D.Fitter1D import Multiscale1DFitter, Model
+from m3_learning.nn.Fitter1D.Fitter1D import Model
 from m3_learning.nn.Fitter1D import Fitter1D
 # import m3_learning
 # from m3_learning.util.rand_util import get_tuple_names
@@ -320,7 +320,7 @@ class Viz:
 
     @static_scale_decorator
     def SHO_hist(self, SHO_data, filename=None, scaled=False):
-        """Plots the SHO hysterisis parameters
+        """Plots the SHO hysteresis parameters
 
         Args:
             SHO_data (numpy): SHO fit results

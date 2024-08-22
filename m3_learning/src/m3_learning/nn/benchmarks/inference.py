@@ -4,7 +4,21 @@ import numpy as np
 
 
 def computeTime(model, train_dataloader, batch_size, device='cuda', write_to_file=False):
+    """
+    Compute the execution time of a model on a given dataloader.
 
+    Args:
+        model (torch.nn.Module): The model to evaluate.
+        train_dataloader (torch.utils.data.DataLoader): The dataloader containing the input data.
+        batch_size (int): The batch size used during inference.
+        device (str, optional): The device to use for inference. Defaults to 'cuda'.
+        write_to_file (bool, optional): Whether to write the execution time to a file. Defaults to False.
+
+    Returns:
+        str: The average execution time in milliseconds, if write_to_file is True.
+
+    """
+    
     model.eval()
 
     time_spent = []

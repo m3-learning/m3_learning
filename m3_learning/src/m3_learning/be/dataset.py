@@ -256,8 +256,8 @@ class BE_Dataset:
         cleaned_hysteresis = clean_interpolate(hysteresis)
 
         # instantiates and computes the global scaler
-        self.hystersis_scaler = GlobalScaler()
-        self.hystersis_scaler.fit_transform(cleaned_hysteresis)
+        self.hysteresis_scaler = GlobalScaler()
+        self.hysteresis_scaler.fit_transform(cleaned_hysteresis)
 
         try:
             self.LoopParmScaler()
@@ -273,7 +273,7 @@ class BE_Dataset:
             scaler: scaler for the hysteresis loops
         """
 
-        return self.hystersis_scaler
+        return self.hysteresis_scaler
 
     @property
     def get_voltage(self):
@@ -335,7 +335,7 @@ class BE_Dataset:
                           "LSQF_phase_shift": None,
                           "NN_phase_shift": None, }
 
-        # sets the atributes to the default state
+        # sets the attributes to the default state
         self.set_attributes(**default_state_)
 
     def get_tree(self):
@@ -544,10 +544,10 @@ class BE_Dataset:
 
     def measure_group(self):
         """
-        measure_group gets the measurement group based on a noise leve
+        measure_group gets the measurement group based on a noise level
 
         Returns:
-            str: string for the measurment group for the data
+            str: string for the measurement group for the data
         """
 
         if self.noise == 0:
@@ -969,7 +969,7 @@ class BE_Dataset:
         to_magnitude converts a complex number to an amplitude and phase
 
         Args:
-            data (np.array): complex photodiode response of the cantilver
+            data (np.array): complex photodiode response of the cantilever
 
         Returns:
             list: list of np.array containing the magnitude and phase of the cantilever response
@@ -1852,7 +1852,7 @@ class BE_Dataset:
             # converts the data to complex
             data = self.complex_data_converter(data)
 
-            # extracts the real and imaginary componets
+            # extracts the real and imaginary components
             real = np.real(data)
             imag = np.imag(data)
 
@@ -1899,7 +1899,7 @@ class BE_Dataset:
             measurement_state (any, optional): sets the measurement state. Defaults to None.
 
         Returns:
-            np.array: output hysteresis data, bias vector for the hystersis loop
+            np.array: output hysteresis data, bias vector for the hysteresis loop
         """
 
         # todo: can replace this to make this much nicer to get the data. Too many random transforms
@@ -1978,7 +1978,7 @@ class BE_Dataset:
 
             # transforms the data with the scaler if necessary.
             if self.scaled:
-                hysteresis_data = self.hystersis_scaler.transform(
+                hysteresis_data = self.hysteresis_scaler.transform(
                     hysteresis_data)
 
             # sets the data to the correct output shape
@@ -2097,11 +2097,11 @@ class BE_Dataset:
 
     def loop_shaper(self, data, shape="pixels"):
         """
-        loop_shaper Tool to reshape the piezoelectric hystersis loops based on the desired shape
+        loop_shaper Tool to reshape the piezoelectric hysteresis loops based on the desired shape
 
         Args:
             data (np.array): hysteresis loops to reshape
-            shape (str, optional): pixel or index as a string to reshpae. Defaults to "pixels".
+            shape (str, optional): pixel or index as a string to reshape. Defaults to "pixels".
 
         Raises:
             ValueError: The data shape is not compatible with the number of rows and columns

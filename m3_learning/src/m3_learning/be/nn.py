@@ -509,7 +509,7 @@ class SHO_Model(AE_Fitter_SHO):
 
             torch.cuda.empty_cache()
 
-        # converts negative ampltiudes to positive and shifts the phase to compensate
+        # converts negative amplitudes to positive and shifts the phase to compensate
         if translate_params:
             params[params[:, 0] < 0, 3] = params[params[:, 0] < 0, 3] - np.pi
             params[params[:, 0] < 0, 0] = np.abs(params[params[:, 0] < 0, 0])

@@ -434,7 +434,6 @@ class USIDataset(h5py.Dataset):
             Informs the user as to how the data_slice has been shaped.
 
         """
-        # TODO: Accept sequences of integers and build a list of slice objects for each dimension
         if slice_dict is None:
             slice_dict = dict()
         else:
