@@ -2152,3 +2152,23 @@ class BE_Dataset:
             return loops, raw_hysteresis_loops, voltage
         
         return loops
+    
+    def hysteresis_tensor(self, data):
+        """
+        hysteresis_tensor utility function that converts data to a tensor
+
+        Args:
+            data (np.array): data to convert to a tensor
+
+        Returns:
+            torch.tensor: tensor of the data
+        """
+        return torch.atleast_3d(torch.tensor(data.reshape(-1, self.get_hysteresis_voltage_len)))
+    
+    def print_hysteresis_mse(self, model, data, labels):
+        
+        data = tuple(self.hysteresis_tensor(item) for item in data)
+        
+        model.print_mse(data, labels, is_SHO=False)
+            
+            

@@ -1380,6 +1380,9 @@ class Viz:
         fit_type='SHO',
         **kwargs,
     ):
+        
+        true_state = torch.atleast_3d(torch.tensor(true_state.reshape(-1,96)))
+        
         d1, d2, x1, x2, label, index1, mse1 = None, None, None, None, None, None, None
 
         if fit_type == "SHO":
@@ -2085,7 +2088,7 @@ class Viz:
     def violin_plot_comparison_hysteresis(self, model, X_data, filename):
         
         if X_data.shape !=3:
-            X_data = torch.atleast_3d(torch.tensor(X_data.reshape(-1, self.dataset.get_hysteresis_voltage_len))).float()
+            X_data = self.dataset.hysteresis_tensor(X_data).float()
 
         df = pd.DataFrame()
 

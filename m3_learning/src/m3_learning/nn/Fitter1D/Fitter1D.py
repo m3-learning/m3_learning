@@ -627,6 +627,8 @@ class Model(nn.Module):
                 pred_data, _ = self.model.dataset.get_raw_data_from_LSQF_SHO(data)
                 data, _ = self.model.dataset.NN_data()
                 pred_data = torch.from_numpy(pred_data)
+                
+            
 
            
             pred_data = pred_data.float()

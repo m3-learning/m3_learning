@@ -610,6 +610,9 @@ class SHO_Model(AE_Fitter_SHO):
                     data)
                 data, _ = self.model.dataset.NN_data()
                 pred_data = torch.from_numpy(pred_data)
+                
+            data = self.dataset.hysteresis_tensor(data)
+            pred_data = self.dataset.hysteresis_tensor(pred_data)
 
             # Computes the MSE
             out = nn.MSELoss()(data, pred_data)
