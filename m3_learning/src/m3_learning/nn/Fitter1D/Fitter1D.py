@@ -35,9 +35,9 @@ def static_state_decorator(func):
 def write_csv(write_CSV,
               path,
               model_name,
-              optimizer_name,
               i,
               noise,
+              optimizer_name,
               epochs,
               total_time,
               train_loss,
@@ -45,7 +45,8 @@ def write_csv(write_CSV,
               loss_func,
               seed,
               stoppage_early,
-              model_updates, 
+              model_updates,
+              model_path=None,
               ):
 
     if write_CSV is not None:
@@ -62,6 +63,11 @@ def write_csv(write_CSV,
                    "filename",
                    "early_stoppage",
                    "model updates"]
+        # path of the saved checkpoint; defaults to the name used by the final
+        # torch.save in Model.fit() (callers pass model_path explicitly when a
+        # different file, e.g. an early-stoppage checkpoint, was saved)
+        if model_path is None:
+            model_path = f"{path}/{model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth"
         data = [model_name,
                 i,
                 noise,
@@ -72,7 +78,7 @@ def write_csv(write_CSV,
                 batch_size,
                 loss_func,
                 seed,
-                f"{path}/{model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth",
+                model_path,
                 f"{stoppage_early}",
                 f"{model_updates}"]
         append_to_csv(f"{path}/{write_CSV}", data, headers)
@@ -396,8 +402,9 @@ class Model(nn.Module):
                     if loss < early_stopping_loss:
                         low_loss_count += train_batch.shape[0]
                         if low_loss_count >= early_stopping_count:
+                            checkpoint_path = f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss/total_num}.pth"
                             torch.save(self.model.state_dict(),
-                                       f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss/total_num}.pth")
+                                       checkpoint_path)
 
                             write_csv(write_CSV,
                                       path,
@@ -412,7 +419,8 @@ class Model(nn.Module):
                                       loss_func,
                                       seed,
                                       True,
-                                      model_updates)
+                                      model_updates,
+                                      model_path=checkpoint_path)
 
                             already_stopped = True
                     else:
@@ -440,8 +448,9 @@ class Model(nn.Module):
 
             if early_stopping_time is not None:
                 if total_time > early_stopping_time:
+                    checkpoint_path = f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth"
                     torch.save(self.model.state_dict(),
-                               f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
+                               checkpoint_path)
 
                     write_csv(write_CSV,
                               path,
@@ -456,7 +465,8 @@ class Model(nn.Module):
                               loss_func,
                               seed,
                               True,
-                              model_updates)
+                              model_updates,
+                              model_path=checkpoint_path)
                     break
 
         torch.save(self.model.state_dict(),

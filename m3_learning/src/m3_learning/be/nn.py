@@ -33,7 +33,8 @@ def write_csv(write_CSV,
               loss_func,
               seed,
               stoppage_early,
-              model_updates):
+              model_updates,
+              model_path=None):
 
     if write_CSV is not None:
         headers = ["Model Name",
@@ -47,8 +48,12 @@ def write_csv(write_CSV,
                    "Seed",
                    "filename",
                    "early_stoppage",
-                   "model updates",
-                   "cuda memory"]
+                   "model updates"]
+        # path of the saved checkpoint; defaults to the name used by the final
+        # torch.save in SHO_Model.fit() (callers pass model_path explicitly
+        # when a different file, e.g. an early-stoppage checkpoint, was saved)
+        if model_path is None:
+            model_path = f"{path}/{model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth"
         data = [model_name,
                 noise_level,
                 optimizer_name,
@@ -58,7 +63,7 @@ def write_csv(write_CSV,
                 batch_size,
                 loss_func,
                 seed,
-                f"{path}/{model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth",
+                model_path,
                 f"{stoppage_early}",
                 f"{model_updates}"]
         append_to_csv(f"{path}/{write_CSV}", data, headers)
@@ -381,8 +386,9 @@ class SHO_Model(AE_Fitter_SHO):
                     if loss < early_stopping_loss:
                         low_loss_count += train_batch.shape[0]
                         if low_loss_count >= early_stopping_count:
+                            checkpoint_path = f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss/total_num}.pth"
                             torch.save(self.model.state_dict(),
-                                       f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss/total_num}.pth")
+                                       checkpoint_path)
 
                             write_csv(write_CSV,
                                       self.dataset.noise_state,
@@ -396,7 +402,8 @@ class SHO_Model(AE_Fitter_SHO):
                                       loss_func,
                                       seed,
                                       True,
-                                      model_updates)
+                                      model_updates,
+                                      model_path=checkpoint_path)
 
                             already_stopped = True
                     else:
@@ -419,8 +426,9 @@ class SHO_Model(AE_Fitter_SHO):
 
             if early_stopping_time is not None:
                 if total_time > early_stopping_time:
+                    checkpoint_path = f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth"
                     torch.save(self.model.state_dict(),
-                               f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
+                               checkpoint_path)
 
                     write_csv(write_CSV,
                               self.dataset.noise_state,
@@ -434,7 +442,8 @@ class SHO_Model(AE_Fitter_SHO):
                               loss_func,
                               seed,
                               True,
-                              model_updates)
+                              model_updates,
+                              model_path=checkpoint_path)
                     break
 
         torch.save(self.model.state_dict(),
@@ -720,13 +729,26 @@ def clear_all_tensors():
 
 
 def find_best_model(basepath, filename):
+    """Reads a batch-training CSV (e.g. the one written by `batch_training` in
+    notebook 2_5) and returns, for every (noise level, optimizer) combination,
+    the row of the model with the lowest training loss."""
 
     # Read the CSV
     df = pd.read_csv(basepath + '/' + filename)
 
-    # Extract noise level from the 'Model Name' column
-    df['Noise Level'] = df['Model Name'].apply(
-        lambda x: float(x.split('_')[3]))
+    # Determine the noise level of each training run. CSVs written by
+    # `batch_training` (nn/Fitter1D write_csv) store it in the "Noise" column;
+    # CSVs written by SHO_Model.fit (be/nn write_csv) use "Noise Level";
+    # legacy CSVs encoded it in the model name
+    # (e.g. SHO_Adam_noise_0_batch_size_1000_seed_41).
+    if 'Noise' in df.columns:
+        df['Noise Level'] = pd.to_numeric(df['Noise'])
+    elif 'Noise Level' in df.columns:
+        df['Noise Level'] = pd.to_numeric(df['Noise Level'])
+    else:
+        # Extract noise level from the 'Model Name' column
+        df['Noise Level'] = df['Model Name'].apply(
+            lambda x: float(x.split('_')[3]))
 
     # Create an empty dictionary to store the results
     results = {}
