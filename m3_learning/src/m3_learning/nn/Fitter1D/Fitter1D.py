@@ -531,8 +531,9 @@ class Model(nn.Module):
             if i == num_batches - 1:
                 end = num_elements
 
+            # model weights are float32; input data may arrive as float64
             pred_batch, params_scaled_, params_ = self.model(
-                train_batch.to(self.device))
+                train_batch.to(self.device).float())
 
             if is_SHO:
                 predictions[start:end] = pred_batch.cpu().detach()

@@ -2129,7 +2129,7 @@ class Viz:
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename)
 
-
+        return fig
 
     def build_figure_for_movie(
         self,
@@ -2688,7 +2688,9 @@ class Viz:
             self.Printer.savefig(
                 fig, filename, size=6, loc="tl", inset_fraction=(0.2, 0.2)
             )
-    
+
+        return fig
+
     def ranked_mse(self, true, sample_a, other_samples=None):
         """
         Compute Mean Squared Error (MSE) between two datasets of samples.
@@ -2897,3 +2899,5 @@ class Viz:
         # prints the figure
         if self.Printer is not None and filename is not None:
             self.Printer.savefig(fig, filename, label_figs=ax, style="b")
+
+        return fig
