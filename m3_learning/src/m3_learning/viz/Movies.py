@@ -1,5 +1,4 @@
 import glob as glob
-import cv2
 from m3_learning.util.file_IO import make_folder
 from tqdm import tqdm
 import numpy as np
@@ -17,6 +16,8 @@ def make_movie(movie_name, input_folder, output_folder, file_format,
         output_format (str, optional): movie file format. Defaults to 'mp4'.
         reverse (bool, optional): selects if should go in a cycle. Defaults to False.
     """
+    # lazy import so the package imports without opencv installed
+    import cv2
 
     # makes the output folder
     output_folder = make_folder(output_folder)

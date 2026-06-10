@@ -1,5 +1,4 @@
 import numpy as np
-import hyperspy.api as hs
 
 
 class STEM_Dataset:
@@ -12,6 +11,8 @@ class STEM_Dataset:
         Args:
             data_path (string): path where the hyperspy file is located
         """
+        # lazy import so the package imports without hyperspy installed
+        import hyperspy.api as hs
 
         # loads the data
         s = hs.load(data_path,

@@ -1,5 +1,4 @@
 import numpy as np
-import hyperspy.api as hs
 import os
 import h5py
 from skimage.color import rgb2gray
@@ -17,11 +16,7 @@ from collections.abc import Iterable
 
 # Pycroscopy
 import sidpy
-import pyNSID
 # print('sidpy version: ', sidpy.__version__)
-import pycroscopy as px
-from pycroscopy.image import ImageWindowing
-import dask.array as da
 
 class Bright_Field_Dataset:
 
@@ -306,7 +301,11 @@ class Bright_Field_Dataset:
 
         Returns:
         returns ImageWindowing object. From pycroscopy.image package
-        """     
+        """
+        # lazy imports so the package imports without pycroscopy/pyNSID installed
+        import pyNSID
+        from pycroscopy.image import ImageWindowing
+
         # window_parms['interpol_factor'] = target_size/window_parms['window_size_x']*window_parms['zoom_factor'] # v2
         iw = ImageWindowing(window_parms)
         with h5py.File(self.combined_h5_path,'a') as h:

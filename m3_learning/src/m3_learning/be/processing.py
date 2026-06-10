@@ -9,7 +9,6 @@ import h5py
 import torch
 import time
 from scipy import special
-import tensorflow as tf
 import os
 from BGlib import be as belib
 import sidpy
@@ -407,6 +406,9 @@ def loop_fitting_function_torch(type, V, y):
     
 
 def loop_fitting_function_tf(type, V, y):
+    # lazy import so the package imports without tensorflow installed
+    import tensorflow as tf
+
     if(type == '9 parameters'):
         a0 = y[:, 0]
         a1 = y[:, 1]
