@@ -724,7 +724,17 @@ class BE_Dataset:
     def dc_voltage(self):
         """Gets the DC voltage vector"""
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f[f"Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
+            # the SHO fit group location depends on how the fit was saved
+            # (file root, or a target group such as `Raw_Data_SHO_Fit`)
+            for path in ("Raw_Data-SHO_Fit_000/Spectroscopic_Values",
+                         "Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Spectroscopic_Values"):
+                if path in h5_f:
+                    return h5_f[path][0, 1::2]
+
+        # falls back to searching the file for the SHO fit group
+        group = find_groups_with_string(self.file, "Raw_Data-SHO_Fit_000")[0]
+        with h5py.File(self.file, "r+") as h5_f:
+            return h5_f[f"{group}/Spectroscopic_Values"][0, 1::2]
 
     @property
     def num_pix(self):
@@ -1060,9 +1070,16 @@ class BE_Dataset:
 
         for dataset in self.raw_datasets:
 
-            # data groups in file
-            SHO_fits = find_groups_with_string(
-                self.file, f'{dataset}-SHO_Fit_000')[0]
+            # data groups in file -- skips datasets that have not been fit yet
+            SHO_fit_groups = find_groups_with_string(
+                self.file, f'{dataset}-SHO_Fit_000')
+
+            if len(SHO_fit_groups) == 0:
+                if self.verbose:
+                    print(f"No SHO fit found for {dataset} -- skipping")
+                continue
+
+            SHO_fits = SHO_fit_groups[0]
 
             with h5py.File(self.file, "r+") as h5_f:
 

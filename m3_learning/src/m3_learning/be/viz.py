@@ -2339,6 +2339,7 @@ class Viz:
         basepath=None,
         labels=None,
         phase_shift=None,
+        max_steps=None,
     ):
         output_state = {"output_shape": "pixels", "scaled": False}
 
@@ -2388,10 +2389,14 @@ class Viz:
         names = ["A", "\u03C9", "Q", "\u03C6"]
 
         # gets the DC voltage data - this is for only the on state or else it would all be 0
-        voltage = self.dataset.dc_voltage
+        voltage_steps = self.dataset.dc_voltage
+
+        # optionally restricts the number of steps (useful for quick verification runs)
+        if max_steps is not None:
+            voltage_steps = voltage_steps[:max_steps]
 
         # loops around each voltage step in the measurement
-        for z, voltage in enumerate(voltage):
+        for z, voltage in enumerate(voltage_steps):
             # calls the function to build the figure
             fig, ax, fig_scalar = self.build_figure_for_movie(
                 models,  # dataset to compare to
