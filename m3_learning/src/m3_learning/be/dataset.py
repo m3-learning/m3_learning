@@ -173,8 +173,10 @@ class BE_Dataset:
             setattr(self, key, value)
 
         # Preprocessing and raw data
+        # Note: SHO_preprocessing() internally calls set_raw_data(), so it is
+        # only called once here (set_preprocessing no longer duplicates it).
+        # This avoids reading/preprocessing the full raw dataset multiple times.
         self.set_preprocessing()
-        self.set_raw_data()
         self.SHO_preprocessing()
 
     def generate_noisy_data_records(self,
@@ -266,9 +268,8 @@ class BE_Dataset:
         """
 
         # does preprocessing for the SHO_fit results
-        if in_list(self.tree, "*SHO_Fit*"):
-            self.SHO_preprocessing()
-        else:
+        # (the actual SHO_preprocessing() call happens once in __post_init__)
+        if not in_list(self.tree, "*SHO_Fit*"):
             Warning("No SHO fit found")
 
         # does preprocessing for the loop fit results
