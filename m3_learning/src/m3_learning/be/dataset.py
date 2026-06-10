@@ -625,6 +625,19 @@ class BE_Dataset:
             # gets the measurement group name
             h5_meas_grp = h5_main.parent.parent
 
+            # Reuses a cached SHO fit (e.g., computed by
+            # ``SHO_Fitter(h5_sho_targ_grp="Raw_Data_SHO_Fit")``) by hard-linking
+            # the results group into the measurement group, where the BGlib
+            # fitters and the downstream readers (``get_loop_path``) expect it.
+            # This makes the SHO fit step below return the cached results
+            # instead of recomputing the entire SHO fit a second time.
+            if h5_sho_targ_grp is not None:
+                sho_grp_name = h5_main.name.split("/")[-1] + "-SHO_Fit_000"
+                cached_sho_grp = h5_file.get(
+                    f"{h5_sho_targ_grp}/{sho_grp_name}")
+                if cached_sho_grp is not None and sho_grp_name not in h5_meas_grp:
+                    h5_meas_grp[sho_grp_name] = cached_sho_grp
+
             # does the SHO_fit if it does not exist.
             sho_fit_points = 5  # The number of data points at each step to use when fitting
             sho_override = False  # Force recompute if True
@@ -656,7 +669,10 @@ class BE_Dataset:
                 print('VS cycle fraction could not be found. Setting to default value')
                 vs_cycle_frac = 'full'
 
-            sho_fit, sho_dataset = self.SHO_Fitter(fit_group=True)
+            # forwards the cached SHO fit location so this call returns the
+            # cached results instead of recomputing the SHO fit
+            sho_fit, sho_dataset = self.SHO_Fitter(
+                fit_group=True, h5_sho_targ_grp=h5_sho_targ_grp)
 
             # instantiates the loop fitter using belib
             loop_fitter = belib.analysis.BELoopFitter(h5_sho_fit,

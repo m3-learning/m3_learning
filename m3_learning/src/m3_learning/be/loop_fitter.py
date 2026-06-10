@@ -1,18 +1,22 @@
 import torch
 
 
-def loop_fitting_function_torch(y, V, type='9 parameters', device='cuda'):
+def loop_fitting_function_torch(y, V, type='9 parameters', device=None):
     """Hysteresis loop fitting function using torch tensors
 
     Args:
         V (np.array): voltage array
         y (np.array): hysteresis loop data
         type (str, optional): loop fitting function to use. Defaults to '9 parameters'.
-        device (str, optional): device to run neural network. Defaults to 'cuda'.
+        device (str, optional): device to run neural network. Defaults to None,
+            which selects "cuda" when available and "cpu" otherwise.
 
     Returns:
         np.array: neural network fit results
     """
+
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
 
     V = torch.tensor(V)
 
