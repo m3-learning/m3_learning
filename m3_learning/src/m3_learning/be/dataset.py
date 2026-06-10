@@ -35,6 +35,30 @@ from dataclasses import dataclass, field, InitVar
 from typing import Any, Callable, Dict, Optional, Union
 
 
+def _patch_bglib_for_numpy2():
+    """BGlib 0.0.6 assigns size-1 arrays into scalar record fields
+    (be_sho_fitter.py: ``sho_vec["R2 Criterion"][i] = 1 - result.fun``),
+    which numpy>=2 rejects. Normalize ``result.fun`` to a scalar first."""
+    fitter_cls = belib.analysis.BESHOfitter
+    if getattr(fitter_cls, "_m3_numpy2_patched", False):
+        return
+    orig_reformat = fitter_cls._reformat_results
+
+    def _reformat_results(self, results, strategy="wavelet_peaks"):
+        if strategy == "least_squares":
+            for result in results:
+                fun = np.asarray(result.fun).ravel()
+                if fun.size == 1:
+                    result.fun = fun.item()
+        return orig_reformat(self, results, strategy)
+
+    fitter_cls._reformat_results = _reformat_results
+    fitter_cls._m3_numpy2_patched = True
+
+
+_patch_bglib_for_numpy2()
+
+
 def static_state_decorator(func):
     """Decorator that stops the function from changing the state
 
@@ -179,6 +203,14 @@ class BE_Dataset:
 
             # iterates through the noise levels provided
             for noise_level in noise_levels:
+
+                # skips the noise level if the record already exists in the file
+                if any(dset.name.split('/')[-1] == f"Noisy_Data_{noise_level}"
+                       for dset in usid.hdf_utils.find_dataset(h5_f, f"Noisy_Data_{noise_level}")):
+                    if verbose:
+                        print(
+                            f"Noisy_Data_{noise_level} already exists -- skipping")
+                    continue
 
                 if verbose:
                     print(f"Adding noise level {noise_level}")
