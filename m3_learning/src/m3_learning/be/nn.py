@@ -623,7 +623,8 @@ class SHO_Model(AE_Fitter_SHO):
 
 @static_state_decorator
 def batch_training(dataset, optimizers, noise_list, batch_size, epochs, seed, write_CSV="Batch_Training_Noisy_Data.csv",
-                   basepath=None, early_stopping_loss=None, early_stopping_count=None, early_stopping_time=None, skip=-1, **kwargs,
+                   basepath=None, early_stopping_loss=None, early_stopping_count=None, early_stopping_time=None, skip=-1,
+                   max_train_size=None, **kwargs,
                    ):
 
     # Generate all combinations
@@ -656,6 +657,11 @@ def batch_training(dataset, optimizers, noise_list, batch_size, epochs, seed, wr
         # constructs a test train split
         X_train, X_test, y_train, y_test = dataset.test_train_split_(
             shuffle=True)
+
+        # optionally restricts the amount of training data
+        # (used for fast verification runs on machines without a GPU)
+        if max_train_size is not None:
+            X_train, y_train = X_train[:max_train_size], y_train[:max_train_size]
 
         model_name = f"SHO_{optimizer_name}_noise_{training[1]}_batch_size_{training[2]}_seed_{training[4]}"
 
