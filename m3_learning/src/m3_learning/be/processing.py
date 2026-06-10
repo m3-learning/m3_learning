@@ -361,8 +361,8 @@ def loop_fitting_function_torch(type, V, y):
         b2 = y[:, 7].type(torch.float64)
         b3 = y[:, 8].type(torch.float64)
         d = 1000
-        V1 = torch.tensor(V[:int(len(V) / 2)]).cuda()
-        V2 = torch.tensor(V[int(len(V) / 2):]).cuda()
+        V1 = torch.tensor(V[:int(len(V) / 2)]).to(y.device)
+        V2 = torch.tensor(V[int(len(V) / 2):]).to(y.device)
 
         g1 = (b1 - b0) / 2 * (torch.erf((V1 - a2) * d) + 1) + b0
         g2 = (b3 - b2) / 2 * (torch.erf((V2 - a3) * d) + 1) + b2

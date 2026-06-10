@@ -190,8 +190,8 @@ class AE_Fitter_SHO(nn.Module):
         # corrects the scaling of the parameters
         unscaled_param = (
             embedding *
-            torch.tensor(self.dataset.SHO_scaler.var_ ** 0.5).cuda()
-            + torch.tensor(self.dataset.SHO_scaler.mean_).cuda()
+            torch.tensor(self.dataset.SHO_scaler.var_ ** 0.5, device=x.device)
+            + torch.tensor(self.dataset.SHO_scaler.mean_, device=x.device)
         )
 
         frequency_bins = resample(self.dataset.frequency_bin,
@@ -205,20 +205,20 @@ class AE_Fitter_SHO(nn.Module):
 
         # extract and return real and imaginary
         real = torch.real(fits)
-        real_scaled = (real - torch.tensor(self.dataset.raw_data_scaler.real_scaler.mean).cuda()) / torch.tensor(
-            self.dataset.raw_data_scaler.real_scaler.std
-        ).cuda()
+        real_scaled = (real - torch.tensor(self.dataset.raw_data_scaler.real_scaler.mean, device=x.device)) / torch.tensor(
+            self.dataset.raw_data_scaler.real_scaler.std, device=x.device
+        )
         imag = torch.imag(fits)
-        imag_scaled = (imag - torch.tensor(self.dataset.raw_data_scaler.imag_scaler.mean).cuda()) / torch.tensor(
-            self.dataset.raw_data_scaler.imag_scaler.std
-        ).cuda()
+        imag_scaled = (imag - torch.tensor(self.dataset.raw_data_scaler.imag_scaler.mean, device=x.device)) / torch.tensor(
+            self.dataset.raw_data_scaler.imag_scaler.std, device=x.device
+        )
         out = torch.stack((real_scaled, imag_scaled), 2)
-        if self.training == True:
+        if self.training:
             return out, unscaled_param
-        if self.training == False:
+        else:
             # this is a scaling that includes the corrections for shifts in the data
-            embeddings = (unscaled_param.cuda() - torch.tensor(self.dataset.SHO_scaler.mean_).cuda()
-                          )/torch.tensor(self.dataset.SHO_scaler.var_ ** 0.5).cuda()
+            embeddings = (unscaled_param - torch.tensor(self.dataset.SHO_scaler.mean_, device=x.device)
+                          ) / torch.tensor(self.dataset.SHO_scaler.var_ ** 0.5, device=x.device)
             return out, embeddings, unscaled_param
 
 

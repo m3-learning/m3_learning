@@ -165,14 +165,12 @@ class Multiscale1DFitter(nn.Module):
         encoded = torch.cat((cnn_flat, xfc), 1)  # merge dense and 1d conv.
         embedding = self.hidden_embedding(encoded)  # output is 4 parameters
 
-        unscaled_param = embedding
-
         if self.scaler is not None:
             # corrects the scaling of the parameters
             unscaled_param = (
                 embedding *
-                torch.tensor(self.scaler.var_ ** 0.5).cuda()
-                + torch.tensor(self.scaler.mean_).cuda()
+                torch.tensor(self.scaler.var_ ** 0.5, device=x.device)
+                + torch.tensor(self.scaler.mean_, device=x.device)
             )
         else:
             unscaled_param = embedding
@@ -190,17 +188,22 @@ class Multiscale1DFitter(nn.Module):
             out = fits
 
         if self.loops_scaler is not None:
-            out_scaled = (out - torch.tensor(self.loops_scaler.mean).cuda()) / torch.tensor(
-                self.loops_scaler.std).cuda()
+            out_scaled = (
+                out - torch.tensor(self.loops_scaler.mean, device=x.device)
+            ) / torch.tensor(self.loops_scaler.std, device=x.device)
         else:
             out_scaled = out
 
-        if self.training == True:
+        if self.training:
             return out_scaled, unscaled_param
-        if self.training == False:
+        else:
             # this is a scaling that includes the corrections for shifts in the data
-            embeddings = (unscaled_param.cuda() - torch.tensor(self.scaler.mean_).cuda()
-                          )/torch.tensor(self.scaler.var_ ** 0.5).cuda()
+            if self.scaler is not None:
+                embeddings = (
+                    unscaled_param - torch.tensor(self.scaler.mean_, device=x.device)
+                ) / torch.tensor(self.scaler.var_ ** 0.5, device=x.device)
+            else:
+                embeddings = unscaled_param
             return out_scaled, embeddings, unscaled_param
 
 
@@ -211,14 +214,15 @@ class ComplexPostProcessor:
 
     def compute(self, fits):
         # extract and return real and imaginary
+        device = fits.device
         real = torch.real(fits)
-        real_scaled = (real - torch.tensor(self.dataset.raw_data_scaler.real_scaler.mean).cuda()) / torch.tensor(
-            self.dataset.raw_data_scaler.real_scaler.std
-        ).cuda()
+        real_scaled = (real - torch.tensor(self.dataset.raw_data_scaler.real_scaler.mean, device=device)) / torch.tensor(
+            self.dataset.raw_data_scaler.real_scaler.std, device=device
+        )
         imag = torch.imag(fits)
-        imag_scaled = (imag - torch.tensor(self.dataset.raw_data_scaler.imag_scaler.mean).cuda()) / torch.tensor(
-            self.dataset.raw_data_scaler.imag_scaler.std
-        ).cuda()
+        imag_scaled = (imag - torch.tensor(self.dataset.raw_data_scaler.imag_scaler.mean, device=device)) / torch.tensor(
+            self.dataset.raw_data_scaler.imag_scaler.std, device=device
+        )
         out = torch.stack((real_scaled, imag_scaled), 2)
 
         return out
