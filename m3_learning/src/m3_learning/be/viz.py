@@ -1381,8 +1381,13 @@ class Viz:
         **kwargs,
     ):
         
-        true_state = torch.atleast_3d(torch.tensor(true_state.reshape(-1,96)))
-        
+        # reshapes flattened hysteresis loops (96 voltage steps per loop) into
+        # a 3D tensor. SHO data (dict states or [samples, bins, 2] tensors)
+        # is passed through unchanged.
+        if fit_type == "hysteresis" and not isinstance(true_state, dict):
+            true_state = torch.atleast_3d(
+                torch.tensor(true_state.reshape(-1, 96)))
+
         d1, d2, x1, x2, label, index1, mse1 = None, None, None, None, None, None, None
 
         if fit_type == "SHO":
@@ -2031,18 +2036,6 @@ class Viz:
         # gets the parameters from the SHO LSQF fit
         true = self.dataset.SHO_fit_results().reshape(-1, 4)
 
-        # Builds the dataframe for the violin plot
-        true_df = pd.DataFrame(
-            true, columns=["Amplitude", "Resonance", "Q-Factor", "Phase"]
-        )
-        predicted_df = pd.DataFrame(
-            scaled_param, columns=["Amplitude",
-                                   "Resonance", "Q-Factor", "Phase"]
-        )
-
-        # merges the two dataframes
-        df = pd.concat((true_df, predicted_df))
-
         # adds the labels to the dataframe
         names = [true, scaled_param]
         names_str = ["LSQF", "NN"]
@@ -2058,7 +2051,7 @@ class Viz:
                     "dataset": np.repeat(names_str[j], name.shape[0]),
                 }
 
-                df = pd.concat((df, pd.DataFrame(dict_)))
+                df = pd.concat((df, pd.DataFrame(dict_)), ignore_index=True)
 
         # builds the plot
         fig, ax = plt.subplots(figsize=(2, 2))
@@ -2099,22 +2092,9 @@ class Viz:
 
         true_scaled = self.dataset.loop_param_scaler.transform(true)
 
-        # Builds the dataframe for the violin plot
-        true_df = pd.DataFrame(
-            true, columns=["a0", "a1", "a2", "a3", "a4",
-                           "b0", "b1", "b2", "b3"]
-        )
-        predicted_df = pd.DataFrame(
-            scaled_param, columns=["a0", "a1", "a2", "a3", "a4",
-                                   "b0", "b1", "b2", "b3"]
-        )
-
-        # merges the two dataframes
-        df = pd.concat((predicted_df, true_df))
-
         # adds the labels to the dataframe
         names = [true_scaled, scaled_param]
-        names_str = ["NN", "LSQF"]
+        names_str = ["LSQF", "NN"]
 
         labels = ["a0", "a1", "a2", "a3", "a4", "b0", "b1", "b2", "b3"]
 
@@ -2127,17 +2107,10 @@ class Viz:
                     "dataset": np.repeat(names_str[j], name.shape[0]),
                 }
 
-                df = pd.concat((df, pd.DataFrame(dict_)))
+                df = pd.concat((df, pd.DataFrame(dict_)), ignore_index=True)
 
         # builds the plot
         fig, ax = plt.subplots(figsize=(4, 4))
-
-        # plots the data
-        print('df colums',df.columns[df.columns.duplicated()])
-        print('df index',df.index[df.index.duplicated()])
-
-        # df = df.loc[:, ~df.columns.duplicated()]
-        df = df.reset_index(drop=False)
 
         sns.violinplot(
             data=df, x="parameter", y="value", hue="dataset", split=True, ax=ax, linewidth=.1,

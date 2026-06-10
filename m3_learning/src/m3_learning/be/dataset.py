@@ -1489,9 +1489,24 @@ class BE_Dataset:
                 # reshapes the parameters for fitting functions
                 params = fit_results.reshape(-1, 4)
 
-                # gets the data from the fitting function
-                data = eval(
-                    f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)")
+                # gets the fitting function for the current fitter
+                fit_func = getattr(self, f"SHO_fit_func_{self.fitter}")
+
+                # computes the fits in chunks to bound peak memory usage --
+                # computing 1.4M complex128 spectra at once requires >15 GB of
+                # intermediate arrays. The results are identical.
+                chunk_size = 100000
+                if isinstance(params, torch.Tensor) and len(params) > chunk_size:
+                    first = fit_func(params[:chunk_size], frequency_bins)
+                    data = torch.empty(
+                        (len(params), first.shape[1]), dtype=first.dtype)
+                    data[:chunk_size] = first
+                    del first
+                    for start in range(chunk_size, len(params), chunk_size):
+                        data[start:start + chunk_size] = fit_func(
+                            params[start:start + chunk_size], frequency_bins)
+                else:
+                    data = fit_func(params, frequency_bins)
 
                 # checks if the full dataset was used and thus the data can be reshaped
                 if bins*self.num_pix*self.voltage_steps*2 == len(data.flatten()):

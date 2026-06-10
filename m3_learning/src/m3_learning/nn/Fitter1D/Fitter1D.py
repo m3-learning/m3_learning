@@ -79,13 +79,16 @@ def write_csv(write_CSV,
 
 
 class Multiscale1DFitter(nn.Module):
-    def __init__(self, function, x_data, input_channels, num_params, scaler=None, post_processing=None, device="cuda", loops_scaler=None, **kwargs):
+    def __init__(self, function, x_data, input_channels, num_params, scaler=None, post_processing=None, device=None, loops_scaler=None, **kwargs):
 
         self.input_channels = input_channels
         self.scaler = scaler
         self.function = function
         self.x_data = x_data
         self.post_processing = post_processing
+        # device-agnostic: defaults to GPU if available, otherwise CPU
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = device
         self.num_params = num_params
         self.loops_scaler = loops_scaler
@@ -176,8 +179,9 @@ class Multiscale1DFitter(nn.Module):
             unscaled_param = embedding
 
         # passes to the pytorch fitting function
+        # uses the device of the input data so the model is device-agnostic
         fits = self.function(
-            unscaled_param, self.x_data, device=self.device)
+            unscaled_param, self.x_data, device=x.device)
 
         out = fits
 
@@ -243,12 +247,13 @@ class Model(nn.Module):
 
         if device is None:
             if torch.cuda.is_available():
-                self.device = "cuda"
+                device = "cuda"
                 print(f"Using GPU {torch.cuda.get_device_name(0)}")
             else:
-                self.device = "cpu"
+                device = "cpu"
                 print("Using CPU")
 
+        self.device = device
         self.model = model
         self.model.dataset = dataset
         self.model.training = True
