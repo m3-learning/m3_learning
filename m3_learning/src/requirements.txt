@@ -10,6 +10,7 @@ torchvision
 torchaudio
 Pillow
 imageio
+opencv-python
 tqdm
 pandas
 py-cpuinfo
