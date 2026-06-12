@@ -35,9 +35,9 @@ def static_state_decorator(func):
 def write_csv(write_CSV,
               path,
               model_name,
-              optimizer_name,
               i,
               noise,
+              optimizer_name,
               epochs,
               total_time,
               train_loss,
@@ -45,7 +45,8 @@ def write_csv(write_CSV,
               loss_func,
               seed,
               stoppage_early,
-              model_updates, 
+              model_updates,
+              model_path=None,
               ):
 
     if write_CSV is not None:
@@ -62,6 +63,11 @@ def write_csv(write_CSV,
                    "filename",
                    "early_stoppage",
                    "model updates"]
+        # path of the saved checkpoint; defaults to the name used by the final
+        # torch.save in Model.fit() (callers pass model_path explicitly when a
+        # different file, e.g. an early-stoppage checkpoint, was saved)
+        if model_path is None:
+            model_path = f"{path}/{model_name}_model_optimizer_{optimizer_name}_epoch_{epochs}_train_loss_{train_loss}.pth"
         data = [model_name,
                 i,
                 noise,
@@ -72,20 +78,23 @@ def write_csv(write_CSV,
                 batch_size,
                 loss_func,
                 seed,
-                f"{path}/{model_name}_model_epoch_{epochs}_train_loss_{train_loss}.pth",
+                model_path,
                 f"{stoppage_early}",
                 f"{model_updates}"]
         append_to_csv(f"{path}/{write_CSV}", data, headers)
 
 
 class Multiscale1DFitter(nn.Module):
-    def __init__(self, function, x_data, input_channels, num_params, scaler=None, post_processing=None, device="cuda", loops_scaler=None, **kwargs):
+    def __init__(self, function, x_data, input_channels, num_params, scaler=None, post_processing=None, device=None, loops_scaler=None, **kwargs):
 
         self.input_channels = input_channels
         self.scaler = scaler
         self.function = function
         self.x_data = x_data
         self.post_processing = post_processing
+        # device-agnostic: defaults to GPU if available, otherwise CPU
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = device
         self.num_params = num_params
         self.loops_scaler = loops_scaler
@@ -165,21 +174,20 @@ class Multiscale1DFitter(nn.Module):
         encoded = torch.cat((cnn_flat, xfc), 1)  # merge dense and 1d conv.
         embedding = self.hidden_embedding(encoded)  # output is 4 parameters
 
-        unscaled_param = embedding
-
         if self.scaler is not None:
             # corrects the scaling of the parameters
             unscaled_param = (
                 embedding *
-                torch.tensor(self.scaler.var_ ** 0.5).cuda()
-                + torch.tensor(self.scaler.mean_).cuda()
+                torch.tensor(self.scaler.var_ ** 0.5, device=x.device)
+                + torch.tensor(self.scaler.mean_, device=x.device)
             )
         else:
             unscaled_param = embedding
 
         # passes to the pytorch fitting function
+        # uses the device of the input data so the model is device-agnostic
         fits = self.function(
-            unscaled_param, self.x_data, device=self.device)
+            unscaled_param, self.x_data, device=x.device)
 
         out = fits
 
@@ -190,17 +198,22 @@ class Multiscale1DFitter(nn.Module):
             out = fits
 
         if self.loops_scaler is not None:
-            out_scaled = (out - torch.tensor(self.loops_scaler.mean).cuda()) / torch.tensor(
-                self.loops_scaler.std).cuda()
+            out_scaled = (
+                out - torch.tensor(self.loops_scaler.mean, device=x.device)
+            ) / torch.tensor(self.loops_scaler.std, device=x.device)
         else:
             out_scaled = out
 
-        if self.training == True:
+        if self.training:
             return out_scaled, unscaled_param
-        if self.training == False:
+        else:
             # this is a scaling that includes the corrections for shifts in the data
-            embeddings = (unscaled_param.cuda() - torch.tensor(self.scaler.mean_).cuda()
-                          )/torch.tensor(self.scaler.var_ ** 0.5).cuda()
+            if self.scaler is not None:
+                embeddings = (
+                    unscaled_param - torch.tensor(self.scaler.mean_, device=x.device)
+                ) / torch.tensor(self.scaler.var_ ** 0.5, device=x.device)
+            else:
+                embeddings = unscaled_param
             return out_scaled, embeddings, unscaled_param
 
 
@@ -211,14 +224,15 @@ class ComplexPostProcessor:
 
     def compute(self, fits):
         # extract and return real and imaginary
+        device = fits.device
         real = torch.real(fits)
-        real_scaled = (real - torch.tensor(self.dataset.raw_data_scaler.real_scaler.mean).cuda()) / torch.tensor(
-            self.dataset.raw_data_scaler.real_scaler.std
-        ).cuda()
+        real_scaled = (real - torch.tensor(self.dataset.raw_data_scaler.real_scaler.mean, device=device)) / torch.tensor(
+            self.dataset.raw_data_scaler.real_scaler.std, device=device
+        )
         imag = torch.imag(fits)
-        imag_scaled = (imag - torch.tensor(self.dataset.raw_data_scaler.imag_scaler.mean).cuda()) / torch.tensor(
-            self.dataset.raw_data_scaler.imag_scaler.std
-        ).cuda()
+        imag_scaled = (imag - torch.tensor(self.dataset.raw_data_scaler.imag_scaler.mean, device=device)) / torch.tensor(
+            self.dataset.raw_data_scaler.imag_scaler.std, device=device
+        )
         out = torch.stack((real_scaled, imag_scaled), 2)
 
         return out
@@ -239,12 +253,13 @@ class Model(nn.Module):
 
         if device is None:
             if torch.cuda.is_available():
-                self.device = "cuda"
+                device = "cuda"
                 print(f"Using GPU {torch.cuda.get_device_name(0)}")
             else:
-                self.device = "cpu"
+                device = "cpu"
                 print("Using CPU")
 
+        self.device = device
         self.model = model
         self.model.dataset = dataset
         self.model.training = True
@@ -387,8 +402,9 @@ class Model(nn.Module):
                     if loss < early_stopping_loss:
                         low_loss_count += train_batch.shape[0]
                         if low_loss_count >= early_stopping_count:
+                            checkpoint_path = f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss/total_num}.pth"
                             torch.save(self.model.state_dict(),
-                                       f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss/total_num}.pth")
+                                       checkpoint_path)
 
                             write_csv(write_CSV,
                                       path,
@@ -403,7 +419,8 @@ class Model(nn.Module):
                                       loss_func,
                                       seed,
                                       True,
-                                      model_updates)
+                                      model_updates,
+                                      model_path=checkpoint_path)
 
                             already_stopped = True
                     else:
@@ -431,8 +448,9 @@ class Model(nn.Module):
 
             if early_stopping_time is not None:
                 if total_time > early_stopping_time:
+                    checkpoint_path = f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth"
                     torch.save(self.model.state_dict(),
-                               f"{path}/Early_Stoppage_at_{total_time}_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
+                               checkpoint_path)
 
                     write_csv(write_CSV,
                               path,
@@ -447,7 +465,8 @@ class Model(nn.Module):
                               loss_func,
                               seed,
                               True,
-                              model_updates)
+                              model_updates,
+                              model_path=checkpoint_path)
                     break
 
         torch.save(self.model.state_dict(),
@@ -512,8 +531,9 @@ class Model(nn.Module):
             if i == num_batches - 1:
                 end = num_elements
 
+            # model weights are float32; input data may arrive as float64
             pred_batch, params_scaled_, params_ = self.model(
-                train_batch.to(self.device))
+                train_batch.to(self.device).float())
 
             if is_SHO:
                 predictions[start:end] = pred_batch.cpu().detach()

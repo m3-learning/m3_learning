@@ -1,6 +1,3 @@
-from pygments import highlight
-from pygments.lexers import PythonLexer
-from pygments.formatters import TerminalFormatter
 import inspect
 
 def print_code(func):
@@ -9,8 +6,13 @@ def print_code(func):
 
     Args:
         func (obj): a python function
-    """    
-    
+    """
+    # lazy import so the package imports without pygments installed
+    from pygments import highlight
+    from pygments.lexers import PythonLexer
+    from pygments.formatters import TerminalFormatter
+
+
     # Fetch source lines and starting line number
     source_lines, starting_line_number = inspect.getsourcelines(func)
     source_code = "".join(source_lines)

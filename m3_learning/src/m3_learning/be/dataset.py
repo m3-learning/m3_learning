@@ -35,6 +35,30 @@ from dataclasses import dataclass, field, InitVar
 from typing import Any, Callable, Dict, Optional, Union
 
 
+def _patch_bglib_for_numpy2():
+    """BGlib 0.0.6 assigns size-1 arrays into scalar record fields
+    (be_sho_fitter.py: ``sho_vec["R2 Criterion"][i] = 1 - result.fun``),
+    which numpy>=2 rejects. Normalize ``result.fun`` to a scalar first."""
+    fitter_cls = belib.analysis.BESHOfitter
+    if getattr(fitter_cls, "_m3_numpy2_patched", False):
+        return
+    orig_reformat = fitter_cls._reformat_results
+
+    def _reformat_results(self, results, strategy="wavelet_peaks"):
+        if strategy == "least_squares":
+            for result in results:
+                fun = np.asarray(result.fun).ravel()
+                if fun.size == 1:
+                    result.fun = fun.item()
+        return orig_reformat(self, results, strategy)
+
+    fitter_cls._reformat_results = _reformat_results
+    fitter_cls._m3_numpy2_patched = True
+
+
+_patch_bglib_for_numpy2()
+
+
 def static_state_decorator(func):
     """Decorator that stops the function from changing the state
 
@@ -149,8 +173,10 @@ class BE_Dataset:
             setattr(self, key, value)
 
         # Preprocessing and raw data
+        # Note: SHO_preprocessing() internally calls set_raw_data(), so it is
+        # only called once here (set_preprocessing no longer duplicates it).
+        # This avoids reading/preprocessing the full raw dataset multiple times.
         self.set_preprocessing()
-        self.set_raw_data()
         self.SHO_preprocessing()
 
     def generate_noisy_data_records(self,
@@ -179,6 +205,14 @@ class BE_Dataset:
 
             # iterates through the noise levels provided
             for noise_level in noise_levels:
+
+                # skips the noise level if the record already exists in the file
+                if any(dset.name.split('/')[-1] == f"Noisy_Data_{noise_level}"
+                       for dset in usid.hdf_utils.find_dataset(h5_f, f"Noisy_Data_{noise_level}")):
+                    if verbose:
+                        print(
+                            f"Noisy_Data_{noise_level} already exists -- skipping")
+                    continue
 
                 if verbose:
                     print(f"Adding noise level {noise_level}")
@@ -234,9 +268,8 @@ class BE_Dataset:
         """
 
         # does preprocessing for the SHO_fit results
-        if in_list(self.tree, "*SHO_Fit*"):
-            self.SHO_preprocessing()
-        else:
+        # (the actual SHO_preprocessing() call happens once in __post_init__)
+        if not in_list(self.tree, "*SHO_Fit*"):
             Warning("No SHO fit found")
 
         # does preprocessing for the loop fit results
@@ -592,6 +625,19 @@ class BE_Dataset:
             # gets the measurement group name
             h5_meas_grp = h5_main.parent.parent
 
+            # Reuses a cached SHO fit (e.g., computed by
+            # ``SHO_Fitter(h5_sho_targ_grp="Raw_Data_SHO_Fit")``) by hard-linking
+            # the results group into the measurement group, where the BGlib
+            # fitters and the downstream readers (``get_loop_path``) expect it.
+            # This makes the SHO fit step below return the cached results
+            # instead of recomputing the entire SHO fit a second time.
+            if h5_sho_targ_grp is not None:
+                sho_grp_name = h5_main.name.split("/")[-1] + "-SHO_Fit_000"
+                cached_sho_grp = h5_file.get(
+                    f"{h5_sho_targ_grp}/{sho_grp_name}")
+                if cached_sho_grp is not None and sho_grp_name not in h5_meas_grp:
+                    h5_meas_grp[sho_grp_name] = cached_sho_grp
+
             # does the SHO_fit if it does not exist.
             sho_fit_points = 5  # The number of data points at each step to use when fitting
             sho_override = False  # Force recompute if True
@@ -623,7 +669,10 @@ class BE_Dataset:
                 print('VS cycle fraction could not be found. Setting to default value')
                 vs_cycle_frac = 'full'
 
-            sho_fit, sho_dataset = self.SHO_Fitter(fit_group=True)
+            # forwards the cached SHO fit location so this call returns the
+            # cached results instead of recomputing the SHO fit
+            sho_fit, sho_dataset = self.SHO_Fitter(
+                fit_group=True, h5_sho_targ_grp=h5_sho_targ_grp)
 
             # instantiates the loop fitter using belib
             loop_fitter = belib.analysis.BELoopFitter(h5_sho_fit,
@@ -692,7 +741,17 @@ class BE_Dataset:
     def dc_voltage(self):
         """Gets the DC voltage vector"""
         with h5py.File(self.file, "r+") as h5_f:
-            return h5_f[f"Raw_Data-SHO_Fit_000/Spectroscopic_Values"][0, 1::2]
+            # the SHO fit group location depends on how the fit was saved
+            # (file root, or a target group such as `Raw_Data_SHO_Fit`)
+            for path in ("Raw_Data-SHO_Fit_000/Spectroscopic_Values",
+                         "Raw_Data_SHO_Fit/Raw_Data-SHO_Fit_000/Spectroscopic_Values"):
+                if path in h5_f:
+                    return h5_f[path][0, 1::2]
+
+        # falls back to searching the file for the SHO fit group
+        group = find_groups_with_string(self.file, "Raw_Data-SHO_Fit_000")[0]
+        with h5py.File(self.file, "r+") as h5_f:
+            return h5_f[f"{group}/Spectroscopic_Values"][0, 1::2]
 
     @property
     def num_pix(self):
@@ -1028,9 +1087,16 @@ class BE_Dataset:
 
         for dataset in self.raw_datasets:
 
-            # data groups in file
-            SHO_fits = find_groups_with_string(
-                self.file, f'{dataset}-SHO_Fit_000')[0]
+            # data groups in file -- skips datasets that have not been fit yet
+            SHO_fit_groups = find_groups_with_string(
+                self.file, f'{dataset}-SHO_Fit_000')
+
+            if len(SHO_fit_groups) == 0:
+                if self.verbose:
+                    print(f"No SHO fit found for {dataset} -- skipping")
+                continue
+
+            SHO_fits = SHO_fit_groups[0]
 
             with h5py.File(self.file, "r+") as h5_f:
 
@@ -1440,9 +1506,24 @@ class BE_Dataset:
                 # reshapes the parameters for fitting functions
                 params = fit_results.reshape(-1, 4)
 
-                # gets the data from the fitting function
-                data = eval(
-                    f"self.SHO_fit_func_{self.fitter}(params, frequency_bins)")
+                # gets the fitting function for the current fitter
+                fit_func = getattr(self, f"SHO_fit_func_{self.fitter}")
+
+                # computes the fits in chunks to bound peak memory usage --
+                # computing 1.4M complex128 spectra at once requires >15 GB of
+                # intermediate arrays. The results are identical.
+                chunk_size = 100000
+                if isinstance(params, torch.Tensor) and len(params) > chunk_size:
+                    first = fit_func(params[:chunk_size], frequency_bins)
+                    data = torch.empty(
+                        (len(params), first.shape[1]), dtype=first.dtype)
+                    data[:chunk_size] = first
+                    del first
+                    for start in range(chunk_size, len(params), chunk_size):
+                        data[start:start + chunk_size] = fit_func(
+                            params[start:start + chunk_size], frequency_bins)
+                else:
+                    data = fit_func(params, frequency_bins)
 
                 # checks if the full dataset was used and thus the data can be reshaped
                 if bins*self.num_pix*self.voltage_steps*2 == len(data.flatten()):

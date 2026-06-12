@@ -9,7 +9,6 @@ import h5py
 import torch
 import time
 from scipy import special
-import tensorflow as tf
 import os
 from BGlib import be as belib
 import sidpy
@@ -362,8 +361,8 @@ def loop_fitting_function_torch(type, V, y):
         b2 = y[:, 7].type(torch.float64)
         b3 = y[:, 8].type(torch.float64)
         d = 1000
-        V1 = torch.tensor(V[:int(len(V) / 2)]).cuda()
-        V2 = torch.tensor(V[int(len(V) / 2):]).cuda()
+        V1 = torch.tensor(V[:int(len(V) / 2)]).to(y.device)
+        V2 = torch.tensor(V[int(len(V) / 2):]).to(y.device)
 
         g1 = (b1 - b0) / 2 * (torch.erf((V1 - a2) * d) + 1) + b0
         g2 = (b3 - b2) / 2 * (torch.erf((V2 - a3) * d) + 1) + b2
@@ -407,6 +406,9 @@ def loop_fitting_function_torch(type, V, y):
     
 
 def loop_fitting_function_tf(type, V, y):
+    # lazy import so the package imports without tensorflow installed
+    import tensorflow as tf
+
     if(type == '9 parameters'):
         a0 = y[:, 0]
         a1 = y[:, 1]

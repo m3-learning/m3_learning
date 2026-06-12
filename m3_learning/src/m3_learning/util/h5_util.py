@@ -39,10 +39,12 @@ def make_group(base, group):
         base (h5py.File): The base h5 file to add the new group to.
         group (str): The name of the group to add.
     """
-    try: 
+    try:
         return base.create_group(group)
     except:
         print('Could not add group - it might already exist.')
+        # returns the existing group so callers can reuse it
+        return base[group]
     
 def make_dataset(base, dataset, data):
     """
