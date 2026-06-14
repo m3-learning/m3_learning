@@ -492,6 +492,15 @@ class Model(nn.Module):
 
         self.model.eval()
 
+        # Release the autograd graph retained by backward(create_graph=True) (which the
+        # second-order optimizers require). Setting .grad=None breaks the parameter<->gradient
+        # reference cycle so the graph's GPU tensors are freed once this model is deleted.
+        # Without this, every batch_training run strands ~0.15 GB on the GPU and the 360-run
+        # loop OOMs. The state_dict is already saved above, so this changes no saved weights,
+        # losses, or training behavior -- it is purely memory cleanup after training completes.
+        for param in self.model.parameters():
+            param.grad = None
+
     def load(self, model_path):
         self.model.load_state_dict(torch.load(model_path))
         self.model.to(self.device)

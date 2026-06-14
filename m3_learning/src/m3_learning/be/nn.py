@@ -707,9 +707,10 @@ def batch_training(dataset, optimizers, noise_list, batch_size, epochs, seed, wr
 
         del model, X_train, X_test, y_train, y_test
 
-        torch.cuda.empty_cache()
-        clear_all_tensors()
+        # Collect first so the (now cycle-free) graph tensors are dropped, THEN return the freed
+        # memory to the device. Calling empty_cache() before gc.collect() leaves it stranded.
         gc.collect()
+        torch.cuda.empty_cache()
 
 
 def clear_all_tensors():
