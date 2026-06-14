@@ -1283,12 +1283,15 @@ class Viz:
                         ax_.set_ylabel("Real (Arb. U.)")
                         ax1.set_ylabel("Imag (Arb. U.)")
 
-                if i < num_fits:
-                    # add a legend just for the last one
+                if i == 0:
+                    # ONE shared legend above the panel grid instead of crowding
+                    # every small panel with the full LSQF/Raw/NN x amplitude/phase
+                    # key (which previously overlapped the data in each panel).
                     lines, labels = ax_.get_legend_handles_labels()
                     lines2, labels2 = ax1.get_legend_handles_labels()
-                    ax_.legend(lines + lines2, labels +
-                               labels2, loc="upper right")
+                    fig.legend(lines + lines2, labels + labels2,
+                               loc="upper center", bbox_to_anchor=(0.5, 1.04),
+                               ncol=3, frameon=False, fontsize="small")
 
         # prints the figure
         if self.Printer is not None and filename is not None:
@@ -2902,11 +2905,12 @@ class Viz:
                 ax[plot_idx - 1].set_ylabel("(Arb. U.)")
                 ax[plot_idx].set_ylabel("(Arb. U.)")
 
-        # add a legend just for the last one
-        lines, labels = ax[plot_idx - 1].get_legend_handles_labels()
-        ax[plot_idx - 1].legend(lines, labels, loc="upper right")
+        # ONE shared legend above the panel grid instead of putting a legend in
+        # the last panels, where it overlapped the measured-loop points.
         lines, labels = ax[plot_idx].get_legend_handles_labels()
-        ax[plot_idx].legend(lines, labels, loc="upper right")
+        fig.legend(lines, labels, loc="upper center",
+                   bbox_to_anchor=(0.5, 1.02), ncol=3, frameon=False,
+                   fontsize="small")
 
         ax[plot_idx - 1].set_xlabel("Voltage (V)")
         ax[plot_idx].set_xlabel("Voltage (V)")
