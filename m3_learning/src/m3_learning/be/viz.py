@@ -1283,12 +1283,15 @@ class Viz:
                         ax_.set_ylabel("Real (Arb. U.)")
                         ax1.set_ylabel("Imag (Arb. U.)")
 
-                if i < num_fits:
-                    # add a legend just for the last one
+                if i == 0:
+                    # ONE shared legend above the panel grid instead of crowding
+                    # every small panel with the full LSQF/Raw/NN x amplitude/phase
+                    # key (which previously overlapped the data in each panel).
                     lines, labels = ax_.get_legend_handles_labels()
                     lines2, labels2 = ax1.get_legend_handles_labels()
-                    ax_.legend(lines + lines2, labels +
-                               labels2, loc="upper right")
+                    fig.legend(lines + lines2, labels + labels2,
+                               loc="upper center", bbox_to_anchor=(0.5, 1.04),
+                               ncol=3, frameon=False, fontsize="small")
 
         # prints the figure
         if self.Printer is not None and filename is not None:
@@ -2053,24 +2056,34 @@ class Viz:
 
                 df = pd.concat((df, pd.DataFrame(dict_)), ignore_index=True)
 
-        # builds the plot
-        fig, ax = plt.subplots(figsize=(2, 2))
+        # builds the plot at a publication-legible size
+        fig, ax = plt.subplots(figsize=(6, 3.6))
 
-        # plots the data
-        sns.violinplot(
-            data=df, x="parameter", y="value", hue="dataset", split=True, ax=ax
-        )
+        # Split violins (LSQF | NN) per parameter. density_norm="width" makes
+        # every violin the same maximum width so the heavy-tailed Q/phi
+        # parameters do not compress the others into slivers; inner="quart"
+        # draws thin quartile lines instead of the default heavy inner box;
+        # cut=0 stops the kernel density from extending past the data.
+        try:
+            sns.violinplot(
+                data=df, x="parameter", y="value", hue="dataset", split=True,
+                inner="quart", cut=0, density_norm="width", linewidth=0.8,
+                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+            )
+        except TypeError:
+            # older seaborn (<0.13) uses scale= instead of density_norm=
+            sns.violinplot(
+                data=df, x="parameter", y="value", hue="dataset", split=True,
+                inner="quartile", cut=0, scale="width", linewidth=0.8,
+                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+            )
 
-        # labels the figure and does some styling
-        labelfigs(ax, 0, style="b")
-        ax.set_ylabel("Scaled SHO Results")
+        ax.set_ylabel("Scaled SHO parameter")
         ax.set_xlabel("")
-
-        # Get the legend associated with the plot
-        legend = ax.get_legend()
-        legend.set_title("")
-
-        # ax.set_aspect(1)
+        ax.axhline(0, color="0.6", lw=0.5, zorder=0)
+        ax.legend(title="", frameon=False, loc="upper right")
+        sns.despine(ax=ax)
+        fig.tight_layout()
 
         # prints the figure
         if self.Printer is not None and filename is not None:
@@ -2109,21 +2122,28 @@ class Viz:
 
                 df = pd.concat((df, pd.DataFrame(dict_)), ignore_index=True)
 
-        # builds the plot
-        fig, ax = plt.subplots(figsize=(4, 4))
+        # builds the plot at a publication-legible size (9 loop parameters)
+        fig, ax = plt.subplots(figsize=(8, 3.6))
 
-        sns.violinplot(
-            data=df, x="parameter", y="value", hue="dataset", split=True, ax=ax, linewidth=.1,
-        )
+        try:
+            sns.violinplot(
+                data=df, x="parameter", y="value", hue="dataset", split=True,
+                inner="quart", cut=0, density_norm="width", linewidth=0.7,
+                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+            )
+        except TypeError:
+            sns.violinplot(
+                data=df, x="parameter", y="value", hue="dataset", split=True,
+                inner="quartile", cut=0, scale="width", linewidth=0.7,
+                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+            )
 
-        # labels the figure and does some styling
-        labelfigs(ax, 0, style="b")
-        ax.set_ylabel("Scaled SHO Results")
+        ax.set_ylabel("Scaled loop parameter")
         ax.set_xlabel("")
-
-        # Get the legend associated with the plot
-        legend = ax.get_legend()
-        legend.set_title("")
+        ax.axhline(0, color="0.6", lw=0.5, zorder=0)
+        ax.legend(title="", frameon=False, loc="upper right")
+        sns.despine(ax=ax)
+        fig.tight_layout()
 
         # prints the figure
         if self.Printer is not None and filename is not None:
@@ -2885,11 +2905,12 @@ class Viz:
                 ax[plot_idx - 1].set_ylabel("(Arb. U.)")
                 ax[plot_idx].set_ylabel("(Arb. U.)")
 
-        # add a legend just for the last one
-        lines, labels = ax[plot_idx - 1].get_legend_handles_labels()
-        ax[plot_idx - 1].legend(lines, labels, loc="upper right")
+        # ONE shared legend above the panel grid instead of putting a legend in
+        # the last panels, where it overlapped the measured-loop points.
         lines, labels = ax[plot_idx].get_legend_handles_labels()
-        ax[plot_idx].legend(lines, labels, loc="upper right")
+        fig.legend(lines, labels, loc="upper center",
+                   bbox_to_anchor=(0.5, 1.02), ncol=3, frameon=False,
+                   fontsize="small")
 
         ax[plot_idx - 1].set_xlabel("Voltage (V)")
         ax[plot_idx].set_xlabel("Voltage (V)")
