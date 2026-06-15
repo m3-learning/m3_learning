@@ -1167,6 +1167,9 @@ class Viz:
         for step, (data, name) in enumerate(zip(data, names)):
             # unpack the data
             d1, d2, x1, x2, label, index1, mse1, params = data
+            # display frequency in MHz (ticks read 1.25/1.30/1.35, no 1e6 offset)
+            x1 = np.asarray(x1) / 1e6
+            x2 = np.asarray(x2) / 1e6
 
             # loops around the datasets to compare
             for bmw, (true, prediction, error, SHO, index1) in enumerate(
@@ -1254,33 +1257,15 @@ class Viz:
                             linestyle="--",
                             label=f"{color} {labels[1]}",
                         )
-                        if display_results == "all":
-                            error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}\n AMP - LSQF:{SHOs['LSQF'][0]:0.2e} NN:{SHOs['NN'][0]:0.2e}\n\u03C9 - LSQF: {SHOs['LSQF'][1]/1000:0.1f} NN: {SHOs['NN'][1]/1000:0.1f} Hz\nQ- LSQF: {SHOs['LSQF'][2]:0.1f} NN: {SHOs['NN'][2]:0.1f}\n\u03C6- LSQF: {SHOs['LSQF'][3]:0.2f} NN: {SHOs['NN'][3]:0.1f} rad"
-                        elif display_results == "MSE":
-                            error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}"
+                # sets the xlabel (frequency shown in MHz, see x1/x2 scaling above)
+                ax_.set_xlabel("Frequency (MHz)")
 
-                # sets the xlabel, this is always frequency (HZ)
-                ax_.set_xlabel("Frequency (Hz)")
-
-                # if wants to display the results
-                if display_results is not None:
-                    # gets the axis position in inches - gets the bottom center
-                    center = get_axis_pos_inches(fig, ax[i])
-
-                    # selects the text position as an offset from the bottom center
-                    text_position_in_inches = (center[0], center[1] - 0.33)
-
-                    if "error_string" not in locals():
-                        error_string = f"MSE: {error:0.4f}"
-
-                    add_text_to_figure(
-                        fig,
-                        error_string,
-                        text_position_in_inches,
-                        fontsize=6,
-                        ha="center",
-                        va="top",
-                    )
+                # reconstruction MSE goes in the panel TITLE (out of the data area,
+                # so it never overlaps the resonance peak)
+                if display_results is not None and {"LSQF", "NN"} <= set(errors):
+                    ax_.set_title(
+                        f"LSQF {errors['LSQF']:.4f}  |  NN {errors['NN']:.4f}",
+                        fontsize=9, pad=3)
 
                 if out_state is not None:
                     if "raw_format" in out_state.keys():
@@ -1303,7 +1288,7 @@ class Viz:
 
         # prints the figure
         if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename, label_figs=ax, style="b")
+            self.Printer.savefig(fig, filename, label_figs=ax, style="b", loc="tr")
 
         return fig
 
@@ -2878,38 +2863,16 @@ class Viz:
                     (gaps[1] + size[1]) * (1.25 - i // 3 - 1.25) - gaps[1],
                 )
 
-                # gets the axis position in inches - gets the bottom center
-                center = get_axis_pos_inches(fig, ax[plot_idx])
-
-                # selects the text position as an offset from the bottom center
-                text_position_in_inches = (center[0], center[1] - 0.32 + .125)
-
-                error = results['MSE_LSQF']
-
-                error_string = f"LSQF MSE: {error:0.4f}"
-
-                add_text_to_figure(
-                    fig,
-                    error_string,
-                    text_position_in_inches,
-                    fontsize=6,
-                    ha="center",
-                )
-
-                # selects the text position as an offset from the bottom center
-                text_position_in_inches = (center[0], center[1] - 0.3)
-
-                error = results['MSE_NN']
-
-                error_string = f"NN MSE: {error:0.4f}"
-
-                add_text_to_figure(
-                    fig,
-                    error_string,
-                    text_position_in_inches,
-                    fontsize=6,
-                    ha="center",
-                )
+                # MSE shown INSIDE the panel (top-left) so it never overlaps the
+                # Voltage (V) axis label/ticks below the panel
+                error_string = (f"LSQF MSE {results['MSE_LSQF']:0.4f}\n"
+                                f"NN MSE {results['MSE_NN']:0.4f}")
+                # placed below the y-axis sci-offset (1e-4) so the two don't collide
+                ax[plot_idx].text(0.03, 0.82, error_string,
+                                  transform=ax[plot_idx].transAxes,
+                                  va="top", ha="left", fontsize=8.5,
+                                  bbox=dict(boxstyle="round,pad=0.2", fc="white",
+                                            ec="none", alpha=0.7))
 
                 ax[plot_idx - 1].set_ylabel("Amplitude (a.u.)")
                 ax[plot_idx].set_ylabel("Amplitude (a.u.)")
@@ -2928,6 +2891,6 @@ class Viz:
 
         # prints the figure
         if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename, label_figs=ax, style="b")
+            self.Printer.savefig(fig, filename, label_figs=ax, style="b", loc="tr")
 
         return fig

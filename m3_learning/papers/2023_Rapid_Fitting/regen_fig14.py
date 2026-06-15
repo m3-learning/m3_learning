@@ -48,7 +48,7 @@ BE_viz.SHO_Fit_comparison(
     (LSQF, NN), ["LSQF", "NN"],
     model_comparison=[model, {"fitter": "LSQF"}],
     out_state=out_state,
-    size=(1.7, 1.7), gaps=(1.9, 1.9),   # roomier panels so the bigger pub-style labels don't overlap
+    size=(2.7, 1.5), gaps=(1.3, 0.75),   # roomier panels so the bigger pub-style labels don't overlap
     filename="Figure_14_LSQF_NN_bmw_comparison",
 )
 print("Wrote ./Figures/Figure_14_LSQF_NN_bmw_comparison.png and .svg")

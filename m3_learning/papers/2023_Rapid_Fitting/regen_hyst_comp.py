@@ -35,7 +35,7 @@ model.load(HYST)
 
 BE_viz.hysteresis_comparison(['LSQF', 'NN'],
                              row=None, col=None, cycle=None,
-                             size=(1.25, 1.25), gaps=(0.8, 0.4),
+                             size=(1.25, 1.25), gaps=(0.9, 0.9),
                              nn_model=model, measurement_state=None,
                              filename="hysteresis_comparison")
 print("Wrote ./Figures/hysteresis_comparison.png and .svg")
