@@ -38,6 +38,10 @@ def main():
     args = ap.parse_args()
 
     set_style("printing")
+    import sys as _s, os as _o
+    _s.path.insert(0,_o.path.dirname(_o.path.abspath(__file__)))
+    from pubstyle import set_pub_style, METHOD_COLORS, SEQ_CMAP
+    set_pub_style()
     random_seed(seed=42)
 
     printing = printer(basepath="./Figures/")

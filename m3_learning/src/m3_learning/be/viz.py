@@ -34,11 +34,14 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Type
 
 
+# One fixed color PER METHOD (matches pubstyle.METHOD_COLORS); amplitude vs phase
+# are distinguished by linestyle (solid vs dashed), not by a second color.
 color_palette = {
-    "LSQF_A": "#003f5c",
-    "LSQF_P": "#444e86",
-    "NN_A": "#955196",
-    "NN_P": "#dd5182",
+    "LSQF_A": "#0072B2",
+    "LSQF_P": "#0072B2",
+    "NN_A": "#E69F00",
+    "NN_P": "#E69F00",
+    "Raw": "#666666",
     "other": "#ff6e54",
     "other_2": "#ffa600",
 }
@@ -1188,21 +1191,25 @@ class Viz:
                     x2,
                     prediction[1].flatten(),
                     color=color_palette[f"{name}_P"],
+                    linestyle="--",
                     label=f"{name} {label[1]}",
                 )
+                ax_.set_ylabel("Amplitude (a.u.)")
+                ax1.set_ylabel("Phase (rad)")
 
                 ax_.plot(
                     x1,
                     true[0].flatten(),
                     "o",
-                    color=color_palette["LSQF_A"],
+                    color=color_palette["Raw"],
                     label=f"Raw {label[0]}",
                 )
                 ax1.plot(
                     x1,
                     true[1].flatten(),
                     "o",
-                    color=color_palette["LSQF_P"],
+                    markerfacecolor="none",
+                    color=color_palette["Raw"],
                     label=f"Raw {label[1]}",
                 )
 
@@ -1244,6 +1251,7 @@ class Viz:
                             x2,
                             pred_data.squeeze()[1].flatten(),
                             color=color_palette[f"{color}_P"],
+                            linestyle="--",
                             label=f"{color} {labels[1]}",
                         )
                         if display_results == "all":
@@ -1663,7 +1671,7 @@ class Viz:
                     ax[i * 4 + j + 1],
                     SHO_[:, ind, j],
                     colorbars=False,
-                    cmap="viridis",
+                    cmap="cividis",
                 )
 
                 if i // rows == 0:
@@ -1894,7 +1902,7 @@ class Viz:
                         ax[axis_start + j],
                         _SHO[:, ind, j],
                         colorbars=False,
-                        cmap="viridis",
+                        cmap="cividis",
                     )
 
                     if i // rows == 0 and k == 0:
@@ -2068,14 +2076,14 @@ class Viz:
             sns.violinplot(
                 data=df, x="parameter", y="value", hue="dataset", split=True,
                 inner="quart", cut=0, density_norm="width", linewidth=0.8,
-                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+                palette={"LSQF": "#0072B2", "NN": "#E69F00"}, ax=ax,
             )
         except TypeError:
             # older seaborn (<0.13) uses scale= instead of density_norm=
             sns.violinplot(
                 data=df, x="parameter", y="value", hue="dataset", split=True,
                 inner="quartile", cut=0, scale="width", linewidth=0.8,
-                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+                palette={"LSQF": "#0072B2", "NN": "#E69F00"}, ax=ax,
             )
 
         ax.set_ylabel("Scaled SHO parameter")
@@ -2129,13 +2137,13 @@ class Viz:
             sns.violinplot(
                 data=df, x="parameter", y="value", hue="dataset", split=True,
                 inner="quart", cut=0, density_norm="width", linewidth=0.7,
-                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+                palette={"LSQF": "#0072B2", "NN": "#E69F00"}, ax=ax,
             )
         except TypeError:
             sns.violinplot(
                 data=df, x="parameter", y="value", hue="dataset", split=True,
                 inner="quartile", cut=0, scale="width", linewidth=0.7,
-                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+                palette={"LSQF": "#0072B2", "NN": "#E69F00"}, ax=ax,
             )
 
         ax.set_ylabel("Scaled loop parameter")
@@ -2644,7 +2652,7 @@ class Viz:
             axs[0, i].imshow(
                 parms_pred[:, i].reshape(
                     embedding_image_size, embedding_image_size),
-                cmap="viridis",
+                cmap="cividis",
                 vmin=clims[i][0],
                 vmax=clims[i][1],
             )
@@ -2653,7 +2661,7 @@ class Viz:
             axs[1, i].imshow(
                 parms_lsqf[:, i].reshape(
                     embedding_image_size, embedding_image_size),
-                cmap="viridis",
+                cmap="cividis",
                 vmin=clims[i][0],
                 vmax=clims[i][1],
             )
@@ -2853,13 +2861,14 @@ class Viz:
                 index = int(results['Original Index'])
 
                 ax[plot_idx].plot(voltage,
-                                  raw_hysteresis_loop[index], 'o', label="Raw Data")
+                                  raw_hysteresis_loop[index], 'o',
+                                  color="#666666", label="Raw Data")
 
                 ax[plot_idx].plot(voltage,
-                                  loops[index], 'r', label='LSQF')
+                                  loops[index], color="#0072B2", label='LSQF')
 
                 ax[plot_idx].plot(voltage,
-                                  NN_loops[index], 'g', label='NN')
+                                  NN_loops[index], color="#E69F00", label='NN')
 
                 ax[plot_idx].ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
 
@@ -2902,8 +2911,8 @@ class Viz:
                     ha="center",
                 )
 
-                ax[plot_idx - 1].set_ylabel("(Arb. U.)")
-                ax[plot_idx].set_ylabel("(Arb. U.)")
+                ax[plot_idx - 1].set_ylabel("Amplitude (a.u.)")
+                ax[plot_idx].set_ylabel("Amplitude (a.u.)")
 
         # ONE shared legend above the panel grid instead of putting a legend in
         # the last panels, where it overlapped the measured-loop points.
