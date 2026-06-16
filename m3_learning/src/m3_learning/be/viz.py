@@ -34,11 +34,14 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Type
 
 
+# One fixed color PER METHOD (matches pubstyle.METHOD_COLORS); amplitude vs phase
+# are distinguished by linestyle (solid vs dashed), not by a second color.
 color_palette = {
-    "LSQF_A": "#003f5c",
-    "LSQF_P": "#444e86",
-    "NN_A": "#955196",
-    "NN_P": "#dd5182",
+    "LSQF_A": "#0072B2",
+    "LSQF_P": "#0072B2",
+    "NN_A": "#E69F00",
+    "NN_P": "#E69F00",
+    "Raw": "#666666",
     "other": "#ff6e54",
     "other_2": "#ffa600",
 }
@@ -1164,6 +1167,9 @@ class Viz:
         for step, (data, name) in enumerate(zip(data, names)):
             # unpack the data
             d1, d2, x1, x2, label, index1, mse1, params = data
+            # display frequency in MHz (ticks read 1.25/1.30/1.35, no 1e6 offset)
+            x1 = np.asarray(x1) / 1e6
+            x2 = np.asarray(x2) / 1e6
 
             # loops around the datasets to compare
             for bmw, (true, prediction, error, SHO, index1) in enumerate(
@@ -1188,21 +1194,25 @@ class Viz:
                     x2,
                     prediction[1].flatten(),
                     color=color_palette[f"{name}_P"],
+                    linestyle="--",
                     label=f"{name} {label[1]}",
                 )
+                ax_.set_ylabel("Amplitude (a.u.)")
+                ax1.set_ylabel("Phase (rad)")
 
                 ax_.plot(
                     x1,
                     true[0].flatten(),
                     "o",
-                    color=color_palette["LSQF_A"],
+                    color=color_palette["Raw"],
                     label=f"Raw {label[0]}",
                 )
                 ax1.plot(
                     x1,
                     true[1].flatten(),
                     "o",
-                    color=color_palette["LSQF_P"],
+                    markerfacecolor="none",
+                    color=color_palette["Raw"],
                     label=f"Raw {label[1]}",
                 )
 
@@ -1244,35 +1254,18 @@ class Viz:
                             x2,
                             pred_data.squeeze()[1].flatten(),
                             color=color_palette[f"{color}_P"],
+                            linestyle="--",
                             label=f"{color} {labels[1]}",
                         )
-                        if display_results == "all":
-                            error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}\n AMP - LSQF:{SHOs['LSQF'][0]:0.2e} NN:{SHOs['NN'][0]:0.2e}\n\u03C9 - LSQF: {SHOs['LSQF'][1]/1000:0.1f} NN: {SHOs['NN'][1]/1000:0.1f} Hz\nQ- LSQF: {SHOs['LSQF'][2]:0.1f} NN: {SHOs['NN'][2]:0.1f}\n\u03C6- LSQF: {SHOs['LSQF'][3]:0.2f} NN: {SHOs['NN'][3]:0.1f} rad"
-                        elif display_results == "MSE":
-                            error_string = f"MSE - LSQF: {errors['LSQF']:0.4f} NN: {errors['NN']:0.4f}"
+                # sets the xlabel (frequency shown in MHz, see x1/x2 scaling above)
+                ax_.set_xlabel("Frequency (MHz)")
 
-                # sets the xlabel, this is always frequency (HZ)
-                ax_.set_xlabel("Frequency (Hz)")
-
-                # if wants to display the results
-                if display_results is not None:
-                    # gets the axis position in inches - gets the bottom center
-                    center = get_axis_pos_inches(fig, ax[i])
-
-                    # selects the text position as an offset from the bottom center
-                    text_position_in_inches = (center[0], center[1] - 0.33)
-
-                    if "error_string" not in locals():
-                        error_string = f"MSE: {error:0.4f}"
-
-                    add_text_to_figure(
-                        fig,
-                        error_string,
-                        text_position_in_inches,
-                        fontsize=6,
-                        ha="center",
-                        va="top",
-                    )
+                # reconstruction MSE goes in the panel TITLE (out of the data area,
+                # so it never overlaps the resonance peak)
+                if display_results is not None and {"LSQF", "NN"} <= set(errors):
+                    ax_.set_title(
+                        f"LSQF {errors['LSQF']:.4f}  |  NN {errors['NN']:.4f}",
+                        fontsize=9, pad=3)
 
                 if out_state is not None:
                     if "raw_format" in out_state.keys():
@@ -1295,7 +1288,7 @@ class Viz:
 
         # prints the figure
         if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename, label_figs=ax, style="b")
+            self.Printer.savefig(fig, filename, label_figs=ax, style="b", loc="tr")
 
         return fig
 
@@ -1663,7 +1656,7 @@ class Viz:
                     ax[i * 4 + j + 1],
                     SHO_[:, ind, j],
                     colorbars=False,
-                    cmap="viridis",
+                    cmap="cividis",
                 )
 
                 if i // rows == 0:
@@ -1894,7 +1887,7 @@ class Viz:
                         ax[axis_start + j],
                         _SHO[:, ind, j],
                         colorbars=False,
-                        cmap="viridis",
+                        cmap="cividis",
                     )
 
                     if i // rows == 0 and k == 0:
@@ -2068,14 +2061,14 @@ class Viz:
             sns.violinplot(
                 data=df, x="parameter", y="value", hue="dataset", split=True,
                 inner="quart", cut=0, density_norm="width", linewidth=0.8,
-                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+                palette={"LSQF": "#0072B2", "NN": "#E69F00"}, ax=ax,
             )
         except TypeError:
             # older seaborn (<0.13) uses scale= instead of density_norm=
             sns.violinplot(
                 data=df, x="parameter", y="value", hue="dataset", split=True,
                 inner="quartile", cut=0, scale="width", linewidth=0.8,
-                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+                palette={"LSQF": "#0072B2", "NN": "#E69F00"}, ax=ax,
             )
 
         ax.set_ylabel("Scaled SHO parameter")
@@ -2129,13 +2122,13 @@ class Viz:
             sns.violinplot(
                 data=df, x="parameter", y="value", hue="dataset", split=True,
                 inner="quart", cut=0, density_norm="width", linewidth=0.7,
-                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+                palette={"LSQF": "#0072B2", "NN": "#E69F00"}, ax=ax,
             )
         except TypeError:
             sns.violinplot(
                 data=df, x="parameter", y="value", hue="dataset", split=True,
                 inner="quartile", cut=0, scale="width", linewidth=0.7,
-                palette={"LSQF": "#3B75AF", "NN": "#EF8636"}, ax=ax,
+                palette={"LSQF": "#0072B2", "NN": "#E69F00"}, ax=ax,
             )
 
         ax.set_ylabel("Scaled loop parameter")
@@ -2644,7 +2637,7 @@ class Viz:
             axs[0, i].imshow(
                 parms_pred[:, i].reshape(
                     embedding_image_size, embedding_image_size),
-                cmap="viridis",
+                cmap="cividis",
                 vmin=clims[i][0],
                 vmax=clims[i][1],
             )
@@ -2653,7 +2646,7 @@ class Viz:
             axs[1, i].imshow(
                 parms_lsqf[:, i].reshape(
                     embedding_image_size, embedding_image_size),
-                cmap="viridis",
+                cmap="cividis",
                 vmin=clims[i][0],
                 vmax=clims[i][1],
             )
@@ -2853,13 +2846,14 @@ class Viz:
                 index = int(results['Original Index'])
 
                 ax[plot_idx].plot(voltage,
-                                  raw_hysteresis_loop[index], 'o', label="Raw Data")
+                                  raw_hysteresis_loop[index], 'o',
+                                  color="#666666", label="Raw Data")
 
                 ax[plot_idx].plot(voltage,
-                                  loops[index], 'r', label='LSQF')
+                                  loops[index], color="#0072B2", label='LSQF')
 
                 ax[plot_idx].plot(voltage,
-                                  NN_loops[index], 'g', label='NN')
+                                  NN_loops[index], color="#E69F00", label='NN')
 
                 ax[plot_idx].ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
 
@@ -2869,41 +2863,19 @@ class Viz:
                     (gaps[1] + size[1]) * (1.25 - i // 3 - 1.25) - gaps[1],
                 )
 
-                # gets the axis position in inches - gets the bottom center
-                center = get_axis_pos_inches(fig, ax[plot_idx])
+                # MSE shown INSIDE the panel (top-left) so it never overlaps the
+                # Voltage (V) axis label/ticks below the panel
+                error_string = (f"LSQF MSE {results['MSE_LSQF']:0.4f}\n"
+                                f"NN MSE {results['MSE_NN']:0.4f}")
+                # placed below the y-axis sci-offset (1e-4) so the two don't collide
+                ax[plot_idx].text(0.03, 0.82, error_string,
+                                  transform=ax[plot_idx].transAxes,
+                                  va="top", ha="left", fontsize=8.5,
+                                  bbox=dict(boxstyle="round,pad=0.2", fc="white",
+                                            ec="none", alpha=0.7))
 
-                # selects the text position as an offset from the bottom center
-                text_position_in_inches = (center[0], center[1] - 0.32 + .125)
-
-                error = results['MSE_LSQF']
-
-                error_string = f"LSQF MSE: {error:0.4f}"
-
-                add_text_to_figure(
-                    fig,
-                    error_string,
-                    text_position_in_inches,
-                    fontsize=6,
-                    ha="center",
-                )
-
-                # selects the text position as an offset from the bottom center
-                text_position_in_inches = (center[0], center[1] - 0.3)
-
-                error = results['MSE_NN']
-
-                error_string = f"NN MSE: {error:0.4f}"
-
-                add_text_to_figure(
-                    fig,
-                    error_string,
-                    text_position_in_inches,
-                    fontsize=6,
-                    ha="center",
-                )
-
-                ax[plot_idx - 1].set_ylabel("(Arb. U.)")
-                ax[plot_idx].set_ylabel("(Arb. U.)")
+                ax[plot_idx - 1].set_ylabel("Amplitude (a.u.)")
+                ax[plot_idx].set_ylabel("Amplitude (a.u.)")
 
         # ONE shared legend above the panel grid instead of putting a legend in
         # the last panels, where it overlapped the measured-loop points.
@@ -2919,6 +2891,6 @@ class Viz:
 
         # prints the figure
         if self.Printer is not None and filename is not None:
-            self.Printer.savefig(fig, filename, label_figs=ax, style="b")
+            self.Printer.savefig(fig, filename, label_figs=ax, style="b", loc="tr")
 
         return fig
