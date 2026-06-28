@@ -14,6 +14,10 @@ from m3_learning.util.file_IO import make_folder, append_to_csv
 import itertools
 from m3_learning.optimizers.TrustRegion import TRCG
 from m3_learning.util.rand_util import save_list_to_txt
+from m3_learning.provenance import (
+    build_training_lineage_payload,
+    log_dataerai_training_run,
+)
 import pandas as pd
 import gc
 
@@ -269,6 +273,12 @@ class SHO_Model(AE_Fitter_SHO):
             early_stopping_count=None,
             early_stopping_time=None,
             save_training_loss=True,
+            log_dataerai_provenance=None,
+            dataerai_dataset_asset_id=None,
+            dataerai_dataset_record_sk=None,
+            dataerai_idempotency_key=None,
+            dataerai_extra_params=None,
+            dataerai_extra_metrics=None,
             **kwargs):
 
         loss_ = []
@@ -321,6 +331,7 @@ class SHO_Model(AE_Fitter_SHO):
 
         # says if the model have already stopped early
         already_stopped = False
+        stopped_early = False
 
         model_updates = 0
 
@@ -406,6 +417,7 @@ class SHO_Model(AE_Fitter_SHO):
                                       model_path=checkpoint_path)
 
                             already_stopped = True
+                            stopped_early = True
                     else:
                         low_loss_count -= (train_batch.shape[0]*5)
 
@@ -444,10 +456,11 @@ class SHO_Model(AE_Fitter_SHO):
                               True,
                               model_updates,
                               model_path=checkpoint_path)
+                    stopped_early = True
                     break
 
-        torch.save(self.model.state_dict(),
-                   f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth")
+        final_model_path = f"{path}/{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.pth"
+        torch.save(self.model.state_dict(), final_model_path)
         write_csv(write_CSV,
                   self.model.dataset.noise_state,
                   path,
@@ -460,11 +473,49 @@ class SHO_Model(AE_Fitter_SHO):
                   loss_func,
                   seed,
                   False,
-                  model_updates)
+                  model_updates,
+                  model_path=final_model_path)
 
+        training_loss_path = None
         if save_training_loss:
+            training_loss_path = f"{path}/Training_loss_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.txt"
             save_list_to_txt(
-                loss_, f"{path}/Training_loss_{self.model_name}_model_optimizer_{optimizer_name}_epoch_{epoch}_train_loss_{train_loss}.txt")
+                loss_, training_loss_path)
+
+        params, metrics = build_training_lineage_payload(
+            model_name=self.model_name,
+            optimizer_name=optimizer_name,
+            epochs=epoch + 1,
+            batch_size=batch_size,
+            seed=seed,
+            train_loss=train_loss,
+            training_time_s=total_time,
+            model_updates=model_updates,
+            noise_level=getattr(self.model.dataset, "noise_state", None),
+            loss_func=loss_func,
+            model_path=final_model_path,
+            training_loss_path=training_loss_path,
+            device=self.device,
+            stopped_early=stopped_early,
+            extra_params=dataerai_extra_params,
+            extra_metrics=dataerai_extra_metrics,
+        )
+        lineage_idempotency_key = (
+            dataerai_idempotency_key
+            or f"m3-learning:{self.model_name}:{optimizer_name}:epochs-{epoch + 1}:batch-{batch_size}:seed-{seed}"
+        )
+        lineage = log_dataerai_training_run(
+            enabled=log_dataerai_provenance,
+            dataset_asset_id=dataerai_dataset_asset_id,
+            dataset_record_sk=dataerai_dataset_record_sk,
+            params=params,
+            metrics=metrics,
+            idempotency_key=lineage_idempotency_key,
+        )
+        if lineage.run_id:
+            print(f"Dataerai lineage run: {lineage.run_id}")
+        elif lineage.enabled and lineage.skipped_reason:
+            print(f"Dataerai lineage skipped: {lineage.skipped_reason}")
 
         del optimizer_
         gc.collect()
