@@ -38,8 +38,8 @@ QUICK_RUN skip themselves with a printed notice. The committed default is
 
 ## Dataerai provenance logging
 
-Notebook 2 and 2.5 can record each neural-network training run in Dataerai's
-lineage graph. The training code uses the Dataerai SDK helper
+The Rapid Fitting notebooks that train neural networks can record each training
+run in Dataerai's lineage graph. The training code uses the Dataerai SDK helper
 `dataerai.ml.lineage.record_training_run`; users authenticate and select/upload
 the source data with the normal CLI.
 
