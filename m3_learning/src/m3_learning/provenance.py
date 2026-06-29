@@ -9,6 +9,7 @@ user-facing glue that notebooks need: loading credentials created by the
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import platform
@@ -97,13 +98,46 @@ def load_dataerai_cli_credentials(path: str | os.PathLike | None = None) -> dict
             keychain_raw = keyring.get_password("dataerai", "auth")
         except Exception:
             keychain_raw = None
-        if keychain_raw:
-            return _normalize_credentials(json.loads(keychain_raw))
+        creds = _decode_keyring_blob(keychain_raw) if keychain_raw else None
+        if creds is not None:
+            return _normalize_credentials(creds)
 
     raise FileNotFoundError(
-        "No Dataerai CLI credentials found. Run `dataerai auth login --device` "
-        "or set DATAERAI_CREDENTIALS_JSON / DATAERAI_CREDENTIALS_PATH."
+        "No Dataerai CLI credentials found. On macOS, run `dataerai auth login` "
+        "and install the `keyring` package so credentials can be read from the "
+        "system keychain; otherwise write ~/.dataerai/credentials.json (or set "
+        "DATAERAI_CREDENTIALS_JSON / DATAERAI_CREDENTIALS_PATH)."
     )
+
+
+def _decode_keyring_blob(raw: str):
+    """Decode the CLI's macOS keychain value into a creds dict, or None.
+
+    The Go CLI stores secrets with go-keyring, which prefixes long values with
+    ``go-keyring-base64:`` (or ``go-keyring-encoded:``) followed by base64; the
+    value may also be raw JSON. Returns the parsed dict, or None if it does not
+    decode to one.
+    """
+    payload = raw
+    for marker in ("go-keyring-base64:", "go-keyring-encoded:"):
+        if payload.startswith(marker):
+            payload = payload[len(marker):]
+            break
+    candidates = [raw, payload]
+    for src in (raw, payload):
+        for fn in (base64.b64decode, base64.urlsafe_b64decode):
+            try:
+                candidates.append(fn(src + "=" * (-len(src) % 4)).decode("utf-8"))
+            except (ValueError, UnicodeDecodeError):
+                pass
+    for text in candidates:
+        try:
+            obj = json.loads(text)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if isinstance(obj, dict):
+            return obj
+    return None
 
 
 def resolve_dataerai_record_sk(
@@ -237,21 +271,30 @@ def log_dataerai_training_run(
             skipped_reason=f"dataerai-sdk is not installed or importable: {exc}",
         )
 
-    creds = _normalize_credentials(credentials or load_dataerai_cli_credentials())
-    if dataset_record_sk is None:
-        dataset_record_sk = resolve_dataerai_record_sk(
-            str(dataset_asset_id), credentials=creds, session=session
-        )
-    dataset_record_sk = int(dataset_record_sk)
+    # Best-effort: a credential, network, or backend failure must not crash a
+    # training run that already saved a model. Downgrade to a skipped result.
+    try:
+        creds = _normalize_credentials(credentials or load_dataerai_cli_credentials())
+        if dataset_record_sk is None:
+            dataset_record_sk = resolve_dataerai_record_sk(
+                str(dataset_asset_id), credentials=creds, session=session
+            )
+        dataset_record_sk = int(dataset_record_sk)
 
-    response = record_training_run(
-        creds,
-        dataset_record_sk=dataset_record_sk,
-        params=_json_safe(params or {}),
-        metrics=_json_safe(metrics or {}),
-        idempotency_key=idempotency_key,
-        session=session,
-    )
+        response = record_training_run(
+            creds,
+            dataset_record_sk=dataset_record_sk,
+            params=_json_safe(params or {}),
+            metrics=_json_safe(metrics or {}),
+            idempotency_key=idempotency_key,
+            session=session,
+        )
+    except Exception as exc:
+        return DataeraiLineageResult(
+            enabled=True,
+            skipped_reason=f"{type(exc).__name__}: {exc}",
+        )
+
     return DataeraiLineageResult(
         enabled=True,
         run_id=response.get("run_id"),
