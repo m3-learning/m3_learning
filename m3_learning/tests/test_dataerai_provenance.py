@@ -44,12 +44,12 @@ class _Session:
 def test_load_dataerai_cli_credentials_from_env(monkeypatch):
     monkeypatch.setenv(
         "DATAERAI_CREDENTIALS_JSON",
-        json.dumps({"server_url": "https://dev.dataerai.com", "access_token": "AT"}),
+        json.dumps({"server_url": "https://beta.dataerai.com", "access_token": "AT"}),
     )
 
     creds = load_dataerai_cli_credentials()
 
-    assert creds["server"] == "https://dev.dataerai.com"
+    assert creds["server"] == "https://beta.dataerai.com"
     assert creds["access_token"] == "AT"
     assert creds["client_id"] == "dataerai-cli"
 
@@ -60,13 +60,13 @@ def test_resolve_dataerai_record_sk_from_lineage_trace(monkeypatch):
 
     record_sk = resolve_dataerai_record_sk(
         "asset-1",
-        credentials={"server_url": "https://dev.dataerai.com", "access_token": "AT"},
+        credentials={"server_url": "https://beta.dataerai.com", "access_token": "AT"},
         session=session,
     )
 
     assert record_sk == 42
     url, kwargs = session.get_calls[0]
-    assert url == "https://dev.dataerai.com/api/lineage/trace/"
+    assert url == "https://beta.dataerai.com/api/lineage/trace/"
     assert kwargs["params"]["subject_kind"] == 1
     assert kwargs["params"]["subject_id"] == "asset-1"
     assert kwargs["headers"]["Authorization"] == "Bearer AT"
@@ -96,7 +96,7 @@ def test_log_dataerai_training_run_uses_sdk_helper(monkeypatch):
     result = log_dataerai_training_run(
         enabled=True,
         dataset_record_sk=42,
-        credentials={"server_url": "https://dev.dataerai.com", "access_token": "AT"},
+        credentials={"server_url": "https://beta.dataerai.com", "access_token": "AT"},
         params={"epochs": 1},
         metrics={"train_loss": 0.1},
         idempotency_key="stable-run",
@@ -105,7 +105,7 @@ def test_log_dataerai_training_run_uses_sdk_helper(monkeypatch):
     assert result.run_id == "run-1"
     assert result.dataset_record_sk == 42
     creds, kwargs = calls[0]
-    assert creds["server"] == "https://dev.dataerai.com"
+    assert creds["server"] == "https://beta.dataerai.com"
     assert kwargs["dataset_record_sk"] == 42
     assert kwargs["params"] == {"epochs": 1}
     assert kwargs["metrics"] == {"train_loss": 0.1}

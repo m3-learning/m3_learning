@@ -45,7 +45,7 @@ the source data with the normal CLI.
 
 ```bash
 python -m pip install dataerai-cli 'dataerai-sdk[ml]'
-dataerai auth login --device --server https://dev.dataerai.com
+dataerai auth login --device --server https://beta.dataerai.com
 dataerai auth status
 ```
 
