@@ -36,6 +36,50 @@ notebook end-to-end on CPU. Cells whose full-scale artifacts are unavailable und
 QUICK_RUN skip themselves with a printed notice. The committed default is
 `QUICK_RUN = False` (the full paper workflow).
 
+## Dataerai provenance logging
+
+The Rapid Fitting notebooks that train neural networks can record each training
+run in Dataerai's lineage graph. The training code uses the Dataerai SDK helper
+`dataerai.ml.lineage.record_training_run`; users authenticate and select/upload
+the source data with the normal CLI.
+
+```bash
+python -m pip install dataerai-cli 'dataerai-sdk[ml]'
+dataerai auth login --device --server https://beta.dataerai.com
+dataerai auth status
+```
+
+Upload the source h5 once, or reuse an existing Dataerai asset id:
+
+```bash
+cat > dataerai_source_asset.json <<'JSON'
+{
+  "title": "PZT 2080 raw BE-PFM data",
+  "description": "Source data for the Rapid Fitting SHO neural-network notebooks.",
+  "tags": ["be-pfm", "sho", "neural-network", "m3-learning"],
+  "metadata": {"source": "Zenodo 7774788"}
+}
+JSON
+
+dataerai upload \
+  --project <project-uuid> \
+  --collection <collection-uuid> \
+  --metadata dataerai_source_asset.json \
+  --file Data/data_raw.h5
+```
+
+Then enable logging before running the training cells:
+
+```bash
+export DATAERAI_DATASET_ASSET_ID=<asset-id-from-upload>
+export DATAERAI_LOG_PROVENANCE=1
+```
+
+If you already know the provenance surrogate, set
+`DATAERAI_DATASET_RECORD_SK=<record-sk>` instead of `DATAERAI_DATASET_ASSET_ID`.
+The notebooks print the Dataerai lineage run id after each successful training
+run.
+
 ## Local development
 
 ```bash

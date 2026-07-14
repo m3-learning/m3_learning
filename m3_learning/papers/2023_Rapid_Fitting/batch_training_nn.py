@@ -1,4 +1,10 @@
-from m3_learning.be.nn import SHO_fit_func_nn, SHO_Model, static_state_decorator, clear_all_tensors
+from m3_learning.be.nn import (
+    SHO_fit_func_nn,
+    SHO_Model,
+    batch_training,
+    static_state_decorator,
+    clear_all_tensors,
+)
 from m3_learning.util.system_info import SystemInfo
 import argparse
 from datetime import datetime
@@ -36,6 +42,21 @@ def main():
     parser.add_argument('--write_CSV', default='Batch_Training_SpeedTest.csv', help='CSV file name')
     parser.add_argument('--basepath', default='', help='Base path for saving files')
     parser.add_argument('--early_stopping_time', type=int, default=None, help='Early stopping time')
+    parser.add_argument(
+        '--log-dataerai-provenance',
+        action='store_true',
+        help='Record each training run with Dataerai NN provenance logging.',
+    )
+    parser.add_argument(
+        '--dataerai-dataset-asset-id',
+        default=None,
+        help='Dataerai asset UUID for the source dataset. The record_sk is resolved from the lineage API.',
+    )
+    parser.add_argument(
+        '--dataerai-dataset-record-sk',
+        default=None,
+        help='Dataerai ProvenanceRecord.record_sk for the source dataset.',
+    )
 
     # Parse arguments
     args = parser.parse_args()
@@ -50,7 +71,11 @@ def main():
         seed=args.seed,
         write_CSV=args.write_CSV,
         basepath=args.basepath,
-        early_stopping_time=args.early_stopping_time
+        early_stopping_time=args.early_stopping_time,
+        log_dataerai_provenance=args.log_dataerai_provenance,
+        dataerai_dataset_asset_id=args.dataerai_dataset_asset_id,
+        dataerai_dataset_record_sk=args.dataerai_dataset_record_sk,
+        dataerai_extra_params={"entrypoint": "batch_training_nn.py"},
     )
 
 if __name__ == '__main__':

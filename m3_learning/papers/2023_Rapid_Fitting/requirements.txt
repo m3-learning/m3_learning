@@ -28,3 +28,5 @@ opencv-python
 hyperspy
 
 sidpy
+dataerai-cli
+dataerai-sdk[ml]
