@@ -261,3 +261,117 @@ def test_load_credentials_decodes_go_keyring_base64_blob(monkeypatch, tmp_path):
     assert out["server"] == "https://beta.dataerai.com"
     assert out["access_token"] == "AT"
     assert out["refresh_token"] == "RT"
+
+
+@pytest.mark.parametrize(
+    "explicit, env_log, env_prov, expected",
+    [
+        (True, None, None, True),
+        (False, "1", "1", False),        # explicit beats env
+        (True, "0", None, True),
+        (None, "1", None, True),
+        (None, "true", None, True),
+        (None, "YES", None, True),
+        (None, "on", None, True),
+        (None, "0", None, False),
+        (None, "false", None, False),
+        (None, "no", None, False),
+        (None, "off", None, False),
+        (None, "", None, False),
+        (None, None, None, False),       # nothing set -> disabled
+        (None, None, "1", True),         # DATAERAI_PROVENANCE fallback
+        (None, "maybe", None, False),    # unknown value -> disabled
+    ],
+)
+def test_dataerai_provenance_enabled_env_toggling(
+    monkeypatch, explicit, env_log, env_prov, expected
+):
+    for var, value in (
+        ("DATAERAI_LOG_PROVENANCE", env_log),
+        ("DATAERAI_PROVENANCE", env_prov),
+    ):
+        if value is None:
+            monkeypatch.delenv(var, raising=False)
+        else:
+            monkeypatch.setenv(var, value)
+
+    assert provenance.dataerai_provenance_enabled(explicit) is expected
+
+
+def test_resolve_dataerai_record_sk_missing_start_sk():
+    class _NoSkSession:
+        def get(self, url, **kwargs):
+            return _Resp({"start": {}})
+
+    with pytest.raises(ValueError, match="start.sk"):
+        resolve_dataerai_record_sk(
+            "asset-1",
+            credentials={"server_url": "https://beta.dataerai.com", "access_token": "AT"},
+            session=_NoSkSession(),
+        )
+
+
+def test_log_dataerai_training_run_env_fallback_identifiers(monkeypatch):
+    calls = []
+    lineage_mod = types.ModuleType("dataerai.ml.lineage")
+
+    def _record_training_run(creds, **kwargs):
+        calls.append(kwargs)
+        return {"run_id": "run-env", "idempotent_replay": False}
+
+    lineage_mod.record_training_run = _record_training_run
+    monkeypatch.setitem(sys.modules, "dataerai", types.ModuleType("dataerai"))
+    monkeypatch.setitem(sys.modules, "dataerai.ml", types.ModuleType("dataerai.ml"))
+    monkeypatch.setitem(sys.modules, "dataerai.ml.lineage", lineage_mod)
+    monkeypatch.setenv("DATAERAI_LOG_PROVENANCE", "1")
+    monkeypatch.setenv("DATAERAI_DATASET_RECORD_SK", "42")
+    monkeypatch.setenv("DATAERAI_LINEAGE_IDEMPOTENCY_KEY", "env-key")
+
+    # enabled=None: toggled on by env; identifiers and key come from env too
+    result = log_dataerai_training_run(
+        credentials={"server_url": "https://beta.dataerai.com", "access_token": "AT"},
+    )
+
+    assert result.run_id == "run-env"
+    assert result.dataset_record_sk == 42
+    assert calls[0]["dataset_record_sk"] == 42  # env string coerced to int
+    assert calls[0]["idempotency_key"] == "env-key"
+
+
+def test_log_dataerai_training_run_skipped_without_dataset_identifier(monkeypatch):
+    for var in (
+        "DATAERAI_DATASET_RECORD_SK",
+        "DATAERAI_RECORD_SK",
+        "DATAERAI_DATASET_ASSET_ID",
+        "DATAERAI_ASSET_ID",
+    ):
+        monkeypatch.delenv(var, raising=False)
+
+    result = log_dataerai_training_run(enabled=True)
+
+    assert result.enabled is True
+    assert result.run_id is None
+    assert "DATAERAI_DATASET_ASSET_ID" in result.skipped_reason
+
+
+def test_log_dataerai_training_run_disabled_never_imports_sdk(monkeypatch):
+    monkeypatch.delenv("DATAERAI_LOG_PROVENANCE", raising=False)
+    monkeypatch.delenv("DATAERAI_PROVENANCE", raising=False)
+    for mod in [m for m in sys.modules if m == "dataerai" or m.startswith("dataerai.")]:
+        monkeypatch.delitem(sys.modules, mod, raising=False)
+
+    import builtins
+
+    real_import = builtins.__import__
+
+    def _guarded_import(name, *args, **kwargs):
+        if name == "dataerai" or name.startswith("dataerai."):
+            raise AssertionError("disabled path must not import the Dataerai SDK")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _guarded_import)
+
+    result = log_dataerai_training_run(enabled=False)
+
+    assert result.enabled is False
+    assert result.skipped_reason == "disabled"

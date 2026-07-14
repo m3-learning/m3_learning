@@ -506,6 +506,7 @@ class Model(nn.Module):
             save_list_to_txt(
                 loss_, training_loss_path)
 
+        noise_level = getattr(self.model.dataset, "noise", None)
         params, metrics = build_training_lineage_payload(
             model_name=self.model_name,
             optimizer_name=optimizer_name,
@@ -515,7 +516,7 @@ class Model(nn.Module):
             train_loss=train_loss,
             training_time_s=total_time,
             model_updates=model_updates,
-            noise_level=getattr(self.model.dataset, "noise", None),
+            noise_level=noise_level,
             loss_func=loss_func,
             model_path=final_model_path,
             training_loss_path=training_loss_path,
@@ -524,10 +525,12 @@ class Model(nn.Module):
             extra_params=dataerai_extra_params,
             extra_metrics=dataerai_extra_metrics,
         )
-        lineage_idempotency_key = (
-            dataerai_idempotency_key
-            or f"m3-learning:{self.model_name}:{optimizer_name}:epochs-{epoch + 1}:batch-{batch_size}:seed-{seed}"
-        )
+        default_key = f"m3-learning:{self.model_name}:{optimizer_name}:epochs-{epoch + 1}:batch-{batch_size}:seed-{seed}"
+        if noise_level is not None:
+            # model_name alone does not distinguish noise levels in batch
+            # training, so without this the runs would replay each other
+            default_key += f":noise-{noise_level}"
+        lineage_idempotency_key = dataerai_idempotency_key or default_key
         lineage = log_dataerai_training_run(
             enabled=log_dataerai_provenance,
             dataset_asset_id=dataerai_dataset_asset_id,
