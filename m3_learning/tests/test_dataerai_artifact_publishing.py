@@ -193,6 +193,21 @@ def test_transient_upload_failure_is_retried(tmp_path, monkeypatch):
     assert result.errors == ()
 
 
+def test_generated_movie_is_published_as_analysis(tmp_path):
+    publisher = _publisher(tmp_path).start()
+    movie = tmp_path / "Movies" / "SHO_NN_noise_0.mp4"
+    movie.parent.mkdir()
+    movie.write_bytes(b"mp4")
+
+    result = publisher.finish()
+
+    upload = next(item for item in publisher.session.uploads if item["path"] == movie)
+    assert upload["record_type"] == "analysis"
+    assert upload["metadata"]["component"] == "saved-movie"
+    assert "notebook-movie" in upload["tags"]
+    assert len(result.analysis_asset_ids) == 1
+
+
 def test_downloaded_source_archive_is_published_as_raw_data(tmp_path):
     publisher = _publisher(tmp_path).start()
     archive = tmp_path / "Datasets" / "AFM.zip"

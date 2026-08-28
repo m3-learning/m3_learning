@@ -22,11 +22,13 @@ _DATA_EXTENSIONS = {".h5", ".hdf5", ".csv"}
 _RAW_ARCHIVE_EXTENSIONS = {".zip", ".tar", ".gz", ".xz"}
 _MODEL_EXTENSIONS = {".pth", ".pt"}
 _FIGURE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".svg", ".pdf"}
+_MOVIE_EXTENSIONS = {".gif", ".mp4", ".webm"}
+_ANALYSIS_EXTENSIONS = _FIGURE_EXTENSIONS | _MOVIE_EXTENSIONS
 _WATCHED_EXTENSIONS = (
     _DATA_EXTENSIONS
     | _RAW_ARCHIVE_EXTENSIONS
     | _MODEL_EXTENSIONS
-    | _FIGURE_EXTENSIONS
+    | _ANALYSIS_EXTENSIONS
 )
 _IGNORED_DIRECTORY_NAMES = {
     ".git",
@@ -392,14 +394,17 @@ class DataeraiArtifactPublisher:
 
     def _queue_saved_figures(self, current: dict[Path, _FileState]) -> None:
         for path, state in current.items():
-            if path.suffix.lower() not in _FIGURE_EXTENSIONS:
+            suffix = path.suffix.lower()
+            if suffix not in _ANALYSIS_EXTENSIONS:
                 continue
             if path in self._analysis_queue or self._baseline.get(path) == state:
                 continue
             self._analysis_queue[path] = _PendingArtifact(
                 path=path,
                 title=_stable_title("M3 figure", self._relative(path)),
-                component="saved-figure",
+                component=(
+                    "saved-movie" if suffix in _MOVIE_EXTENSIONS else "saved-figure"
+                ),
                 metadata={"source_path": self._relative(path)},
             )
 
@@ -412,13 +417,18 @@ class DataeraiArtifactPublisher:
             self._model_queue[path] = _PendingModel(model_path=path)
 
     def _publish_analysis(self, artifact: _PendingArtifact) -> None:
+        is_movie = artifact.path.suffix.lower() in _MOVIE_EXTENSIONS
         uploaded = self._upload(
             artifact.path,
             title=artifact.title,
             record_type="analysis",
             component=artifact.component,
             metadata=artifact.metadata,
-            tags=["m3-learning", "notebook-figure", "analysis"],
+            tags=[
+                "m3-learning",
+                "notebook-movie" if is_movie else "notebook-figure",
+                "analysis",
+            ],
         )
         asset_id = str(uploaded.asset_id)
         self._analysis_asset_ids.append(asset_id)
