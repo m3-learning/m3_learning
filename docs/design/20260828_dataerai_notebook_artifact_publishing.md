@@ -44,6 +44,9 @@ it falls back to the trace's captured display bundle.
 - An unchanged source dataset is not uploaded again by later notebooks.
 - Stable derived titles deliberately create new content versions instead of
   duplicate assets.
+- Derived files above the configurable inline limit produce a versioned
+  dataset-manifest asset rather than failing every later notebook against a
+  smaller storage allocation.
 
 ## Publication relationships
 

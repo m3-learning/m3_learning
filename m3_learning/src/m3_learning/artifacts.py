@@ -236,8 +236,11 @@ class DataeraiArtifactPublisher:
             category = "Data / Raw"
             if lowered and lowered[0] in {"data", "datasets"}:
                 parts = parts[1:]
-        elif component == "derived-data":
+        elif component in {"derived-data", "derived-data-manifest"}:
             category = "Data / Derived"
+            if "derived-data" in lowered:
+                parts = parts[lowered.index("derived-data") + 1 :]
+                lowered = [part.casefold() for part in parts]
             if lowered and lowered[0] in {"data", "datasets"}:
                 parts = parts[1:]
         elif component in {"saved-movie"}:
@@ -620,6 +623,15 @@ class DataeraiArtifactPublisher:
                     )
                 if matches:
                     asset_id = str(matches[0].asset_id)
+                elif _exceeds_inline_asset_limit(path):
+                    if not self.raw_dataset_asset_ids:
+                        raise RuntimeError(
+                            f"source dataset is {path.stat().st_size:,} bytes, "
+                            "which exceeds DATAERAI_MAX_INLINE_ASSET_BYTES; "
+                            "publish the immutable original source first or set "
+                            "DATAERAI_RAW_DATA_ASSET_ID"
+                        )
+                    asset_id = self.raw_dataset_asset_ids[0]
                 else:
                     uploaded = self._upload(
                         path,
@@ -705,18 +717,57 @@ class DataeraiArtifactPublisher:
             self._attempt(lambda path=path: self._publish_derived_data(path))
 
     def _publish_derived_data(self, path: Path) -> None:
+        upload_path = path
+        component = "derived-data"
+        content_mode = "full"
+        if _exceeds_inline_asset_limit(path):
+            upload_path = self._write_oversized_data_manifest(path)
+            component = "derived-data-manifest"
+            content_mode = "manifest-only"
         uploaded = self._upload(
-            path,
+            upload_path,
             title=_stable_title("M3 derived data", self._relative(path)),
             record_type="dataset",
-            component="derived-data",
-            metadata={"source_path": self._relative(path), "versioned": True},
-            tags=["m3-learning", "derived-data", "versioned"],
+            component=component,
+            metadata={
+                "source_path": self._relative(path),
+                "source_size_bytes": path.stat().st_size,
+                "versioned": True,
+                "content_mode": content_mode,
+            },
+            tags=["m3-learning", "derived-data", "versioned", content_mode],
         )
         asset_id = str(uploaded.asset_id)
         self._dataset_asset_ids.append(asset_id)
         self._link_to_raw(asset_id, "derived_from")
         self._link_to_notebook(asset_id, "generated_by_notebook")
+
+    def _write_oversized_data_manifest(self, path: Path) -> Path:
+        """Represent a derived file that cannot fit in the upload allocation."""
+
+        relative = Path(self._relative(path))
+        manifest_path = (
+            self.artifact_directory
+            / "derived-data"
+            / relative.parent
+            / f"{relative.name}.manifest.json"
+        )
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "schema": "m3-learning.oversized-derived-data.v1",
+            "notebook": self.notebook_name,
+            "notebook_run_id": self.run_id,
+            "source_path": relative.as_posix(),
+            "size_bytes": path.stat().st_size,
+            "source_dataset_asset_ids": list(self.raw_dataset_asset_ids),
+            "content_mode": "manifest-only",
+            "reason": "file exceeds DATAERAI_MAX_INLINE_ASSET_BYTES",
+            "max_inline_asset_bytes": _max_inline_asset_bytes(),
+        }
+        manifest_path.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        return manifest_path
 
     def _publish_model(self, queued: _PendingModel) -> None:
         if not queued.model_path.is_file():
@@ -1169,6 +1220,16 @@ def _is_transient_upload_error(exc: Exception) -> bool:
             "err_server_error",
         )
     )
+
+
+def _max_inline_asset_bytes() -> int:
+    return int(
+        os.environ.get("DATAERAI_MAX_INLINE_ASSET_BYTES", str(8 * 1024**3))
+    )
+
+
+def _exceeds_inline_asset_limit(path: Path) -> bool:
+    return path.stat().st_size > _max_inline_asset_bytes()
 
 
 def _is_raw_candidate(path: Path) -> bool:

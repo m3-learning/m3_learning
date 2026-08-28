@@ -34,6 +34,13 @@ source paths. Publication is strict by default: a partial upload makes the final
 Set `DATAERAI_RAW_DATA_ASSET_ID` to force reuse of an already-published source
 asset instead of resolving it by the stable title.
 
+Files larger than `DATAERAI_MAX_INLINE_ASSET_BYTES` (8 GiB by default) cannot
+be copied into a smaller Dataerai allocation. The immutable original source is
+still uploaded and reused; an oversized derived HDF5 receives a versioned
+dataset-manifest asset with its path, size, run, and source lineage instead of
+repeated failing uploads. Raise the limit only when the destination allocation
+can hold the full file.
+
 Neural-network fitters publish full model-and-optimizer checkpoints with
 `dataerai.nn.PyTorchProvenanceTracker`. The original M3 `.pth` state dict and
 loss history are retained as linked model assets, while the toolkit's safe

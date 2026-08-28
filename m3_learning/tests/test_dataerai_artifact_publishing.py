@@ -23,6 +23,7 @@ def _isolated_dataerai_environment(monkeypatch):
         "DATAERAI_DATASET_ASSET_ID",
         "DATAERAI_RAW_DATA_PATHS",
         "DATAERAI_LOG_PROVENANCE",
+        "DATAERAI_MAX_INLINE_ASSET_BYTES",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -227,6 +228,57 @@ def test_contentless_raw_dataset_placeholder_is_retried(tmp_path):
     raw_upload = next(item for item in session.uploads if item["path"] == raw)
     assert raw_upload["title"] == title
     assert result.raw_dataset_asset_ids == ("asset-2",)
+
+
+def test_oversized_working_hdf5_reuses_smaller_original_source(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATAERAI_MAX_INLINE_ASSET_BYTES", "8")
+    data = tmp_path / "Data"
+    data.mkdir()
+    original = data / "000_original_raw.h5"
+    working = data / "data_raw.h5"
+    original.write_bytes(b"original")
+    working.write_bytes(b"derived-working-copy")
+
+    publisher = _publisher(tmp_path).start()
+    result = publisher.finish()
+
+    dataset_uploads = [
+        upload
+        for upload in publisher.session.uploads
+        if upload["metadata"]["component"] == "raw-dataset"
+    ]
+    assert [upload["path"] for upload in dataset_uploads] == [original]
+    assert result.raw_dataset_asset_ids == ("asset-2",)
+
+
+def test_oversized_derived_hdf5_publishes_versioned_dataset_manifest(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("DATAERAI_MAX_INLINE_ASSET_BYTES", "8")
+    raw = tmp_path / "Data" / "raw.h5"
+    raw.parent.mkdir()
+    raw.write_bytes(b"raw")
+    derived = tmp_path / "Data" / "processed.h5"
+    derived.write_bytes(b"before-data")
+    publisher = _publisher(tmp_path).start()
+    derived.write_bytes(b"after-derived-data")
+
+    result = publisher.finish()
+
+    manifest_upload = next(
+        upload
+        for upload in publisher.session.uploads
+        if upload["metadata"]["component"] == "derived-data-manifest"
+    )
+    manifest = json.loads(manifest_upload["content"])
+    assert manifest["schema"] == "m3-learning.oversized-derived-data.v1"
+    assert manifest["source_path"] == "Data/processed.h5"
+    assert manifest_upload["record_type"] == "dataset"
+    assert manifest_upload["metadata"]["content_mode"] == "manifest-only"
+    assert manifest_upload["collection_id"] == publisher.session.collections[
+        "M3 / Example Notebook / Data / Derived"
+    ]
+    assert len(result.dataset_asset_ids) == 1
 
 
 def test_transient_upload_failure_is_retried(tmp_path, monkeypatch):
