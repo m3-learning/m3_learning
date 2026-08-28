@@ -246,9 +246,13 @@ class DataeraiArtifactPublisher:
         lowered = [part.casefold() for part in parts]
         if component == "source-notebook":
             return "Notebooks"
-        if component == "raw-dataset":
+        if component.startswith("raw-dataset"):
             category = "Data / Raw"
-            if lowered and lowered[0] in {"data", "datasets"}:
+            if component == "raw-dataset-part":
+                parts = ["Parts", path.parent.name]
+            elif component == "raw-dataset-manifest":
+                parts = []
+            elif lowered and lowered[0] in {"data", "datasets"}:
                 parts = parts[1:]
         elif component in {"derived-data", "derived-data-manifest"}:
             category = "Data / Derived"
@@ -646,6 +650,8 @@ class DataeraiArtifactPublisher:
                             "DATAERAI_RAW_DATA_ASSET_ID"
                         )
                     asset_id = self.raw_dataset_asset_ids[0]
+                elif _exceeds_raw_single_asset_limit(path):
+                    asset_id = self._publish_raw_bundle(path, title=title)
                 else:
                     uploaded = self._upload(
                         path,
@@ -658,6 +664,7 @@ class DataeraiArtifactPublisher:
                     asset_id = str(uploaded.asset_id)
             self._raw_by_path[path] = asset_id
             self._raw_states[path] = state or self._state(path)
+            self._record_reused_raw_product(path, asset_id)
             if self.notebook_asset_id and self.notebook_asset_id != asset_id:
                 self._relationship(self.notebook_asset_id, asset_id, "uses_data")
             os.environ.setdefault("DATAERAI_RAW_DATA_ASSET_ID", asset_id)
@@ -668,6 +675,135 @@ class DataeraiArtifactPublisher:
                 f"could not publish/reuse source dataset {path}: {exc}"
             )
             return None
+
+    def _record_reused_raw_product(self, path: Path, asset_id: str) -> None:
+        """Include a reused raw input in the execution's signed relationships."""
+
+        trace = getattr(self.session, "_trace", None)
+        transfers = getattr(trace, "transfers", None)
+        if not isinstance(transfers, list) or any(
+            str(item.get("asset_id")) == str(asset_id) for item in transfers
+        ):
+            return
+        transfers.append(
+            {
+                "direction": "reuse",
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "asset_id": str(asset_id),
+                "title": _stable_title(
+                    "M3 source dataset", self._relative(path)
+                ),
+                "record_type": "dataset",
+                "component": "raw-dataset",
+                "filename": path.name,
+                "size_bytes": path.stat().st_size,
+                "sha256": None,
+                "run_identity_stamped": False,
+                "collection_routing": "reused-provenance-input",
+            }
+        )
+
+    def _publish_raw_bundle(self, path: Path, *, title: str) -> str:
+        """Publish a large immutable source as parts plus one canonical manifest."""
+
+        chunk_bytes = _raw_chunk_bytes()
+        bundle_directory = self.artifact_directory / "raw-bundles" / path.name
+        bundle_directory.mkdir(parents=True, exist_ok=True)
+        part_paths: list[Path] = []
+        full_digest = hashlib.sha256()
+        with path.open("rb") as source:
+            part_number = 1
+            while True:
+                content = source.read(chunk_bytes)
+                if not content:
+                    break
+                full_digest.update(content)
+                part_path = bundle_directory / f"part-{part_number:04d}.bin"
+                part_path.write_bytes(content)
+                part_paths.append(part_path)
+                part_number += 1
+
+        total_parts = len(part_paths)
+        part_assets: list[dict[str, Any]] = []
+        for index, part_path in enumerate(part_paths, start=1):
+            part_sha256 = _sha256(part_path)
+            part_title = _stable_title(
+                "M3 source dataset part",
+                f"{self._relative(path)} · {index:04d}-of-{total_parts:04d}",
+            )
+            matches = self.session.find_assets(
+                part_title,
+                title=part_title,
+                predicate=lambda asset: bool(getattr(asset, "has_content", True)),
+            )
+            if len(matches) > 1:
+                raise LookupError(
+                    f"more than one readable raw-data part has title {part_title!r}"
+                )
+            if matches:
+                part_asset_id = str(matches[0].asset_id)
+            else:
+                uploaded = self._upload(
+                    part_path,
+                    title=part_title,
+                    record_type="dataset",
+                    component="raw-dataset-part",
+                    metadata={
+                        "source_path": self._relative(path),
+                        "part_number": index,
+                        "part_count": total_parts,
+                        "part_sha256": part_sha256,
+                        "part_size_bytes": part_path.stat().st_size,
+                    },
+                    tags=["m3-learning", "raw-data", "dataset-part"],
+                )
+                part_asset_id = str(uploaded.asset_id)
+            part_assets.append(
+                {
+                    "asset_id": part_asset_id,
+                    "filename": part_path.name,
+                    "part_number": index,
+                    "size_bytes": part_path.stat().st_size,
+                    "sha256": part_sha256,
+                }
+            )
+
+        manifest_path = bundle_directory / f"{path.name}.manifest.json"
+        manifest_payload = {
+            "schema": "m3-learning.raw-dataset-bundle.v1",
+            "source_path": self._relative(path),
+            "source_filename": path.name,
+            "source_size_bytes": path.stat().st_size,
+            "source_sha256": full_digest.hexdigest(),
+            "part_count": total_parts,
+            "chunk_bytes": chunk_bytes,
+            "parts": part_assets,
+            "reassemble": f"cat part-*.bin > {path.name}",
+        }
+        manifest_path.write_text(
+            json.dumps(manifest_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        manifest = self._upload(
+            manifest_path,
+            title=title,
+            record_type="dataset",
+            component="raw-dataset-manifest",
+            metadata={
+                "source_path": self._relative(path),
+                "source_size_bytes": path.stat().st_size,
+                "source_sha256": full_digest.hexdigest(),
+                "part_count": total_parts,
+                "content_mode": "multipart-manifest",
+            },
+            tags=["m3-learning", "raw-data", "multipart-manifest"],
+        )
+        manifest_asset_id = str(manifest.asset_id)
+        for part in part_assets:
+            self._relationship(
+                str(part["asset_id"]), manifest_asset_id, "part_of"
+            )
+        return manifest_asset_id
 
     def _queue_saved_figures(self, current: dict[Path, _FileState]) -> None:
         for path, state in current.items():
@@ -882,13 +1018,13 @@ class DataeraiArtifactPublisher:
         stamped_metadata = {
             **_json_safe(metadata),
             "component": component,
-            "notebook_run_id": self.run_id,
+            "m3_notebook_run_id": self.run_id,
             "source_notebook": self.notebook_name,
         }
         stamped_tags = list(dict.fromkeys([
             *tags,
-            "dataerai-notebook-trace",
-            f"notebook-run:{self.run_id}",
+            "m3-notebook-provenance",
+            f"m3-notebook-run:{self.run_id}",
         ]))
         collection_id = self._collection_id_for(path, component)
         attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
@@ -953,8 +1089,46 @@ class DataeraiArtifactPublisher:
             kwargs = trace.decorate_upload(kwargs)
         uploaded = client.upload(str(path), title=title, **kwargs)
         if trace is not None and getattr(self.session, "_trace", None) is trace:
-            trace.record_upload(str(path), title, kwargs, uploaded)
+            self._record_routed_trace_product(
+                trace,
+                path,
+                title=title,
+                record_type=record_type,
+                component=str(metadata.get("component") or ""),
+                asset_id=str(uploaded.asset_id),
+            )
         return uploaded
+
+    @staticmethod
+    def _record_routed_trace_product(
+        trace: Any,
+        path: Path,
+        *,
+        title: str,
+        record_type: str,
+        component: str,
+        asset_id: str,
+    ) -> None:
+        """Add a sibling-collection product to the signed execution payload."""
+
+        transfers = getattr(trace, "transfers", None)
+        if not isinstance(transfers, list):
+            return
+        transfers.append(
+            {
+                "direction": "upload",
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "asset_id": asset_id,
+                "title": title,
+                "record_type": record_type,
+                "component": component,
+                "filename": path.name,
+                "size_bytes": path.stat().st_size,
+                "sha256": _sha256(path),
+                "run_identity_stamped": False,
+                "collection_routing": "sibling-provenance-collection",
+            }
+        )
 
     def _link_to_raw(self, asset_id: str, relation: str) -> None:
         for raw_id in self.raw_dataset_asset_ids:
@@ -1244,6 +1418,14 @@ def _max_inline_asset_bytes() -> int:
 
 def _exceeds_inline_asset_limit(path: Path) -> bool:
     return path.stat().st_size > _max_inline_asset_bytes()
+
+
+def _raw_chunk_bytes() -> int:
+    return int(os.environ.get("DATAERAI_RAW_CHUNK_BYTES", str(600 * 1024**2)))
+
+
+def _exceeds_raw_single_asset_limit(path: Path) -> bool:
+    return path.stat().st_size > _raw_chunk_bytes()
 
 
 def _is_raw_candidate(path: Path) -> bool:

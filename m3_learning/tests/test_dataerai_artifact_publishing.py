@@ -24,6 +24,7 @@ def _isolated_dataerai_environment(monkeypatch):
         "DATAERAI_RAW_DATA_PATHS",
         "DATAERAI_LOG_PROVENANCE",
         "DATAERAI_MAX_INLINE_ASSET_BYTES",
+        "DATAERAI_RAW_CHUNK_BYTES",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -77,6 +78,7 @@ class _Session:
         self._trace = SimpleNamespace(
             run_id=run_id,
             cells=[],
+            transfers=[],
             uses_unsigned_legacy_contract=False,
             record_upload=lambda *args: None,
         )
@@ -251,6 +253,54 @@ def test_oversized_working_hdf5_reuses_smaller_original_source(tmp_path, monkeyp
     assert result.raw_dataset_asset_ids == ("asset-2",)
 
 
+def test_large_raw_source_is_one_reusable_manifest_with_deterministic_parts(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("DATAERAI_RAW_CHUNK_BYTES", "4")
+    raw = tmp_path / "Data" / "raw.h5"
+    raw.parent.mkdir()
+    raw.write_bytes(b"abcdefghij")
+    publisher = _publisher(tmp_path).start()
+
+    result = publisher.finish()
+
+    uploads = publisher.session.uploads
+    parts = [
+        upload
+        for upload in uploads
+        if upload["metadata"]["component"] == "raw-dataset-part"
+    ]
+    manifest_upload = next(
+        upload
+        for upload in uploads
+        if upload["metadata"]["component"] == "raw-dataset-manifest"
+    )
+    manifest = json.loads(manifest_upload["content"])
+    assert [upload["content"] for upload in parts] == [b"abcd", b"efgh", b"ij"]
+    assert manifest["schema"] == "m3-learning.raw-dataset-bundle.v1"
+    assert manifest["part_count"] == 3
+    assert [part["asset_id"] for part in manifest["parts"]] == [
+        "asset-2",
+        "asset-3",
+        "asset-4",
+    ]
+    assert result.raw_dataset_asset_ids == ("asset-5",)
+    assert sum(
+        relation == "part_of"
+        for _, _, relation, _ in publisher.session.relationships
+    ) == 3
+    assert all(
+        upload["collection_id"]
+        == publisher.session.collections[
+            "M3 / Example Notebook / Data / Raw / Parts / raw.h5"
+        ]
+        for upload in parts
+    )
+    assert {
+        item["asset_id"] for item in publisher.session._trace.transfers
+    }.issuperset({"asset-1", "asset-2", "asset-3", "asset-4", "asset-5"})
+
+
 def test_oversized_derived_hdf5_publishes_versioned_dataset_manifest(
     tmp_path, monkeypatch
 ):
@@ -393,7 +443,10 @@ def test_each_rich_figure_gets_a_deterministic_analysis_asset(tmp_path):
         "cell-0007-display-01.png",
         "cell-0007-display-02.svg",
     ]
-    assert all(u["metadata"]["notebook_run_id"] == "trace-123" for u in figure_uploads)
+    assert all(
+        u["metadata"]["m3_notebook_run_id"] == "trace-123"
+        for u in figure_uploads
+    )
     assert len(result.analysis_asset_ids) == 2
     assert sum(
         relation == "analysis_of"
@@ -591,7 +644,10 @@ def test_every_uploaded_product_uses_the_traced_session_for_execution_linking(tm
     publisher.finish()
 
     assert session.uploads
-    assert all(upload["metadata"]["notebook_run_id"] == "trace-123" for upload in session.uploads)
+    assert all(
+        upload["metadata"]["m3_notebook_run_id"] == "trace-123"
+        for upload in session.uploads
+    )
 
 
 def test_publisher_unregisters_its_notebook_hook_on_finish(tmp_path):

@@ -34,9 +34,12 @@ source paths. Publication is strict by default: a partial upload makes the final
 Set `DATAERAI_RAW_DATA_ASSET_ID` to force reuse of an already-published source
 asset instead of resolving it by the stable title.
 
-Files larger than `DATAERAI_MAX_INLINE_ASSET_BYTES` (8 GiB by default) cannot
-be copied into a smaller Dataerai allocation. The immutable original source is
-still uploaded and reused; an oversized derived HDF5 receives a versioned
+Raw sources above `DATAERAI_RAW_CHUNK_BYTES` (600 MiB by default) are uploaded
+as deterministic parts plus one canonical reconstruction manifest; notebooks
+reuse the manifest asset ID. Files larger than
+`DATAERAI_MAX_INLINE_ASSET_BYTES` (8 GiB by default) cannot be copied into a
+smaller Dataerai allocation. The immutable original source is still preserved;
+an oversized derived HDF5 receives a versioned
 dataset-manifest asset with its path, size, run, and source lineage instead of
 repeated failing uploads. Raise the limit only when the destination allocation
 can hold the full file.

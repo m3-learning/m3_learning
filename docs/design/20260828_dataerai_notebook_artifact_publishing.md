@@ -42,6 +42,8 @@ it falls back to the trace's captured display bundle.
 - Files unrelated to the documented artifact extensions are never scanned or
   uploaded.
 - An unchanged source dataset is not uploaded again by later notebooks.
+- Large immutable sources use deterministic multipart assets and one canonical
+  reconstruction-manifest ID that later notebooks reuse.
 - Stable derived titles deliberately create new content versions instead of
   duplicate assets.
 - Derived files above the configurable inline limit produce a versioned
