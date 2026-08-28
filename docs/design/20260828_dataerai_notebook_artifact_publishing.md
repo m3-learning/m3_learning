@@ -8,6 +8,11 @@ Publishing is implemented by one reusable `m3_learning` helper started beside
 the `%dataerai --trace` magic and flushed immediately before `%dataerai
 --finish`.
 
+Immediately after the magic starts the trace, the managed setup cell appends
+the generated run UUID to the trace title. This prevents the SDK's title-based
+upsert behavior from replacing an earlier execution JSON while retaining a
+readable notebook title.
+
 The helper uploads the source notebook, reuses source datasets by a stable,
 exact asset title; captures full
 rich-image payloads into deterministic files before the execution log applies
@@ -66,8 +71,11 @@ it falls back to the trace's captured display bundle.
 The artifact directory is local and regenerable. Uploads use deterministic
 titles, so retrying versions existing assets rather than creating a second
 logical artifact. Relationship-exists responses are treated as idempotent;
-other publication errors are reported and make the final publication step
-fail rather than presenting partial provenance as success.
+temporary gateway and failed-verification responses are retried, and recovered
+attempts are removed from the final error report. The signed execution-log
+upload uses the same bounded retry policy. Other publication errors are
+reported and make the final publication step fail rather than presenting
+partial provenance as success.
 
 ## Verification matrix
 
@@ -79,4 +87,4 @@ fail rather than presenting partial provenance as success.
 | Publish source notebook and hierarchy | immutable notebook upload plus routed collections | `test_source_notebook_and_nested_output_folders_are_first_class_collections` |
 | Publish model bundle | specialized PyTorch tracker plus linked M3 outputs | `test_specialized_pytorch_tracker_routes_complete_training_bundle` |
 | Link products | SDK relationship contract | model/figure/derived assertions above |
-| Keep one execution log | all products upload through traced session | `test_every_uploaded_product_uses_the_traced_session_for_execution_linking` |
+| Keep one execution log per run | run UUID in title; all products registered with trace | `test_every_source_notebook_has_one_managed_provenance_boundary`, `test_final_signed_trace_upload_uses_transient_retry_wrapper` |

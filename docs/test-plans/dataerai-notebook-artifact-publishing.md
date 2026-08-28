@@ -14,5 +14,6 @@ notebooks in order with `QUICK_RUN=True` and verify:
 4. changed HDF5/CSV titles gain content versions;
 5. the neural-network notebook publishes checkpoint, loss, and manifest model
    assets plus the documented relationships; and
-6. each run has one execution log whose product count matches its promoted
-   artifacts.
+6. each run has one UUID-qualified execution log whose product count matches
+   its promoted artifacts; rerunning a notebook creates another execution
+   asset instead of replacing the earlier one.

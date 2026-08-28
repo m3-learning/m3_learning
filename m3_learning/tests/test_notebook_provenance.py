@@ -51,6 +51,8 @@ def test_every_source_notebook_has_one_managed_provenance_boundary():
         assert "provenance_root_path=DATAERAI_PROVENANCE_ROOT_PATH" in start_source
         assert "DATAERAI_NOTEBOOK_TRACE_RUN_ID" in start_source
         assert "dataerai_session.trace_run_id" in start_source
+        assert "_dataerai_trace.title" in start_source
+        assert "· run {_dataerai_trace.run_id}" in start_source
 
         finish_index = ids.index("dataerai-provenance-finish")
         finish = cells[finish_index]
