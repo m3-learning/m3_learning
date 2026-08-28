@@ -35,3 +35,7 @@ torchsummary
 wget
 
 xlrd
+
+dataerai-cli
+
+dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3

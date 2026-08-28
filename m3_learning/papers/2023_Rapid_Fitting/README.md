@@ -36,15 +36,17 @@ notebook end-to-end on CPU. Cells whose full-scale artifacts are unavailable und
 QUICK_RUN skip themselves with a printed notice. The committed default is
 `QUICK_RUN = False` (the full paper workflow).
 
-## Dataerai provenance logging
+## Dataerai notebook and neural-network provenance
 
-The Rapid Fitting notebooks that train neural networks can record each training
-run in Dataerai's lineage graph. The training code uses the Dataerai SDK helper
-`dataerai.ml.lineage.record_training_run`; users authenticate and select/upload
-the source data with the normal CLI.
+Every authored notebook starts a Dataerai execution trace with the `%dataerai`
+IPython magic and finishes it in the final code cell. The trace captures cell
+source, outputs, logs, transfers, errors, and the runtime environment. The Rapid
+Fitting notebooks that train neural networks also publish their training run to
+Dataerai's lineage graph. Both records carry the same notebook trace ID, so the
+scientific execution and training lineage can be inspected together.
 
 ```bash
-python -m pip install dataerai-cli 'dataerai-sdk[ml]'
+python -m pip install dataerai-cli 'dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3'
 dataerai auth login --device --server https://beta.dataerai.com
 dataerai auth status
 ```
@@ -68,17 +70,22 @@ dataerai upload \
   --file Data/data_raw.h5
 ```
 
-Then enable logging before running the training cells:
+Set the destination collection and enable source-data lineage before launching
+Jupyter. The destination defaults to an `M3 Learning / Notebook Provenance / …`
+path derived from the notebook's directory when the first variable is omitted.
 
 ```bash
+export DATAERAI_DESTINATION_COLLECTION_PATH='My Project / M3 Learning Runs'
 export DATAERAI_DATASET_ASSET_ID=<asset-id-from-upload>
 export DATAERAI_LOG_PROVENANCE=1
 ```
 
 If you already know the provenance surrogate, set
 `DATAERAI_DATASET_RECORD_SK=<record-sk>` instead of `DATAERAI_DATASET_ASSET_ID`.
-The notebooks print the Dataerai lineage run id after each successful training
-run.
+The notebooks print the Dataerai lineage run ID after each successful training
+run, and `%dataerai --finish` publishes the related execution log at the end.
+The four managed provenance cells in each source notebook can be regenerated
+idempotently with `python tools/update_dataerai_notebook_provenance.py`.
 
 ## Local development
 

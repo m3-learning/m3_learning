@@ -4,7 +4,8 @@ The actual lineage write is delegated to Dataerai's SDK
 ``dataerai.ml.lineage.record_training_run``. This module only handles the
 user-facing glue that notebooks need: loading credentials created by the
 ``dataerai`` CLI, resolving a normal Dataerai asset id to the lineage
-``record_sk`` surrogate, and packaging common training parameters/metrics.
+``record_sk`` surrogate, packaging common training parameters/metrics, and
+correlating a training run with the active ``%dataerai --trace`` execution.
 """
 
 from __future__ import annotations
@@ -252,7 +253,21 @@ def log_dataerai_training_run(
         or os.environ.get("DATAERAI_DATASET_ASSET_ID")
         or os.environ.get("DATAERAI_ASSET_ID")
     )
-    idempotency_key = idempotency_key or os.environ.get("DATAERAI_LINEAGE_IDEMPOTENCY_KEY")
+    idempotency_key = idempotency_key or os.environ.get(
+        "DATAERAI_LINEAGE_IDEMPOTENCY_KEY"
+    )
+    params = dict(params or {})
+    notebook_trace_run_id = os.environ.get("DATAERAI_NOTEBOOK_TRACE_RUN_ID")
+    notebook_collection_path = os.environ.get("DATAERAI_NOTEBOOK_COLLECTION_PATH")
+    if notebook_trace_run_id:
+        # Scope a stable training key to this notebook execution. Retries within
+        # one trace remain idempotent, while a later notebook run receives a new
+        # training-lineage record instead of replaying an older execution.
+        params.setdefault("notebook_trace_run_id", notebook_trace_run_id)
+        if idempotency_key:
+            idempotency_key = f"{idempotency_key}:notebook:{notebook_trace_run_id}"
+    if notebook_collection_path:
+        params.setdefault("notebook_collection_path", notebook_collection_path)
 
     if dataset_record_sk is None and not dataset_asset_id:
         return DataeraiLineageResult(
@@ -284,7 +299,7 @@ def log_dataerai_training_run(
         response = record_training_run(
             creds,
             dataset_record_sk=dataset_record_sk,
-            params=_json_safe(params or {}),
+            params=_json_safe(params),
             metrics=_json_safe(metrics or {}),
             idempotency_key=idempotency_key,
             session=session,

@@ -112,6 +112,44 @@ def test_log_dataerai_training_run_uses_sdk_helper(monkeypatch):
     assert kwargs["idempotency_key"] == "stable-run"
 
 
+def test_training_run_inherits_active_notebook_trace_identity(monkeypatch):
+    calls = []
+    lineage_mod = types.ModuleType("dataerai.ml.lineage")
+
+    def _record_training_run(creds, **kwargs):
+        calls.append((creds, kwargs))
+        return {"run_id": "training-run", "idempotent_replay": False}
+
+    lineage_mod.record_training_run = _record_training_run
+    monkeypatch.setitem(sys.modules, "dataerai", types.ModuleType("dataerai"))
+    monkeypatch.setitem(sys.modules, "dataerai.ml", types.ModuleType("dataerai.ml"))
+    monkeypatch.setitem(sys.modules, "dataerai.ml.lineage", lineage_mod)
+    monkeypatch.setenv("DATAERAI_NOTEBOOK_TRACE_RUN_ID", "notebook-run-123")
+    monkeypatch.setenv(
+        "DATAERAI_NOTEBOOK_COLLECTION_PATH",
+        "M3 Learning / Notebook Provenance / Rapid Fitting",
+    )
+
+    result = log_dataerai_training_run(
+        enabled=True,
+        dataset_record_sk=42,
+        credentials={"server_url": "https://beta.dataerai.com", "access_token": "AT"},
+        params={"epochs": 1},
+        metrics={"train_loss": 0.1},
+        idempotency_key="stable-run",
+    )
+
+    assert result.run_id == "training-run"
+    _, kwargs = calls[0]
+    assert kwargs["params"]["notebook_trace_run_id"] == "notebook-run-123"
+    assert kwargs["params"]["notebook_collection_path"].endswith(
+        "Notebook Provenance / Rapid Fitting"
+    )
+    assert kwargs["idempotency_key"] == (
+        "stable-run:notebook:notebook-run-123"
+    )
+
+
 def test_build_training_lineage_payload_json_safe():
     params, metrics = build_training_lineage_payload(
         model_name="model",
