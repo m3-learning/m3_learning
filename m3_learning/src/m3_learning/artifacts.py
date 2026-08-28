@@ -1172,18 +1172,23 @@ class DataeraiArtifactPublisher:
             self._relationship(asset_id, self.notebook_asset_id, relation)
 
     def _relationship(self, source: str, target: str, relation: str) -> None:
-        try:
-            self.session.create_relationship(
-                source,
-                target,
-                relation,
-                qualifiers={"notebook_run_id": self.run_id},
-            )
-        except Exception as exc:
-            code = str(getattr(exc, "code", ""))
-            if "EXISTS" in code.upper() or "EXISTS" in str(exc).upper():
+        attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
+        for attempt in range(1, attempts + 1):
+            try:
+                self.session.create_relationship(
+                    source,
+                    target,
+                    relation,
+                    qualifiers={"notebook_run_id": self.run_id},
+                )
                 return
-            raise
+            except Exception as exc:
+                code = str(getattr(exc, "code", ""))
+                if "EXISTS" in code.upper() or "EXISTS" in str(exc).upper():
+                    return
+                if attempt == attempts or not _is_transient_upload_error(exc):
+                    raise
+                time.sleep(min(2 ** (attempt - 1), 8))
 
     def _attempt(self, operation: Any) -> None:
         try:

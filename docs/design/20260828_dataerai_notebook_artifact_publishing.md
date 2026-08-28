@@ -73,9 +73,9 @@ titles, so retrying versions existing assets rather than creating a second
 logical artifact. Relationship-exists responses are treated as idempotent;
 temporary gateway and failed-verification responses are retried, and recovered
 attempts are removed from the final error report. The signed execution-log
-upload uses the same bounded retry policy. Other publication errors are
-reported and make the final publication step fail rather than presenting
-partial provenance as success.
+upload and scientific relationship writes use the same bounded retry policy.
+Other publication errors are reported and make the final publication step fail
+rather than presenting partial provenance as success.
 
 ## Verification matrix
 

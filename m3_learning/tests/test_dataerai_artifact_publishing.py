@@ -450,6 +450,38 @@ def test_final_signed_trace_upload_uses_transient_retry_wrapper(tmp_path, monkey
     assert uploaded.asset_id == "asset-2"
 
 
+def test_transient_scientific_relationship_failure_is_retried(
+    tmp_path, monkeypatch
+):
+    class _TransientRelationshipSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.relationship_attempts = 0
+
+        def create_relationship(self, source, target, relation, **kwargs):
+            if relation == "analysis_of":
+                self.relationship_attempts += 1
+                if self.relationship_attempts == 1:
+                    raise RuntimeError("POST relationships: HTTP 502 Bad Gateway")
+            return super().create_relationship(source, target, relation, **kwargs)
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    raw = tmp_path / "Data" / "raw.h5"
+    raw.parent.mkdir()
+    raw.write_bytes(b"raw")
+    session = _TransientRelationshipSession()
+    publisher = _publisher(tmp_path, session=session).start()
+    figure = tmp_path / "Figures" / "frame.png"
+    figure.parent.mkdir()
+    figure.write_bytes(b"png")
+
+    result = publisher.finish()
+
+    assert session.relationship_attempts == 2
+    assert len(result.analysis_asset_ids) == 1
+    assert result.errors == ()
+
+
 def test_transient_collection_discovery_failure_is_retried(tmp_path, monkeypatch):
     class _TransientCollectionSession(_Session):
         def __init__(self):
