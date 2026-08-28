@@ -31,7 +31,8 @@ def test_every_source_notebook_has_one_managed_provenance_boundary():
         start = cells[ids.index("dataerai-provenance-start")]
         start_source = "".join(start["source"])
         assert "dataerai-cli-beta" in start_source
-        assert "dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3" in start_source
+        assert "dataerai-sdk[ml,notebook]>=0.2.0b52,<0.3" in start_source
+        assert "start_dataerai_artifact_publishing" in start_source
         assert "%load_ext dataerai.magics" in start_source
         assert "%dataerai --request-timeout 120 --trace" in start_source
         assert "DATAERAI_NOTEBOOK_TRACE_RUN_ID" in start_source
@@ -39,7 +40,9 @@ def test_every_source_notebook_has_one_managed_provenance_boundary():
 
         finish_index = ids.index("dataerai-provenance-finish")
         finish = cells[finish_index]
-        assert "".join(finish["source"]).strip() == "%dataerai --finish"
+        finish_source = "".join(finish["source"])
+        assert "dataerai_artifacts.finish()" in finish_source
+        assert finish_source.strip().endswith("%dataerai --finish")
         assert not any(
             cell.get("cell_type") == "code" for cell in cells[finish_index + 1 :]
         ), f"{path}: code appears after the trace is finished"

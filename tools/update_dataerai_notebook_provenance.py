@@ -14,7 +14,6 @@ import re
 import subprocess
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 MANAGED_IDS = {
     "dataerai-provenance-intro",
@@ -193,6 +192,25 @@ def _insert_cells(
     )
 
 
+def _replace_managed_cells(text: str, replacements: dict[str, dict]) -> str:
+    """Replace managed cell objects without reserializing authored cells."""
+
+    array_open, array_close = _cells_array_bounds(text)
+    spans = _cell_spans(text, array_open, array_close)
+    seen = set()
+    for start, end in reversed(spans):
+        cell = json.loads(text[start:end])
+        cell_id = cell.get("id")
+        if cell_id not in replacements:
+            continue
+        text = text[:start] + _serialized_cells([replacements[cell_id]]) + text[end:]
+        seen.add(cell_id)
+    missing = set(replacements) - seen
+    if missing:
+        raise ValueError(f"managed cells missing from notebook: {sorted(missing)}")
+    return text
+
+
 def _managed_cells(path: Path, notebook: dict) -> tuple[list[dict], list[dict]]:
     title = _title(notebook, path)
     default_collection = _collection_path(path)
@@ -202,35 +220,55 @@ def _managed_cells(path: Path, notebook: dict) -> tuple[list[dict], list[dict]]:
         "markdown",
         "dataerai-provenance-intro",
         "## Dataerai notebook and neural-network provenance\n\n"
-        "Authenticate once with `dataerai auth login --device --server "
-        "https://beta.dataerai.com`. The next cell starts `%dataerai --trace`, "
-        "which records the remaining cell source, outputs, logs, transfers, "
-        "errors, and runtime environment. When this notebook trains a neural "
-        "network through an instrumented `m3_learning` fitter, its training "
-        "lineage receives the same notebook trace ID. Set "
+        "Authenticate once with `dataerai auth login --device --client-id "
+        "dataerai-mobile --server https://beta.dataerai.com`. The next cell "
+        "starts `%dataerai --trace` and the M3 artifact publisher. Together "
+        "they record cell execution; reuse source datasets; publish figures, "
+        "changed HDF5/CSV data, checkpoints, loss histories, and manifests; "
+        "and link those products to the notebook run and source data. Set "
         "`DATAERAI_DESTINATION_COLLECTION_PATH` before launching Jupyter to "
         "override the default destination.\n",
     )
     start = _cell(
         "code",
         "dataerai-provenance-start",
-        "import importlib.util as _dataerai_importlib_util\n"
         "import os as _dataerai_os\n"
         "import subprocess as _dataerai_subprocess\n"
         "import sys as _dataerai_sys\n\n"
-        "if _dataerai_importlib_util.find_spec(\"dataerai\") is None:\n"
+        "_dataerai_subprocess.run(\n"
+        "    [\n"
+        "        _dataerai_sys.executable,\n"
+        "        \"-m\",\n"
+        "        \"pip\",\n"
+        "        \"install\",\n"
+        "        \"--quiet\",\n"
+        "        \"--upgrade\",\n"
+        "        \"--pre\",\n"
+        "        \"dataerai-cli-beta>=0.1.54\",\n"
+        "        \"dataerai-sdk[ml,notebook]>=0.2.0b52,<0.3\",\n"
+        "    ],\n"
+        "    check=True,\n"
+        ")\n\n"
+        "try:\n"
+        "    from m3_learning.artifacts import "
+        "start_dataerai_artifact_publishing\n"
+        "except ImportError:\n"
         "    _dataerai_subprocess.run(\n"
         "        [\n"
         "            _dataerai_sys.executable,\n"
         "            \"-m\",\n"
         "            \"pip\",\n"
         "            \"install\",\n"
-        "            \"--pre\",\n"
-        "            \"dataerai-cli-beta\",\n"
-        "            \"dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3\",\n"
+        "            \"--upgrade\",\n"
+        "            \"--no-deps\",\n"
+        "            \"git+https://github.com/m3-learning/\"\n"
+        "            \"m3_learning.git@codex/dataerai-notebook-training-provenance\"\n"
+        "            \"#subdirectory=m3_learning\",\n"
         "        ],\n"
         "        check=True,\n"
-        "    )\n\n"
+        "    )\n"
+        "    from m3_learning.artifacts import "
+        "start_dataerai_artifact_publishing\n\n"
         f"DATAERAI_NOTEBOOK = {path.name!r}\n"
         f"DATAERAI_NOTEBOOK_TITLE = {title!r}\n"
         "DATAERAI_DESTINATION_COLLECTION_PATH = _dataerai_os.environ.get(\n"
@@ -245,19 +283,25 @@ def _managed_cells(path: Path, notebook: dict) -> tuple[list[dict], list[dict]]:
         "_dataerai_os.environ[\"DATAERAI_NOTEBOOK_TRACE_RUN_ID\"] = "
         "dataerai_session.trace_run_id\n"
         "_dataerai_os.environ[\"DATAERAI_NOTEBOOK_COLLECTION_PATH\"] = "
-        "dataerai_session.collection_path\n",
+        "dataerai_session.collection_path\n"
+        "dataerai_artifacts = start_dataerai_artifact_publishing(\n"
+        "    dataerai_session,\n"
+        "    DATAERAI_NOTEBOOK,\n"
+        "    shell=get_ipython(),\n"
+        ")\n",
     )
     finish_note = _cell(
         "markdown",
         "dataerai-provenance-finish-note",
         "## Finish the Dataerai provenance record\n\n"
-        "Run this final cell even when no files were uploaded. It publishes the "
-        "notebook execution log after any neural-network training lineage and "
-        "other recorded products.\n",
+        "This cell first uploads captured figures, changed HDF5/CSV files, and "
+        "model artifacts. It then publishes the single notebook execution log "
+        "and its `records_telemetry` relationships.\n",
     )
     finish = _cell(
         "code",
         "dataerai-provenance-finish",
+        "dataerai_artifact_result = dataerai_artifacts.finish()\n"
         "%dataerai --finish\n",
     )
     for cell in (intro, start, finish_note, finish):
@@ -286,7 +330,10 @@ def update_notebook(path: Path, *, base_ref: str | None = None) -> bool:
     original = path.read_text(encoding="utf-8")
     source = _source_text(path, base_ref)
     if all(f'"id": "{cell_id}"' in source for cell_id in MANAGED_IDS):
-        target = source
+        notebook = json.loads(source)
+        opening, closing = _managed_cells(path, notebook)
+        replacements = {cell["id"]: cell for cell in (*opening, *closing)}
+        target = _replace_managed_cells(source, replacements)
     elif any(f'"id": "{cell_id}"' in source for cell_id in MANAGED_IDS):
         raise ValueError(f"{path} has a partial Dataerai managed-cell boundary")
     else:

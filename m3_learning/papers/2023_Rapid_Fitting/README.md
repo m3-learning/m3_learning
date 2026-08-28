@@ -4,7 +4,7 @@ Code for *"Rapid Fitting of Band-Excitation Piezoresponse Force Microscopy Using
 Physics Constrained Unsupervised Neural Networks"* (NeurIPS 2023, ML4PS workshop).
 
 The notebooks run in order on Google Colab (GPU runtime recommended) or locally.
-Each notebook's first cell clones this repo (`BRANCH = "shofit"`), pip-installs the
+Each notebook's first cell clones this feature branch, pip-installs the
 `m3_learning` SDK, and upgrades `numpy_groupies` (required: the BGlib dependency
 pins a version that crashes on NumPy ≥ 2). Data downloads automatically from
 [Zenodo record 7774788](https://zenodo.org/record/7774788) (1.74 GB raw; the h5
@@ -38,52 +38,43 @@ QUICK_RUN skip themselves with a printed notice. The committed default is
 
 ## Dataerai notebook and neural-network provenance
 
-Every authored notebook starts a Dataerai execution trace with the `%dataerai`
-IPython magic and finishes it in the final code cell. The trace captures cell
-source, outputs, logs, transfers, errors, and the runtime environment. The Rapid
-Fitting notebooks that train neural networks also publish their training run to
-Dataerai's lineage graph. Both records carry the same notebook trace ID, so the
-scientific execution and training lineage can be inspected together.
+Every authored notebook starts a Dataerai execution trace and artifact publisher
+and finishes both in the final code cell. The trace captures cell execution. The
+publisher reuses the raw HDF5 asset, exports each rich figure, versions changed
+HDF5/CSV data, and publishes model checkpoints, loss histories, and manifests.
+All products carry the notebook run ID and receive source-data relationships;
+the execution log receives `records_telemetry` relationships from the SDK.
 
 ```bash
-python -m pip install --pre dataerai-cli-beta 'dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3'
-dataerai auth login --device --server https://beta.dataerai.com
+python -m pip install --pre dataerai-cli-beta 'dataerai-sdk[ml,notebook]>=0.2.0b52,<0.3'
+dataerai auth login --device --client-id dataerai-mobile --server https://beta.dataerai.com
 dataerai auth status
 ```
 
-Upload the source h5 once, or reuse an existing Dataerai asset id:
-
-```bash
-cat > dataerai_source_asset.json <<'JSON'
-{
-  "title": "PZT 2080 raw BE-PFM data",
-  "description": "Source data for the Rapid Fitting SHO neural-network notebooks.",
-  "tags": ["be-pfm", "sho", "neural-network", "m3-learning"],
-  "metadata": {"source": "Zenodo 7774788"}
-}
-JSON
-
-dataerai upload \
-  --project <project-uuid> \
-  --collection <collection-uuid> \
-  --metadata dataerai_source_asset.json \
-  --file Data/data_raw.h5
-```
-
-Set the destination collection and enable source-data lineage before launching
-Jupyter. The destination defaults to an `M3 Learning / Notebook Provenance / …`
-path derived from the notebook's directory when the first variable is omitted.
+The first notebook to see `Data/data_raw.h5` uploads it under a stable source
+title. Later notebooks find and reuse that exact asset, including across fresh
+cloud kernels. Set only the destination before launching Jupyter; artifact and
+training provenance are enabled by the managed setup cell.
 
 ```bash
 export DATAERAI_DESTINATION_COLLECTION_PATH='My Project / M3 Learning Runs'
-export DATAERAI_DATASET_ASSET_ID=<asset-id-from-upload>
-export DATAERAI_LOG_PROVENANCE=1
 ```
 
-If you already know the provenance surrogate, set
-`DATAERAI_DATASET_RECORD_SK=<record-sk>` instead of `DATAERAI_DATASET_ASSET_ID`.
+If you already know a source asset, set
+`DATAERAI_RAW_DATA_ASSET_ID=<asset-id>` (and optionally
+`DATAERAI_DATASET_ASSET_ID` to the same value);
+if you know the provenance surrogate, set `DATAERAI_DATASET_RECORD_SK=<record-sk>`.
 The notebooks print the Dataerai lineage run ID after each successful training
-run, and `%dataerai --finish` publishes the related execution log at the end.
+run. The artifact summary then prints before `%dataerai --finish` publishes the
+related execution log.
+
+A successful final cell ends with output in this form (counts vary by notebook):
+
+```text
+Dataerai artifacts: 1 source dataset, 8 analyses, 2 derived datasets, 3 model artifacts.
+Published notebook execution trace <run-id> (<cell-count> cells, <product-count> products).
+```
+
 The four managed provenance cells in each source notebook can be regenerated
 idempotently with `python tools/update_dataerai_notebook_provenance.py`.
 

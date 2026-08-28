@@ -19,6 +19,7 @@ from m3_learning.provenance import (
     build_training_lineage_payload,
     log_dataerai_training_run,
 )
+from m3_learning.artifacts import queue_dataerai_model_artifacts
 import pandas as pd
 
 
@@ -543,6 +544,13 @@ class Model(nn.Module):
             print(f"Dataerai lineage run: {lineage.run_id}")
         elif lineage.enabled and lineage.skipped_reason:
             print(f"Dataerai lineage skipped: {lineage.skipped_reason}")
+        queue_dataerai_model_artifacts(
+            model_path=final_model_path,
+            loss_path=training_loss_path,
+            params=params,
+            metrics=metrics,
+            lineage_run_id=lineage.run_id,
+        )
 
         self.model.eval()
 

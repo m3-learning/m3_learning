@@ -21,4 +21,4 @@ BGlib
 pyUSID
 sidpy
 dataerai-cli-beta
-dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3
+dataerai-sdk[ml,notebook]>=0.2.0b52,<0.3

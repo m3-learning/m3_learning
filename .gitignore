@@ -76,6 +76,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+.dataerai-artifacts/
 
 # IPython
 profile_default/
