@@ -31,6 +31,7 @@ def _isolated_dataerai_environment(monkeypatch):
 class _Asset:
     asset_id: str
     title: str
+    has_content: bool = True
 
 
 class _Events:
@@ -143,6 +144,28 @@ def test_raw_dataset_downloaded_after_trace_start_is_published_before_later_cell
     upload = next(item for item in session.uploads if item["path"] == raw)
     assert upload["metadata"]["component"] == "raw-dataset"
     assert publisher.raw_dataset_asset_ids == ("asset-1",)
+
+
+def test_contentless_raw_dataset_placeholder_is_retried(tmp_path):
+    raw = tmp_path / "Data" / "data_raw.h5"
+    raw.parent.mkdir()
+    raw.write_bytes(b"raw-hdf5")
+    title = "M3 source dataset · Data/data_raw.h5"
+    session = _Session(
+        existing=[
+            _Asset(
+                asset_id="failed-placeholder",
+                title=title,
+                has_content=False,
+            )
+        ]
+    )
+
+    result = _publisher(tmp_path, session=session).start().finish()
+
+    raw_upload = next(item for item in session.uploads if item["path"] == raw)
+    assert raw_upload["title"] == title
+    assert result.raw_dataset_asset_ids == ("asset-1",)
 
 
 def test_downloaded_source_archive_is_published_as_raw_data(tmp_path):

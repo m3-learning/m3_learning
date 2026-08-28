@@ -354,7 +354,13 @@ class DataeraiArtifactPublisher:
             if explicit_id:
                 asset_id = explicit_id
             else:
-                matches = self.session.find_assets(title, title=title)
+                matches = self.session.find_assets(
+                    title,
+                    title=title,
+                    predicate=lambda asset: bool(
+                        getattr(asset, "has_content", True)
+                    ),
+                )
                 if len(matches) > 1:
                     raise LookupError(
                         f"more than one readable source dataset has title {title!r}; "
