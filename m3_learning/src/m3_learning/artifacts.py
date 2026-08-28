@@ -163,6 +163,7 @@ class DataeraiArtifactPublisher:
         if self._registered or self._finished:
             return self
         self._install_trace_upload_retry()
+        self._install_trace_relationship_retry()
         self._ensure_provenance_collections()
         self._publish_source_notebook()
         self._baseline = self._snapshot()
@@ -224,6 +225,33 @@ class DataeraiArtifactPublisher:
 
         retrying_upload._m3_retrying_upload = True  # type: ignore[attr-defined]
         self.session._upload_bound = retrying_upload
+
+    def _install_trace_relationship_retry(self) -> None:
+        """Retry signed execution-to-product relationship writes."""
+
+        client = getattr(self.session, "client", None)
+        original = getattr(client, "create_relationship", None)
+        if not callable(original) or getattr(
+            original, "_m3_retrying_relationship", False
+        ):
+            return
+
+        def retrying_relationship(*args: Any, **kwargs: Any) -> Any:
+            attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
+            for attempt in range(1, attempts + 1):
+                try:
+                    return original(*args, **kwargs)
+                except Exception as exc:  # noqa: BLE001 - SDK/network boundary
+                    code = str(getattr(exc, "code", ""))
+                    if "EXISTS" in code.upper() or "EXISTS" in str(exc).upper():
+                        raise
+                    if attempt == attempts or not _is_transient_upload_error(exc):
+                        raise
+                    time.sleep(min(2 ** (attempt - 1), 8))
+            raise AssertionError("unreachable")
+
+        retrying_relationship._m3_retrying_relationship = True  # type: ignore[attr-defined]
+        client.create_relationship = retrying_relationship
 
     def _ensure_collection_path(self, path: str) -> Any:
         """Resolve/create one collection with bounded transient retries."""

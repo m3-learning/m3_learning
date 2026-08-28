@@ -482,6 +482,36 @@ def test_transient_scientific_relationship_failure_is_retried(
     assert result.errors == ()
 
 
+def test_final_trace_relationship_uses_transient_retry_wrapper(
+    tmp_path, monkeypatch
+):
+    class _TransientTraceRelationshipSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.trace_relationship_attempts = 0
+
+        def create_relationship(self, source, target, relation, **kwargs):
+            if relation == "records_telemetry":
+                self.trace_relationship_attempts += 1
+                if self.trace_relationship_attempts == 1:
+                    raise RuntimeError("POST relationships: HTTP 502 Bad Gateway")
+            return super().create_relationship(source, target, relation, **kwargs)
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    session = _TransientTraceRelationshipSession()
+    _publisher(tmp_path, session=session).start()
+
+    relationship = session.client.create_relationship(
+        "execution-1",
+        "product-1",
+        "records_telemetry",
+        qualifiers={"notebook_run_id": "trace-123"},
+    )
+
+    assert session.trace_relationship_attempts == 2
+    assert relationship.id == "relationship-1"
+
+
 def test_transient_collection_discovery_failure_is_retried(tmp_path, monkeypatch):
     class _TransientCollectionSession(_Session):
         def __init__(self):
