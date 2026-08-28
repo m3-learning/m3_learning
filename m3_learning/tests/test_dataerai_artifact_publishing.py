@@ -168,6 +168,31 @@ def test_contentless_raw_dataset_placeholder_is_retried(tmp_path):
     assert result.raw_dataset_asset_ids == ("asset-1",)
 
 
+def test_transient_upload_failure_is_retried(tmp_path, monkeypatch):
+    class _TransientUploadSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.attempts = 0
+
+        def upload(self, local_path, *, title=None, **kwargs):
+            self.attempts += 1
+            if self.attempts == 1:
+                raise RuntimeError("POST transfers: HTTP 504 Gateway Timeout")
+            return super().upload(local_path, title=title, **kwargs)
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    figure = tmp_path / "Figures" / "frame.png"
+    publisher = _publisher(tmp_path, session=_TransientUploadSession()).start()
+    figure.parent.mkdir()
+    figure.write_bytes(b"png")
+
+    result = publisher.finish()
+
+    assert publisher.session.attempts == 2
+    assert len(result.analysis_asset_ids) == 1
+    assert result.errors == ()
+
+
 def test_downloaded_source_archive_is_published_as_raw_data(tmp_path):
     publisher = _publisher(tmp_path).start()
     archive = tmp_path / "Datasets" / "AFM.zip"

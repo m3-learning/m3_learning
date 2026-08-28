@@ -13,6 +13,7 @@ import base64
 import hashlib
 import json
 import os
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -546,13 +547,21 @@ class DataeraiArtifactPublisher:
             "notebook_run_id": self.run_id,
             "source_notebook": self.notebook_name,
         }
-        return self.session.upload(
-            str(path),
-            title=title,
-            record_type=record_type,
-            tags=tags,
-            metadata=stamped_metadata,
-        )
+        attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
+        for attempt in range(1, attempts + 1):
+            try:
+                return self.session.upload(
+                    str(path),
+                    title=title,
+                    record_type=record_type,
+                    tags=tags,
+                    metadata=stamped_metadata,
+                )
+            except Exception as exc:  # noqa: BLE001 - SDK/network boundary
+                if attempt == attempts or not _is_transient_upload_error(exc):
+                    raise
+                time.sleep(min(2 ** (attempt - 1), 8))
+        raise AssertionError("unreachable")
 
     def _link_to_raw(self, asset_id: str, relation: str) -> None:
         for raw_id in self.raw_dataset_asset_ids:
@@ -708,6 +717,31 @@ def _env_bool(name: str, *, default: bool) -> bool:
     if value is None:
         return default
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
+
+
+def _is_transient_upload_error(exc: Exception) -> bool:
+    """Return whether retrying an SDK upload can reasonably succeed."""
+
+    message = f"{getattr(exc, 'code', '')} {exc}".casefold()
+    return any(
+        token in message
+        for token in (
+            "timeout",
+            "timed out",
+            "connection reset",
+            "connection aborted",
+            "connection refused",
+            "temporarily unavailable",
+            "too many requests",
+            "http 408",
+            "http 429",
+            "http 500",
+            "http 502",
+            "http 503",
+            "http 504",
+            "err_server_error",
+        )
+    )
 
 
 def _is_raw_candidate(path: Path) -> bool:
