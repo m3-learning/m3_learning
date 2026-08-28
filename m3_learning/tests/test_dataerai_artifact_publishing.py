@@ -158,6 +158,17 @@ def test_downloaded_source_archive_is_published_as_raw_data(tmp_path):
     assert upload["metadata"]["component"] == "raw-dataset"
 
 
+def test_unrelated_existing_csv_is_not_misclassified_as_raw_data(tmp_path):
+    benchmark = tmp_path / "record_from_datafed.csv"
+    benchmark.write_text("optimizer,loss\nAdam,0.1\n", encoding="utf-8")
+    publisher = _publisher(tmp_path).start()
+
+    result = publisher.finish()
+
+    assert result.raw_dataset_asset_ids == ()
+    assert all(item["path"] != benchmark for item in publisher.session.uploads)
+
+
 def test_each_rich_figure_gets_a_deterministic_analysis_asset(tmp_path):
     raw = tmp_path / "Data" / "data_raw.h5"
     raw.parent.mkdir()

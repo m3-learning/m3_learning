@@ -23,9 +23,8 @@ provenance cells are maintained by
 `python tools/update_dataerai_notebook_provenance.py`; generated notebooks under
 `m3_learning/_build` are refreshed by the Jupyter Book build instead.
 
-The publisher treats shallow HDF5/CSV files present when tracing starts as
-source data, recognizes newly downloaded source archives, and recognizes files
-with `raw`, `source`, `standard`, or `data_file` in their names. Set
+The publisher recognizes newly downloaded source archives and files with
+`raw`, `source`, `standard`, or `data_file` in their names. Set
 `DATAERAI_RAW_DATA_PATHS` (colon-separated on Linux/macOS) to declare additional
 source paths. Publication is strict by default: a partial upload makes the final cell fail. Set
 `DATAERAI_ARTIFACT_STRICT=0` only when best-effort publication is intentional.

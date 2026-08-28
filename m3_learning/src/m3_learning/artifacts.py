@@ -580,13 +580,9 @@ class DataeraiArtifactPublisher:
             return path.name
 
     def _is_source_input(self, path: Path) -> bool:
-        if _is_raw_candidate(path):
-            return True
-        try:
-            parts = path.resolve().relative_to(self.root).parts
-        except ValueError:
-            return False
-        return len(parts) <= 2
+        return path.suffix.lower() in _RAW_ARCHIVE_EXTENSIONS or _is_raw_candidate(
+            path
+        )
 
     @staticmethod
     def _state(path: Path) -> _FileState:
