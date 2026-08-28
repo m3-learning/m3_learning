@@ -9,12 +9,22 @@ MANAGED_IDS = (
     "dataerai-provenance-finish-note",
     "dataerai-provenance-finish",
 )
+IGNORED_NOTEBOOK_DIRECTORIES = {
+    ".dataerai-artifacts",
+    ".ipynb_checkpoints",
+    "_build",
+    "executed",
+}
 
 
 def _source_notebooks():
     notebooks = list((ROOT / "m3_learning").rglob("*.ipynb"))
     notebooks.extend((ROOT / "Testing").rglob("*.ipynb"))
-    return sorted(path for path in notebooks if "_build" not in path.parts)
+    return sorted(
+        path
+        for path in notebooks
+        if not IGNORED_NOTEBOOK_DIRECTORIES.intersection(path.parts)
+    )
 
 
 def test_every_source_notebook_has_one_managed_provenance_boundary():

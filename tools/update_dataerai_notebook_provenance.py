@@ -21,6 +21,12 @@ MANAGED_IDS = {
     "dataerai-provenance-finish-note",
     "dataerai-provenance-finish",
 }
+IGNORED_NOTEBOOK_DIRECTORIES = {
+    ".dataerai-artifacts",
+    ".ipynb_checkpoints",
+    "_build",
+    "executed",
+}
 
 
 def source_notebooks() -> list[Path]:
@@ -28,7 +34,11 @@ def source_notebooks() -> list[Path]:
 
     notebooks = list((ROOT / "m3_learning").rglob("*.ipynb"))
     notebooks.extend((ROOT / "Testing").rglob("*.ipynb"))
-    return sorted(path for path in notebooks if "_build" not in path.parts)
+    return sorted(
+        path
+        for path in notebooks
+        if not IGNORED_NOTEBOOK_DIRECTORIES.intersection(path.parts)
+    )
 
 
 def _source_lines(text: str) -> list[str]:
