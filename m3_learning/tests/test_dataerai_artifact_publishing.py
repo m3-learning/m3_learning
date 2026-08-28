@@ -66,9 +66,26 @@ class _Session:
         self.existing = list(existing or [])
         self.uploads = []
         self.relationships = []
+        self.collections = {}
+        self.metadata_updates = []
+        self.client = self
+        self.project_id = "project-1"
         self.collection_id = "collection-1"
+        self.collection_path = "M3 / Example Notebook / Executions"
         self.trace_run_id = run_id
-        self._trace = SimpleNamespace(run_id=run_id, cells=[])
+        self._trace = SimpleNamespace(
+            run_id=run_id,
+            cells=[],
+            uses_unsigned_legacy_contract=False,
+            record_upload=lambda *args: None,
+        )
+
+    def ensure_collection_path(self, path, *, create_project=False):
+        del create_project
+        collection_id = self.collections.setdefault(
+            path, f"collection-{len(self.collections) + 2}"
+        )
+        return SimpleNamespace(collection_id=collection_id)
 
     def find_assets(self, query, *, title=None, predicate=None):
         matches = [asset for asset in self.existing if title in (None, asset.title)]
@@ -89,8 +106,17 @@ class _Session:
         self.relationships.append((source, target, relation, kwargs))
         return SimpleNamespace(id=f"relationship-{len(self.relationships)}")
 
+    def get_metadata(self, asset_id):
+        return SimpleNamespace(asset_id=asset_id, metadata={})
+
+    def set_metadata(self, asset_id, *, metadata):
+        self.metadata_updates.append((asset_id, metadata))
+
 
 def _publisher(tmp_path, *, session=None):
+    notebook = tmp_path / "2_Pytorch_SHO_Fitter.ipynb"
+    if not notebook.exists():
+        notebook.write_text('{"cells": []}\n', encoding="utf-8")
     session = session or _Session()
     shell = SimpleNamespace(
         events=_Events(),
@@ -119,7 +145,7 @@ def test_raw_dataset_is_uploaded_once_then_reused_by_exact_stable_title(
     raw_upload = next(item for item in first_session.uploads if item["path"] == raw)
     assert raw_upload["record_type"] == "dataset"
     assert raw_upload["metadata"]["component"] == "raw-dataset"
-    assert first_result.raw_dataset_asset_ids == ("asset-1",)
+    assert first_result.raw_dataset_asset_ids == ("asset-2",)
 
     existing = _Asset(asset_id="raw-existing", title=raw_upload["title"])
     monkeypatch.delenv("DATAERAI_RAW_DATA_ASSET_ID")
@@ -130,6 +156,41 @@ def test_raw_dataset_is_uploaded_once_then_reused_by_exact_stable_title(
 
     assert all(item["path"] != raw for item in second_session.uploads)
     assert second_result.raw_dataset_asset_ids == ("raw-existing",)
+
+
+def test_source_notebook_and_nested_output_folders_are_first_class_collections(
+    tmp_path,
+):
+    session = _Session()
+    publisher = _publisher(tmp_path, session=session).start()
+    movie = tmp_path / "Movies" / "Noise 3" / "comparison.mp4"
+    movie.parent.mkdir(parents=True)
+    movie.write_bytes(b"movie")
+
+    result = publisher.finish()
+
+    source = next(
+        upload
+        for upload in session.uploads
+        if upload["metadata"]["component"] == "source-notebook"
+    )
+    movie_upload = next(upload for upload in session.uploads if upload["path"] == movie)
+    assert result.notebook_asset_id == "asset-1"
+    assert source["record_type"] == "jupyter_notebook"
+    assert source["collection_id"] == session.collections[
+        "M3 / Example Notebook / Notebooks"
+    ]
+    assert movie_upload["collection_id"] == session.collections[
+        "M3 / Example Notebook / Movies / Noise 3"
+    ]
+    assert {
+        "M3 / Example Notebook / Executions",
+        "M3 / Example Notebook / Data / Raw",
+        "M3 / Example Notebook / Data / Derived",
+        "M3 / Example Notebook / Figures",
+        "M3 / Example Notebook / Models",
+        "M3 / Example Notebook / Manifests",
+    }.issubset(session.collections)
 
 
 def test_raw_dataset_downloaded_after_trace_start_is_published_before_later_cells(tmp_path):
@@ -143,7 +204,7 @@ def test_raw_dataset_downloaded_after_trace_start_is_published_before_later_cell
 
     upload = next(item for item in session.uploads if item["path"] == raw)
     assert upload["metadata"]["component"] == "raw-dataset"
-    assert publisher.raw_dataset_asset_ids == ("asset-1",)
+    assert publisher.raw_dataset_asset_ids == ("asset-2",)
 
 
 def test_contentless_raw_dataset_placeholder_is_retried(tmp_path):
@@ -165,7 +226,7 @@ def test_contentless_raw_dataset_placeholder_is_retried(tmp_path):
 
     raw_upload = next(item for item in session.uploads if item["path"] == raw)
     assert raw_upload["title"] == title
-    assert result.raw_dataset_asset_ids == ("asset-1",)
+    assert result.raw_dataset_asset_ids == ("asset-2",)
 
 
 def test_transient_upload_failure_is_retried(tmp_path, monkeypatch):
@@ -175,8 +236,9 @@ def test_transient_upload_failure_is_retried(tmp_path, monkeypatch):
             self.attempts = 0
 
         def upload(self, local_path, *, title=None, **kwargs):
-            self.attempts += 1
-            if self.attempts == 1:
+            if Path(local_path).name == "frame.png":
+                self.attempts += 1
+            if Path(local_path).name == "frame.png" and self.attempts == 1:
                 raise RuntimeError("POST transfers: HTTP 504 Gateway Timeout")
             return super().upload(local_path, title=title, **kwargs)
 
@@ -345,6 +407,100 @@ def test_model_checkpoint_loss_and_manifest_are_model_assets_with_lineage(tmp_pa
     assert any(rel == "describes" for _, _, rel in relations)
 
 
+def test_specialized_pytorch_tracker_routes_complete_training_bundle(
+    tmp_path, monkeypatch
+):
+    calls = []
+
+    class _Tracker:
+        def __init__(self, model, optimizer, **kwargs):
+            self.session = kwargs["session"]
+            self.output_dir = Path(kwargs["output_dir"])
+            calls.append((model, optimizer, kwargs))
+
+        def save_checkpoint(self, **kwargs):
+            checkpoint = self.output_dir / f"{kwargs['record_name']}.pt"
+            manifest = self.output_dir / f"{kwargs['record_name']}.provenance.json"
+            checkpoint.write_bytes(b"safe model and optimizer state")
+            manifest.write_text('{"schema": "dataerai.nn.pytorch"}\n')
+            checkpoint_asset = self.session.upload(
+                str(checkpoint),
+                title=checkpoint.name,
+                record_type="model",
+                tags=["nn-provenance"],
+                metadata={"component": "nn-checkpoint"},
+            )
+            manifest_asset = self.session.upload(
+                str(manifest),
+                title=manifest.name,
+                record_type="analysis",
+                tags=["nn-provenance"],
+                metadata={"component": "nn-provenance-manifest"},
+            )
+            return SimpleNamespace(
+                checkpoint_asset_id=checkpoint_asset.asset_id,
+                manifest_asset_id=manifest_asset.asset_id,
+            )
+
+    dataerai_module = SimpleNamespace(nn=SimpleNamespace(PyTorchProvenanceTracker=_Tracker))
+    monkeypatch.setitem(sys.modules, "dataerai", dataerai_module)
+    monkeypatch.setitem(sys.modules, "dataerai.nn", dataerai_module.nn)
+
+    raw = tmp_path / "Data" / "data_raw.h5"
+    raw.parent.mkdir()
+    raw.write_bytes(b"raw")
+    publisher = _publisher(tmp_path).start()
+    model = tmp_path / "Trained Models" / "Noise 3" / "sho.pth"
+    loss = model.with_name("sho-loss.txt")
+    model.parent.mkdir(parents=True)
+    model.write_bytes(b"legacy state dict")
+    loss.write_text("1.0\n0.5\n", encoding="utf-8")
+
+    tracker_result = publisher.publish_pytorch_training(
+        model=object(),
+        optimizer=object(),
+        model_path=model,
+        loss_path=loss,
+        params={"optimizer": "Adam", "epochs": 2},
+        metrics={"train_loss": 0.5},
+        epoch=2,
+        run_name="sho-Adam",
+    )
+    result = publisher.finish()
+
+    assert calls
+    tracker_kwargs = calls[0][2]
+    assert tracker_kwargs["notebook_asset_id"] == result.notebook_asset_id
+    assert tracker_kwargs["dataset_references"][0]["asset_id"] == "asset-2"
+    assert tracker_result.checkpoint_asset_id in result.model_asset_ids
+    assert len(result.model_asset_ids) == 3
+    assert len(result.analysis_asset_ids) == 1
+    components = {upload["metadata"]["component"] for upload in publisher.session.uploads}
+    assert {
+        "nn-checkpoint",
+        "nn-provenance-manifest",
+        "nn-legacy-state-dict",
+        "nn-training-loss",
+    }.issubset(components)
+    training_collection = publisher.session.collections[
+        "M3 / Example Notebook / Models / Noise 3"
+    ]
+    assert all(
+        upload["collection_id"] == training_collection
+        for upload in publisher.session.uploads
+        if upload["metadata"]["component"]
+        in {"nn-checkpoint", "nn-legacy-state-dict", "nn-training-loss"}
+    )
+    manifest_upload = next(
+        upload
+        for upload in publisher.session.uploads
+        if upload["metadata"]["component"] == "nn-provenance-manifest"
+    )
+    assert manifest_upload["collection_id"] == publisher.session.collections[
+        "M3 / Example Notebook / Manifests / Noise 3"
+    ]
+
+
 def test_every_uploaded_product_uses_the_traced_session_for_execution_linking(tmp_path):
     raw = tmp_path / "Data" / "data_raw.h5"
     raw.parent.mkdir()
@@ -380,18 +536,19 @@ def test_publisher_unregisters_its_notebook_hook_on_finish(tmp_path):
         "be/nn.py",
     ),
 )
-def test_instrumented_fitters_queue_saved_model_outputs(relative_path):
+def test_instrumented_fitters_use_specialized_pytorch_provenance(relative_path):
     source = (
         Path(__file__).parents[1] / "src" / "m3_learning" / relative_path
     ).read_text(encoding="utf-8")
 
-    lineage_position = source.index("lineage = log_dataerai_training_run(")
-    queue_position = source.index("queue_dataerai_model_artifacts(")
-    queue_block = source[queue_position : queue_position + 400]
+    payload_position = source.index("params, metrics = build_training_lineage_payload(")
+    tracker_position = source.index("publish_dataerai_pytorch_training(")
+    tracker_block = source[tracker_position : tracker_position + 600]
 
-    assert queue_position > lineage_position
-    assert "model_path=final_model_path" in queue_block
-    assert "loss_path=training_loss_path" in queue_block
-    assert "params=params" in queue_block
-    assert "metrics=metrics" in queue_block
-    assert "lineage_run_id=lineage.run_id" in queue_block
+    assert tracker_position > payload_position
+    assert "model=self.model" in tracker_block
+    assert "optimizer=optimizer_" in tracker_block
+    assert "model_path=final_model_path" in tracker_block
+    assert "loss_path=training_loss_path" in tracker_block
+    assert "params=params" in tracker_block
+    assert "metrics=metrics" in tracker_block

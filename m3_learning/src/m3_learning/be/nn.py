@@ -14,11 +14,8 @@ from m3_learning.util.file_IO import make_folder, append_to_csv
 import itertools
 from m3_learning.optimizers.TrustRegion import TRCG
 from m3_learning.util.rand_util import save_list_to_txt
-from m3_learning.provenance import (
-    build_training_lineage_payload,
-    log_dataerai_training_run,
-)
-from m3_learning.artifacts import queue_dataerai_model_artifacts
+from m3_learning.provenance import build_training_lineage_payload
+from m3_learning.artifacts import publish_dataerai_pytorch_training
 import pandas as pd
 import gc
 
@@ -502,31 +499,23 @@ class SHO_Model(AE_Fitter_SHO):
             extra_params=dataerai_extra_params,
             extra_metrics=dataerai_extra_metrics,
         )
-        default_key = f"m3-learning:{self.model_name}:{optimizer_name}:epochs-{epoch + 1}:batch-{batch_size}:seed-{seed}"
-        if noise_level is not None:
-            # model_name alone does not distinguish noise levels in batch
-            # training, so without this the runs would replay each other
-            default_key += f":noise-{noise_level}"
-        lineage_idempotency_key = dataerai_idempotency_key or default_key
-        lineage = log_dataerai_training_run(
-            enabled=log_dataerai_provenance,
-            dataset_asset_id=dataerai_dataset_asset_id,
-            dataset_record_sk=dataerai_dataset_record_sk,
-            params=params,
-            metrics=metrics,
-            idempotency_key=lineage_idempotency_key,
-        )
-        if lineage.run_id:
-            print(f"Dataerai lineage run: {lineage.run_id}")
-        elif lineage.enabled and lineage.skipped_reason:
-            print(f"Dataerai lineage skipped: {lineage.skipped_reason}")
-        queue_dataerai_model_artifacts(
+        training_provenance = publish_dataerai_pytorch_training(
+            model=self.model,
+            optimizer=optimizer_,
             model_path=final_model_path,
             loss_path=training_loss_path,
             params=params,
             metrics=metrics,
-            lineage_run_id=lineage.run_id,
+            epoch=epoch + 1,
+            run_name=f"{self.model_name}-{optimizer_name}",
+            enabled=log_dataerai_provenance,
+            dataset_asset_id=dataerai_dataset_asset_id,
         )
+        if training_provenance is not None:
+            print(
+                "Dataerai PyTorch checkpoint: "
+                f"{training_provenance.checkpoint_asset_id}"
+            )
 
         del optimizer_
         gc.collect()

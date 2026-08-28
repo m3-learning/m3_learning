@@ -21,4 +21,4 @@ BGlib
 pyUSID
 sidpy
 dataerai-cli-beta==0.1.54
-dataerai-sdk[notebook]==0.2.0b52
+dataerai-sdk[notebook,nn-pytorch]==0.2.0b52

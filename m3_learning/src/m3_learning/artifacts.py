@@ -38,6 +38,16 @@ _IGNORED_DIRECTORY_NAMES = {
     "_build",
     "node_modules",
 }
+_PROVENANCE_COLLECTIONS = (
+    "Notebooks",
+    "Executions",
+    "Data / Raw",
+    "Data / Derived",
+    "Figures",
+    "Movies",
+    "Models",
+    "Manifests",
+)
 _ACTIVE_PUBLISHER: DataeraiArtifactPublisher | None = None
 
 
@@ -68,6 +78,7 @@ class _PendingModel:
 class ArtifactPublishResult:
     """Assets published or reused by one notebook execution."""
 
+    notebook_asset_id: str | None = None
     raw_dataset_asset_ids: tuple[str, ...] = ()
     analysis_asset_ids: tuple[str, ...] = ()
     dataset_asset_ids: tuple[str, ...] = ()
@@ -84,6 +95,7 @@ class DataeraiArtifactPublisher:
     root: Path | str = field(default_factory=Path.cwd)
     shell: Any = None
     strict: bool | None = None
+    provenance_root_path: str | None = None
 
     _baseline: dict[Path, _FileState] = field(default_factory=dict, init=False)
     _raw_states: dict[Path, _FileState] = field(default_factory=dict, init=False)
@@ -101,10 +113,22 @@ class DataeraiArtifactPublisher:
     _analysis_asset_ids: list[str] = field(default_factory=list, init=False)
     _dataset_asset_ids: list[str] = field(default_factory=list, init=False)
     _model_asset_ids: list[str] = field(default_factory=list, init=False)
+    _collection_ids: dict[str, str] = field(default_factory=dict, init=False)
+    _published_paths: set[Path] = field(default_factory=set, init=False)
+    _ignored_model_paths: set[Path] = field(default_factory=set, init=False)
+    _notebook_asset_id: str | None = field(default=None, init=False)
     _errors: list[str] = field(default_factory=list, init=False)
 
     def __post_init__(self) -> None:
         self.root = Path(self.root).expanduser().resolve()
+        if self.provenance_root_path is None:
+            session_path = str(getattr(self.session, "collection_path", "")).strip()
+            suffix = " / Executions"
+            self.provenance_root_path = (
+                session_path[: -len(suffix)]
+                if session_path.endswith(suffix)
+                else session_path
+            )
         if self.strict is None:
             self.strict = _env_bool("DATAERAI_ARTIFACT_STRICT", default=True)
         self.artifact_directory = (
@@ -128,11 +152,17 @@ class DataeraiArtifactPublisher:
     def raw_dataset_asset_ids(self) -> tuple[str, ...]:
         return tuple(dict.fromkeys(self._raw_by_path.values()))
 
+    @property
+    def notebook_asset_id(self) -> str | None:
+        return self._notebook_asset_id
+
     def start(self) -> DataeraiArtifactPublisher:
         """Snapshot inputs, reuse/upload source data, and observe later cells."""
 
         if self._registered or self._finished:
             return self
+        self._ensure_provenance_collections()
+        self._publish_source_notebook()
         self._baseline = self._snapshot()
         for path in sorted(self._baseline, key=str):
             if (
@@ -150,6 +180,101 @@ class DataeraiArtifactPublisher:
             self._display_hook_registered = True
         os.environ.setdefault("DATAERAI_LOG_PROVENANCE", "1")
         return self
+
+    def _ensure_provenance_collections(self) -> None:
+        """Create the stable notebook provenance tree once per session."""
+
+        client = getattr(self.session, "client", None)
+        ensure = getattr(client, "ensure_collection_path", None)
+        root = str(self.provenance_root_path or "").strip()
+        if not root or not callable(ensure):
+            return
+        for relative in _PROVENANCE_COLLECTIONS:
+            path = f"{root} / {relative}"
+            destination = ensure(path, create_project=False)
+            self._collection_ids[relative] = str(destination.collection_id)
+
+    def _publish_source_notebook(self) -> None:
+        """Upload the raw source notebook as a first-class run input."""
+
+        path = (self.root / self.notebook_name).resolve()
+        if not path.is_file():
+            self._errors.append(f"source notebook does not exist: {path}")
+            return
+        checksum = _sha256(path)
+        try:
+            uploaded = self._upload(
+                path,
+                title=_stable_title(
+                    "M3 source notebook",
+                    f"{self.notebook_name} · {checksum[:12]}",
+                ),
+                record_type="jupyter_notebook",
+                component="source-notebook",
+                metadata={
+                    "source_path": self.notebook_name,
+                    "sha256": checksum,
+                    "size_bytes": path.stat().st_size,
+                    "immutable_run_snapshot": True,
+                },
+                tags=["m3-learning", "source-notebook", "provenance-input"],
+            )
+            self._notebook_asset_id = str(uploaded.asset_id)
+            os.environ["DATAERAI_NOTEBOOK_ASSET_ID"] = self._notebook_asset_id
+        except Exception as exc:  # noqa: BLE001 - SDK/network boundary
+            self._errors.append(f"could not publish source notebook {path}: {exc}")
+
+    def _collection_relative_path(self, path: Path, component: str) -> str:
+        """Map an artifact and its local folder into the provenance tree."""
+
+        relative_parent = Path(self._relative(path)).parent
+        parts = [part for part in relative_parent.parts if part not in ("", ".")]
+        lowered = [part.casefold() for part in parts]
+        if component == "source-notebook":
+            return "Notebooks"
+        if component == "raw-dataset":
+            category = "Data / Raw"
+            if lowered and lowered[0] in {"data", "datasets"}:
+                parts = parts[1:]
+        elif component == "derived-data":
+            category = "Data / Derived"
+            if lowered and lowered[0] in {"data", "datasets"}:
+                parts = parts[1:]
+        elif component in {"saved-movie"}:
+            category = "Movies"
+            if lowered and lowered[0] == "movies":
+                parts = parts[1:]
+        elif component.startswith("nn-provenance") or component == "model-manifest":
+            category = "Manifests"
+            parts = _strip_artifact_category(parts, {"models", "trained models"})
+        elif component.startswith("nn-") or component in {
+            "model-checkpoint",
+            "training-loss",
+        }:
+            category = "Models"
+            parts = _strip_artifact_category(parts, {"models", "trained models"})
+        else:
+            category = "Figures"
+            if component == "notebook-figure":
+                parts = ["Rich Outputs"]
+            elif lowered and lowered[0] == "figures":
+                parts = parts[1:]
+        clean = [_collection_segment(part) for part in parts]
+        return " / ".join([category, *clean])
+
+    def _collection_id_for(self, path: Path, component: str) -> str | None:
+        relative = self._collection_relative_path(path, component)
+        if relative in self._collection_ids:
+            return self._collection_ids[relative]
+        client = getattr(self.session, "client", None)
+        ensure = getattr(client, "ensure_collection_path", None)
+        root = str(self.provenance_root_path or "").strip()
+        if not root or not callable(ensure):
+            return None
+        destination = ensure(f"{root} / {relative}", create_project=False)
+        collection_id = str(destination.collection_id)
+        self._collection_ids[relative] = collection_id
+        return collection_id
 
     def capture_completed_cells(self) -> None:
         """Extract each newly captured rich figure into a deterministic file."""
@@ -238,6 +363,129 @@ class DataeraiArtifactPublisher:
             lineage_run_id=lineage_run_id,
         )
 
+    def publish_pytorch_training(
+        self,
+        *,
+        model: Any,
+        optimizer: Any,
+        model_path: str | os.PathLike,
+        loss_path: str | os.PathLike | None,
+        params: dict[str, Any],
+        metrics: dict[str, Any],
+        epoch: int | None,
+        run_name: str,
+        dataset_asset_id: str | None = None,
+    ) -> Any:
+        """Publish a complete checkpoint with Dataerai's PyTorch toolkit."""
+
+        from dataerai.nn import PyTorchProvenanceTracker
+
+        legacy_model = Path(model_path).expanduser().resolve()
+        legacy_loss = (
+            Path(loss_path).expanduser().resolve() if loss_path is not None else None
+        )
+        self._ignored_model_paths.add(legacy_model)
+        dataset_references = [
+            {
+                "asset_id": asset_id,
+                "filename": self._relative(path),
+            }
+            for path, asset_id in self._raw_by_path.items()
+        ]
+        if dataset_asset_id and dataset_asset_id not in {
+            item["asset_id"] for item in dataset_references
+        }:
+            dataset_references.append({"asset_id": dataset_asset_id})
+
+        tracker = PyTorchProvenanceTracker(
+            model,
+            optimizer,
+            session=_RoutedNotebookSession(self),
+            output_dir=legacy_model.parent,
+            run_name=run_name,
+            dataset_references=dataset_references,
+            notebook_path=(self.root / self.notebook_name),
+            notebook_asset_id=self.notebook_asset_id,
+            tags=(
+                "m3-learning",
+                "model",
+                "checkpoint",
+                "nn-provenance",
+                "pytorch",
+                f"notebook-run:{self.run_id}",
+            ),
+        )
+        outcomes: dict[str, Any] = {
+            "legacy_state_dict": _file_manifest(
+                legacy_model, self._relative(legacy_model)
+            )
+        }
+        if legacy_loss is not None and legacy_loss.is_file():
+            outcomes["loss_history"] = _file_manifest(
+                legacy_loss, self._relative(legacy_loss)
+            )
+        result = tracker.save_checkpoint(
+            epoch=epoch,
+            metrics=_json_safe(metrics),
+            training_parameters=_json_safe(params),
+            outcomes=outcomes,
+            label="final",
+            record_name=legacy_model.stem,
+        )
+        self._publish_training_companions(
+            legacy_model,
+            legacy_loss,
+            checkpoint_asset_id=result.checkpoint_asset_id,
+        )
+        return result
+
+    def _publish_training_companions(
+        self,
+        legacy_model: Path,
+        legacy_loss: Path | None,
+        *,
+        checkpoint_asset_id: str | None,
+    ) -> None:
+        """Publish M3's state dict and loss history beside the safe checkpoint."""
+
+        legacy = self._upload(
+            legacy_model,
+            title=_stable_title("M3 PyTorch state dict", self._relative(legacy_model)),
+            record_type="model",
+            component="nn-legacy-state-dict",
+            metadata={
+                "source_path": self._relative(legacy_model),
+                "safe_checkpoint_asset_id": checkpoint_asset_id,
+            },
+            tags=["m3-learning", "pytorch", "state-dict", "neural-network"],
+        )
+        legacy_id = str(legacy.asset_id)
+        self._model_asset_ids.append(legacy_id)
+        if checkpoint_asset_id:
+            self._relationship(legacy_id, str(checkpoint_asset_id), "derived_from")
+        self._link_to_raw(legacy_id, "trained_on")
+        self._link_to_notebook(legacy_id, "generated_by_notebook")
+
+        if legacy_loss is None or not legacy_loss.is_file():
+            return
+        loss = self._upload(
+            legacy_loss,
+            title=_stable_title("M3 training loss", self._relative(legacy_loss)),
+            record_type="model",
+            component="nn-training-loss",
+            metadata={
+                "source_path": self._relative(legacy_loss),
+                "safe_checkpoint_asset_id": checkpoint_asset_id,
+            },
+            tags=["m3-learning", "pytorch", "training-loss", "neural-network"],
+        )
+        loss_id = str(loss.asset_id)
+        self._model_asset_ids.append(loss_id)
+        if checkpoint_asset_id:
+            self._relationship(loss_id, str(checkpoint_asset_id), "training_output_of")
+        self._link_to_raw(loss_id, "derived_from")
+        self._link_to_notebook(loss_id, "generated_by_notebook")
+
     def finish(self) -> ArtifactPublishResult:
         """Publish queued and changed artifacts before the trace is finalized."""
 
@@ -261,6 +509,7 @@ class DataeraiArtifactPublisher:
             self._attempt(lambda model=model: self._publish_model(model))
 
         self._result = ArtifactPublishResult(
+            notebook_asset_id=self.notebook_asset_id,
             raw_dataset_asset_ids=self.raw_dataset_asset_ids,
             analysis_asset_ids=tuple(self._analysis_asset_ids),
             dataset_asset_ids=tuple(self._dataset_asset_ids),
@@ -383,6 +632,8 @@ class DataeraiArtifactPublisher:
                     asset_id = str(uploaded.asset_id)
             self._raw_by_path[path] = asset_id
             self._raw_states[path] = state or self._state(path)
+            if self.notebook_asset_id and self.notebook_asset_id != asset_id:
+                self._relationship(self.notebook_asset_id, asset_id, "uses_data")
             os.environ.setdefault("DATAERAI_RAW_DATA_ASSET_ID", asset_id)
             os.environ.setdefault("DATAERAI_DATASET_ASSET_ID", asset_id)
             return asset_id
@@ -397,7 +648,11 @@ class DataeraiArtifactPublisher:
             suffix = path.suffix.lower()
             if suffix not in _ANALYSIS_EXTENSIONS:
                 continue
-            if path in self._analysis_queue or self._baseline.get(path) == state:
+            if (
+                path in self._analysis_queue
+                or path in self._published_paths
+                or self._baseline.get(path) == state
+            ):
                 continue
             self._analysis_queue[path] = _PendingArtifact(
                 path=path,
@@ -412,7 +667,12 @@ class DataeraiArtifactPublisher:
         for path, state in current.items():
             if path.suffix.lower() not in _MODEL_EXTENSIONS:
                 continue
-            if path in self._model_queue or self._baseline.get(path) == state:
+            if (
+                path in self._model_queue
+                or path in self._published_paths
+                or path in self._ignored_model_paths
+                or self._baseline.get(path) == state
+            ):
                 continue
             self._model_queue[path] = _PendingModel(model_path=path)
 
@@ -433,6 +693,7 @@ class DataeraiArtifactPublisher:
         asset_id = str(uploaded.asset_id)
         self._analysis_asset_ids.append(asset_id)
         self._link_to_raw(asset_id, "analysis_of")
+        self._link_to_notebook(asset_id, "generated_by_notebook")
 
     def _publish_changed_data(self, current: dict[Path, _FileState]) -> None:
         for path, state in sorted(current.items(), key=lambda item: str(item[0])):
@@ -455,6 +716,7 @@ class DataeraiArtifactPublisher:
         asset_id = str(uploaded.asset_id)
         self._dataset_asset_ids.append(asset_id)
         self._link_to_raw(asset_id, "derived_from")
+        self._link_to_notebook(asset_id, "generated_by_notebook")
 
     def _publish_model(self, queued: _PendingModel) -> None:
         if not queued.model_path.is_file():
@@ -473,6 +735,7 @@ class DataeraiArtifactPublisher:
         checkpoint_id = str(checkpoint.asset_id)
         self._model_asset_ids.append(checkpoint_id)
         self._link_to_raw(checkpoint_id, "trained_on")
+        self._link_to_notebook(checkpoint_id, "generated_by_notebook")
 
         if queued.loss_path is not None and queued.loss_path.is_file():
             loss = self._upload(
@@ -557,26 +820,85 @@ class DataeraiArtifactPublisher:
             "notebook_run_id": self.run_id,
             "source_notebook": self.notebook_name,
         }
+        stamped_tags = list(dict.fromkeys([
+            *tags,
+            "dataerai-notebook-trace",
+            f"notebook-run:{self.run_id}",
+        ]))
+        collection_id = self._collection_id_for(path, component)
         attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
         for attempt in range(1, attempts + 1):
             try:
-                return self.session.upload(
-                    str(path),
+                uploaded = self._upload_once(
+                    path,
                     title=title,
                     record_type=record_type,
-                    tags=tags,
+                    tags=stamped_tags,
                     metadata=stamped_metadata,
+                    collection_id=collection_id,
                 )
+                self._published_paths.add(path.resolve())
+                return uploaded
             except Exception as exc:  # noqa: BLE001 - SDK/network boundary
                 if attempt == attempts or not _is_transient_upload_error(exc):
                     raise
                 time.sleep(min(2 ** (attempt - 1), 8))
         raise AssertionError("unreachable")
 
+    def _upload_once(
+        self,
+        path: Path,
+        *,
+        title: str,
+        record_type: str,
+        tags: list[str],
+        metadata: dict[str, Any],
+        collection_id: str | None,
+    ) -> Any:
+        """Upload through a routed collection while preserving trace capture."""
+
+        if collection_id in (None, str(getattr(self.session, "collection_id", ""))):
+            return self.session.upload(
+                str(path),
+                title=title,
+                record_type=record_type,
+                tags=tags,
+                metadata=metadata,
+            )
+        client = getattr(self.session, "client", None)
+        if client is None or not hasattr(client, "upload"):
+            return self.session.upload(
+                str(path),
+                title=title,
+                record_type=record_type,
+                tags=tags,
+                metadata=metadata,
+                collection_id=collection_id,
+            )
+        trace = getattr(self.session, "_trace", None)
+        kwargs = {
+            "owner_type": "project",
+            "owner_id": self.session.project_id,
+            "collection_id": collection_id,
+            "record_type": record_type,
+            "tags": tags,
+            "metadata": metadata,
+        }
+        if trace is not None and getattr(trace, "uses_unsigned_legacy_contract", False):
+            kwargs = trace.decorate_upload(kwargs)
+        uploaded = client.upload(str(path), title=title, **kwargs)
+        if trace is not None and getattr(self.session, "_trace", None) is trace:
+            trace.record_upload(str(path), title, kwargs, uploaded)
+        return uploaded
+
     def _link_to_raw(self, asset_id: str, relation: str) -> None:
         for raw_id in self.raw_dataset_asset_ids:
             if raw_id != asset_id:
                 self._relationship(asset_id, raw_id, relation)
+
+    def _link_to_notebook(self, asset_id: str, relation: str) -> None:
+        if self.notebook_asset_id and self.notebook_asset_id != asset_id:
+            self._relationship(asset_id, self.notebook_asset_id, relation)
 
     def _relationship(self, source: str, target: str, relation: str) -> None:
         try:
@@ -644,6 +966,7 @@ def start_dataerai_artifact_publishing(
     *,
     root: Path | str | None = None,
     shell: Any = None,
+    provenance_root_path: str | None = None,
 ) -> DataeraiArtifactPublisher:
     """Start and globally register the publisher used by instrumented fitters."""
 
@@ -653,6 +976,7 @@ def start_dataerai_artifact_publishing(
         notebook_name=notebook_name,
         root=root or os.environ.get("DATAERAI_ARTIFACT_ROOT") or Path.cwd(),
         shell=shell,
+        provenance_root_path=provenance_root_path,
     ).start()
     _ACTIVE_PUBLISHER = publisher
     return publisher
@@ -679,12 +1003,105 @@ def queue_dataerai_model_artifacts(
     )
 
 
+def publish_dataerai_pytorch_training(
+    *,
+    model: Any,
+    optimizer: Any,
+    model_path: str | os.PathLike,
+    loss_path: str | os.PathLike | None,
+    params: dict[str, Any],
+    metrics: dict[str, Any],
+    epoch: int | None,
+    run_name: str,
+    enabled: bool | None = None,
+    dataset_asset_id: str | None = None,
+) -> Any | None:
+    """Publish NN state through ``dataerai.nn.PyTorchProvenanceTracker``."""
+
+    should_publish = (
+        _env_bool("DATAERAI_LOG_PROVENANCE", default=False)
+        if enabled is None
+        else bool(enabled)
+    )
+    if not should_publish or _ACTIVE_PUBLISHER is None:
+        return None
+    return _ACTIVE_PUBLISHER.publish_pytorch_training(
+        model=model,
+        optimizer=optimizer,
+        model_path=model_path,
+        loss_path=loss_path,
+        params=params,
+        metrics=metrics,
+        epoch=epoch,
+        run_name=run_name,
+        dataset_asset_id=dataset_asset_id,
+    )
+
+
+class _RoutedNotebookSession:
+    """Notebook-session facade that routes toolkit products into collections."""
+
+    def __init__(self, publisher: DataeraiArtifactPublisher) -> None:
+        self._publisher = publisher
+        self.client = publisher.session.client
+
+    @property
+    def trace_run_id(self) -> str:
+        return self._publisher.run_id
+
+    def upload(self, local_path: str, *, title: str | None = None, **kwargs: Any) -> Any:
+        path = Path(local_path).expanduser().resolve()
+        metadata = dict(kwargs.pop("metadata", {}) or {})
+        component = str(metadata.pop("component", "nn-training-artifact"))
+        record_type = str(kwargs.pop("record_type", "analysis"))
+        tags = list(kwargs.pop("tags", []) or [])
+        if kwargs:
+            raise TypeError(f"unsupported routed upload arguments: {sorted(kwargs)}")
+        uploaded = self._publisher._upload(
+            path,
+            title=title or path.name,
+            record_type=record_type,
+            component=component,
+            metadata=metadata,
+            tags=tags,
+        )
+        asset_id = str(uploaded.asset_id)
+        if record_type == "model":
+            self._publisher._model_asset_ids.append(asset_id)
+        else:
+            self._publisher._analysis_asset_ids.append(asset_id)
+        return uploaded
+
+    def create_relationship(self, *args: Any, **kwargs: Any) -> Any:
+        return self._publisher.session.create_relationship(*args, **kwargs)
+
+    def get_metadata(self, asset_id: str) -> Any:
+        return self._publisher.session.get_metadata(asset_id)
+
+
 def _stable_title(prefix: str, relative_path: str) -> str:
     title = f"{prefix} · {relative_path}"
     if len(title) <= 220:
         return title
     digest = hashlib.sha256(title.encode("utf-8")).hexdigest()[:12]
     return f"{title[:204]} · {digest}"
+
+
+def _collection_segment(value: str) -> str:
+    """Return a safe, readable collection path segment."""
+
+    segment = " ".join(str(value).replace("/", " ").split()).strip(" .")
+    return segment or "Uncategorized"
+
+
+def _strip_artifact_category(parts: list[str], names: set[str]) -> list[str]:
+    """Drop local category wrappers while retaining loop-created subfolders."""
+
+    lowered = [part.casefold() for part in parts]
+    for index, value in enumerate(lowered):
+        if value in names:
+            return parts[index + 1 :]
+    return parts
 
 
 def _counted(count: int, singular: str, plural: str | None = None) -> str:

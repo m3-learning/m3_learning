@@ -46,7 +46,7 @@ All products carry the notebook run ID and receive source-data relationships;
 the execution log receives `records_telemetry` relationships from the SDK.
 
 ```bash
-python -m pip install --pre dataerai-cli-beta==0.1.54 'dataerai-sdk[notebook]==0.2.0b52'
+python -m pip install --pre dataerai-cli-beta==0.1.54 'dataerai-sdk[notebook,nn-pytorch]==0.2.0b52'
 dataerai auth login --device --client-id dataerai-mobile --server https://beta.dataerai.com
 dataerai auth status
 ```
@@ -64,9 +64,12 @@ If you already know a source asset, set
 `DATAERAI_RAW_DATA_ASSET_ID=<asset-id>` (and optionally
 `DATAERAI_DATASET_ASSET_ID` to the same value);
 if you know the provenance surrogate, set `DATAERAI_DATASET_RECORD_SK=<record-sk>`.
-The notebooks print the Dataerai lineage run ID after each successful training
-run. The artifact summary then prints before `%dataerai --finish` publishes the
-related execution log.
+Each notebook creates a provenance root containing `Executions`, `Notebooks`,
+`Data/Raw`, `Data/Derived`, `Figures`, `Movies`, `Models`, and `Manifests`.
+Sweep folders such as a noise-level output folder become nested collections.
+The fitters print the Dataerai PyTorch checkpoint asset ID after each successful
+training run. The artifact summary then prints before `%dataerai --finish`
+publishes that run's distinct execution log.
 
 A successful final cell ends with output in this form (counts vary by notebook):
 
