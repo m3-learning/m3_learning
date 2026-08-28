@@ -13,7 +13,7 @@ notebooks; stable derived titles create content versions. Neural-network runs
 inherit the same trace ID. Authenticate once before running a notebook:
 
 ```bash
-python -m pip install --pre dataerai-cli-beta 'dataerai-sdk[ml,notebook]>=0.2.0b52,<0.3'
+python -m pip install --pre dataerai-cli-beta==0.1.54 'dataerai-sdk[notebook]==0.2.0b52'
 dataerai auth login --device --client-id dataerai-mobile --server https://beta.dataerai.com
 ```
 

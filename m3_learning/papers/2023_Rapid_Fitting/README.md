@@ -46,7 +46,7 @@ All products carry the notebook run ID and receive source-data relationships;
 the execution log receives `records_telemetry` relationships from the SDK.
 
 ```bash
-python -m pip install --pre dataerai-cli-beta 'dataerai-sdk[ml,notebook]>=0.2.0b52,<0.3'
+python -m pip install --pre dataerai-cli-beta==0.1.54 'dataerai-sdk[notebook]==0.2.0b52'
 dataerai auth login --device --client-id dataerai-mobile --server https://beta.dataerai.com
 dataerai auth status
 ```
