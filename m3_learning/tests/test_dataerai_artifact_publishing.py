@@ -307,6 +307,30 @@ def test_transient_upload_failure_is_retried(tmp_path, monkeypatch):
     assert result.errors == ()
 
 
+def test_transient_collection_discovery_failure_is_retried(tmp_path, monkeypatch):
+    class _TransientCollectionSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.ensure_attempts = 0
+
+        def ensure_collection_path(self, path, *, create_project=False):
+            self.ensure_attempts += 1
+            if self.ensure_attempts == 1:
+                raise RuntimeError("GET collections: HTTP 502 Bad Gateway")
+            return super().ensure_collection_path(
+                path, create_project=create_project
+            )
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    session = _TransientCollectionSession()
+
+    result = _publisher(tmp_path, session=session).start().finish()
+
+    assert session.ensure_attempts == len(artifacts._PROVENANCE_COLLECTIONS) + 1
+    assert result.notebook_asset_id == "asset-1"
+    assert result.errors == ()
+
+
 def test_generated_movie_is_published_as_analysis(tmp_path):
     publisher = _publisher(tmp_path).start()
     movie = tmp_path / "Movies" / "SHO_NN_noise_0.mp4"

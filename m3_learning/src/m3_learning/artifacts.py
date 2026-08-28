@@ -191,8 +191,22 @@ class DataeraiArtifactPublisher:
             return
         for relative in _PROVENANCE_COLLECTIONS:
             path = f"{root} / {relative}"
-            destination = ensure(path, create_project=False)
+            destination = self._ensure_collection_path(path)
             self._collection_ids[relative] = str(destination.collection_id)
+
+    def _ensure_collection_path(self, path: str) -> Any:
+        """Resolve/create one collection with bounded transient retries."""
+
+        ensure = self.session.client.ensure_collection_path
+        attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
+        for attempt in range(1, attempts + 1):
+            try:
+                return ensure(path, create_project=False)
+            except Exception as exc:  # noqa: BLE001 - SDK/network boundary
+                if attempt == attempts or not _is_transient_upload_error(exc):
+                    raise
+                time.sleep(min(2 ** (attempt - 1), 8))
+        raise AssertionError("unreachable")
 
     def _publish_source_notebook(self) -> None:
         """Upload the raw source notebook as a first-class run input."""
@@ -274,7 +288,7 @@ class DataeraiArtifactPublisher:
         root = str(self.provenance_root_path or "").strip()
         if not root or not callable(ensure):
             return None
-        destination = ensure(f"{root} / {relative}", create_project=False)
+        destination = self._ensure_collection_path(f"{root} / {relative}")
         collection_id = str(destination.collection_id)
         self._collection_ids[relative] = collection_id
         return collection_id
