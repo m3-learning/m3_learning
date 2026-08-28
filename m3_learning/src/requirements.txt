@@ -20,5 +20,5 @@ zenodopy
 BGlib
 pyUSID
 sidpy
-dataerai-cli
+dataerai-cli-beta
 dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3

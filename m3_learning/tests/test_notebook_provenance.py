@@ -30,6 +30,7 @@ def test_every_source_notebook_has_one_managed_provenance_boundary():
 
         start = cells[ids.index("dataerai-provenance-start")]
         start_source = "".join(start["source"])
+        assert "dataerai-cli-beta" in start_source
         assert "dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3" in start_source
         assert "%load_ext dataerai.magics" in start_source
         assert "%dataerai --request-timeout 120 --trace" in start_source

@@ -46,7 +46,7 @@ Dataerai's lineage graph. Both records carry the same notebook trace ID, so the
 scientific execution and training lineage can be inspected together.
 
 ```bash
-python -m pip install dataerai-cli 'dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3'
+python -m pip install --pre dataerai-cli-beta 'dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3'
 dataerai auth login --device --server https://beta.dataerai.com
 dataerai auth status
 ```

@@ -226,7 +226,7 @@ def _managed_cells(path: Path, notebook: dict) -> tuple[list[dict], list[dict]]:
         "            \"pip\",\n"
         "            \"install\",\n"
         "            \"--pre\",\n"
-        "            \"dataerai-cli\",\n"
+        "            \"dataerai-cli-beta\",\n"
         "            \"dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3\",\n"
         "        ],\n"
         "        check=True,\n"

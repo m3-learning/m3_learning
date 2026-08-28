@@ -11,7 +11,7 @@ All 31 authored notebooks start and finish a Dataerai execution trace with the
 cell-level execution record. Authenticate once before running a notebook:
 
 ```bash
-python -m pip install dataerai-cli 'dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3'
+python -m pip install --pre dataerai-cli-beta 'dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3'
 dataerai auth login --device --server https://beta.dataerai.com
 ```
 

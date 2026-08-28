@@ -36,6 +36,6 @@ wget
 
 xlrd
 
-dataerai-cli
+dataerai-cli-beta
 
 dataerai-sdk[ml,notebook]>=0.2.0b1,<0.3
