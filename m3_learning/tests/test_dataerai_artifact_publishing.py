@@ -9,7 +9,9 @@ from types import SimpleNamespace
 import pytest
 
 _MODULE_PATH = Path(__file__).parents[1] / "src" / "m3_learning" / "artifacts.py"
-_SPEC = importlib.util.spec_from_file_location("m3_learning_artifacts_test", _MODULE_PATH)
+_SPEC = importlib.util.spec_from_file_location(
+    "m3_learning_artifacts_test", _MODULE_PATH
+)
 artifacts = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = artifacts
 _SPEC.loader.exec_module(artifacts)
@@ -180,12 +182,14 @@ def test_source_notebook_and_nested_output_folders_are_first_class_collections(
     movie_upload = next(upload for upload in session.uploads if upload["path"] == movie)
     assert result.notebook_asset_id == "asset-1"
     assert source["record_type"] == "jupyter_notebook"
-    assert source["collection_id"] == session.collections[
-        "M3 / Example Notebook / Notebooks"
-    ]
-    assert movie_upload["collection_id"] == session.collections[
-        "M3 / Example Notebook / Movies / Noise 3"
-    ]
+    assert (
+        source["collection_id"]
+        == session.collections["M3 / Example Notebook / Notebooks"]
+    )
+    assert (
+        movie_upload["collection_id"]
+        == session.collections["M3 / Example Notebook / Movies / Noise 3"]
+    )
     assert {
         "M3 / Example Notebook / Executions",
         "M3 / Example Notebook / Data / Raw",
@@ -196,7 +200,9 @@ def test_source_notebook_and_nested_output_folders_are_first_class_collections(
     }.issubset(session.collections)
 
 
-def test_raw_dataset_downloaded_after_trace_start_is_published_before_later_cells(tmp_path):
+def test_raw_dataset_downloaded_after_trace_start_is_published_before_later_cells(
+    tmp_path,
+):
     session = _Session()
     publisher = _publisher(tmp_path, session=session).start()
     raw = tmp_path / "Data" / "PZT_2080_raw_data.h5"
@@ -285,10 +291,13 @@ def test_large_raw_source_is_one_reusable_manifest_with_deterministic_parts(
         "asset-4",
     ]
     assert result.raw_dataset_asset_ids == ("asset-5",)
-    assert sum(
-        relation == "part_of"
-        for _, _, relation, _ in publisher.session.relationships
-    ) == 3
+    assert (
+        sum(
+            relation == "part_of"
+            for _, _, relation, _ in publisher.session.relationships
+        )
+        == 3
+    )
     assert all(
         upload["collection_id"]
         == publisher.session.collections[
@@ -296,9 +305,9 @@ def test_large_raw_source_is_one_reusable_manifest_with_deterministic_parts(
         ]
         for upload in parts
     )
-    assert {
-        item["asset_id"] for item in publisher.session._trace.transfers
-    }.issuperset({"asset-1", "asset-2", "asset-3", "asset-4", "asset-5"})
+    assert {item["asset_id"] for item in publisher.session._trace.transfers}.issuperset(
+        {"asset-1", "asset-2", "asset-3", "asset-4", "asset-5"}
+    )
 
 
 def test_oversized_derived_hdf5_publishes_versioned_dataset_manifest(
@@ -325,9 +334,10 @@ def test_oversized_derived_hdf5_publishes_versioned_dataset_manifest(
     assert manifest["source_path"] == "Data/processed.h5"
     assert manifest_upload["record_type"] == "dataset"
     assert manifest_upload["metadata"]["content_mode"] == "manifest-only"
-    assert manifest_upload["collection_id"] == publisher.session.collections[
-        "M3 / Example Notebook / Data / Derived"
-    ]
+    assert (
+        manifest_upload["collection_id"]
+        == publisher.session.collections["M3 / Example Notebook / Data / Derived"]
+    )
     assert len(result.dataset_asset_ids) == 1
 
 
@@ -357,6 +367,89 @@ def test_transient_upload_failure_is_retried(tmp_path, monkeypatch):
     assert result.errors == ()
 
 
+def test_failed_transfer_verification_is_retried(tmp_path, monkeypatch):
+    class _UnverifiedTransferSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.raw_attempts = 0
+
+        def upload(self, local_path, *, title=None, **kwargs):
+            if Path(local_path).name == "raw.h5":
+                self.raw_attempts += 1
+                if self.raw_attempts == 1:
+                    raise RuntimeError(
+                        'ERR_TRANSFER_FAILED: server status "failed": '
+                        "the upload was not verified"
+                    )
+            return super().upload(local_path, title=title, **kwargs)
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    raw = tmp_path / "Data" / "raw.h5"
+    raw.parent.mkdir()
+    raw.write_bytes(b"raw")
+    session = _UnverifiedTransferSession()
+
+    result = _publisher(tmp_path, session=session).start().finish()
+
+    assert session.raw_attempts == 2
+    assert result.raw_dataset_asset_ids == ("asset-2",)
+    assert result.errors == ()
+
+
+def test_recovered_raw_failure_is_not_retained_in_final_result(tmp_path):
+    class _RecoveringRawSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.fail_raw = True
+
+        def upload(self, local_path, *, title=None, **kwargs):
+            if Path(local_path).name == "raw.h5" and self.fail_raw:
+                raise RuntimeError("storage service rejected the first pass")
+            return super().upload(local_path, title=title, **kwargs)
+
+    raw = tmp_path / "Data" / "raw.h5"
+    raw.parent.mkdir()
+    raw.write_bytes(b"raw")
+    session = _RecoveringRawSession()
+    publisher = _publisher(tmp_path, session=session).start()
+    assert publisher.raw_dataset_asset_ids == ()
+
+    session.fail_raw = False
+    publisher._post_run_cell(SimpleNamespace())
+    result = publisher.finish()
+
+    assert result.raw_dataset_asset_ids == ("asset-2",)
+    assert result.errors == ()
+
+
+def test_final_signed_trace_upload_uses_transient_retry_wrapper(tmp_path, monkeypatch):
+    class _TransientBoundSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.bound_attempts = 0
+
+        def _upload_bound(self, local_path, *, title=None, **kwargs):
+            self.bound_attempts += 1
+            if self.bound_attempts == 1:
+                raise RuntimeError("POST transfers: HTTP 502 Bad Gateway")
+            return super().upload(local_path, title=title, **kwargs)
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    session = _TransientBoundSession()
+    _publisher(tmp_path, session=session).start()
+    execution = tmp_path / "execution.json"
+    execution.write_text('{"run_id": "trace-123"}\n', encoding="utf-8")
+
+    uploaded = session._upload_bound(
+        str(execution),
+        title="Notebook execution.json",
+        record_type="log",
+    )
+
+    assert session.bound_attempts == 2
+    assert uploaded.asset_id == "asset-2"
+
+
 def test_transient_collection_discovery_failure_is_retried(tmp_path, monkeypatch):
     class _TransientCollectionSession(_Session):
         def __init__(self):
@@ -367,9 +460,7 @@ def test_transient_collection_discovery_failure_is_retried(tmp_path, monkeypatch
             self.ensure_attempts += 1
             if self.ensure_attempts == 1:
                 raise RuntimeError("GET collections: HTTP 502 Bad Gateway")
-            return super().ensure_collection_path(
-                path, create_project=create_project
-            )
+            return super().ensure_collection_path(path, create_project=create_project)
 
     monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
     session = _TransientCollectionSession()
@@ -431,9 +522,7 @@ def test_each_rich_figure_gets_a_deterministic_analysis_asset(tmp_path):
     publisher.shell.display_pub.publish(
         {"image/png": png, "text/plain": "<Figure size>"}
     )
-    publisher.shell.display_pub.publish(
-        {"image/svg+xml": "<svg><circle/></svg>"}
-    )
+    publisher.shell.display_pub.publish({"image/svg+xml": "<svg><circle/></svg>"})
 
     publisher.capture_completed_cells()
     result = publisher.finish()
@@ -444,14 +533,13 @@ def test_each_rich_figure_gets_a_deterministic_analysis_asset(tmp_path):
         "cell-0007-display-02.svg",
     ]
     assert all(
-        u["metadata"]["m3_notebook_run_id"] == "trace-123"
-        for u in figure_uploads
+        u["metadata"]["m3_notebook_run_id"] == "trace-123" for u in figure_uploads
     )
     assert len(result.analysis_asset_ids) == 2
-    assert sum(
-        relation == "analysis_of"
-        for _, _, relation, _ in session.relationships
-    ) == 2
+    assert (
+        sum(relation == "analysis_of" for _, _, relation, _ in session.relationships)
+        == 2
+    )
 
 
 def test_direct_display_capture_preserves_figures_larger_than_trace_limit(tmp_path):
@@ -487,14 +575,21 @@ def test_changed_hdf5_and_csv_use_stable_titles_for_content_versioning(tmp_path)
     csv.write_text("loss\n1\n0.5\n", encoding="utf-8")
     publisher.finish()
 
-    uploads = [u for u in publisher.session.uploads if u["metadata"]["component"] == "derived-data"]
+    uploads = [
+        u
+        for u in publisher.session.uploads
+        if u["metadata"]["component"] == "derived-data"
+    ]
     assert {u["path"] for u in uploads} == {h5, csv}
     assert all(u["record_type"] == "dataset" for u in uploads)
     assert all("trace-123" not in u["title"] for u in uploads)
-    assert sum(
-        relation == "derived_from"
-        for _, _, relation, _ in publisher.session.relationships
-    ) >= 2
+    assert (
+        sum(
+            relation == "derived_from"
+            for _, _, relation, _ in publisher.session.relationships
+        )
+        >= 2
+    )
 
 
 def test_model_checkpoint_loss_and_manifest_are_model_assets_with_lineage(tmp_path):
@@ -517,13 +612,17 @@ def test_model_checkpoint_loss_and_manifest_are_model_assets_with_lineage(tmp_pa
 
     result = publisher.finish()
 
-    model_uploads = [u for u in publisher.session.uploads if u["record_type"] == "model"]
+    model_uploads = [
+        u for u in publisher.session.uploads if u["record_type"] == "model"
+    ]
     assert {u["metadata"]["component"] for u in model_uploads} == {
         "model-checkpoint",
         "training-loss",
         "model-manifest",
     }
-    manifest_upload = next(u for u in model_uploads if u["metadata"]["component"] == "model-manifest")
+    manifest_upload = next(
+        u for u in model_uploads if u["metadata"]["component"] == "model-manifest"
+    )
     manifest = json.loads(manifest_upload["content"])
     assert manifest["schema"] == "m3-learning.dataerai-model-manifest.v1"
     assert manifest["notebook_run_id"] == "trace-123"
@@ -531,7 +630,10 @@ def test_model_checkpoint_loss_and_manifest_are_model_assets_with_lineage(tmp_pa
     assert manifest["params"]["optimizer"] == "Adam"
     assert manifest["metrics"]["train_loss"] == 0.5
     assert len(result.model_asset_ids) == 3
-    relations = {(source, target, rel) for source, target, rel, _ in publisher.session.relationships}
+    relations = {
+        (source, target, rel)
+        for source, target, rel, _ in publisher.session.relationships
+    }
     assert any(rel == "trained_on" for _, _, rel in relations)
     assert any(rel == "describes" for _, _, rel in relations)
 
@@ -571,7 +673,9 @@ def test_specialized_pytorch_tracker_routes_complete_training_bundle(
                 manifest_asset_id=manifest_asset.asset_id,
             )
 
-    dataerai_module = SimpleNamespace(nn=SimpleNamespace(PyTorchProvenanceTracker=_Tracker))
+    dataerai_module = SimpleNamespace(
+        nn=SimpleNamespace(PyTorchProvenanceTracker=_Tracker)
+    )
     monkeypatch.setitem(sys.modules, "dataerai", dataerai_module)
     monkeypatch.setitem(sys.modules, "dataerai.nn", dataerai_module.nn)
 
@@ -604,7 +708,9 @@ def test_specialized_pytorch_tracker_routes_complete_training_bundle(
     assert tracker_result.checkpoint_asset_id in result.model_asset_ids
     assert len(result.model_asset_ids) == 3
     assert len(result.analysis_asset_ids) == 1
-    components = {upload["metadata"]["component"] for upload in publisher.session.uploads}
+    components = {
+        upload["metadata"]["component"] for upload in publisher.session.uploads
+    }
     assert {
         "nn-checkpoint",
         "nn-provenance-manifest",
@@ -625,9 +731,10 @@ def test_specialized_pytorch_tracker_routes_complete_training_bundle(
         for upload in publisher.session.uploads
         if upload["metadata"]["component"] == "nn-provenance-manifest"
     )
-    assert manifest_upload["collection_id"] == publisher.session.collections[
-        "M3 / Example Notebook / Manifests / Noise 3"
-    ]
+    assert (
+        manifest_upload["collection_id"]
+        == publisher.session.collections["M3 / Example Notebook / Manifests / Noise 3"]
+    )
 
 
 def test_every_uploaded_product_uses_the_traced_session_for_execution_linking(tmp_path):

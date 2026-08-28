@@ -118,6 +118,7 @@ class DataeraiArtifactPublisher:
     _ignored_model_paths: set[Path] = field(default_factory=set, init=False)
     _notebook_asset_id: str | None = field(default=None, init=False)
     _errors: list[str] = field(default_factory=list, init=False)
+    _raw_errors: dict[Path, str] = field(default_factory=dict, init=False)
 
     def __post_init__(self) -> None:
         self.root = Path(self.root).expanduser().resolve()
@@ -161,6 +162,7 @@ class DataeraiArtifactPublisher:
 
         if self._registered or self._finished:
             return self
+        self._install_trace_upload_retry()
         self._ensure_provenance_collections()
         self._publish_source_notebook()
         self._baseline = self._snapshot()
@@ -193,6 +195,35 @@ class DataeraiArtifactPublisher:
             path = f"{root} / {relative}"
             destination = self._ensure_collection_path(path)
             self._collection_ids[relative] = str(destination.collection_id)
+
+    def _install_trace_upload_retry(self) -> None:
+        """Retry the SDK's final execution-log upload on transient failures.
+
+        The notebook magic publishes its JSON trace after the finish cell has
+        completed.  Wrapping the session's bound upload here keeps that final
+        write inside the SDK's signed notebook-tracing flow while making a
+        temporary gateway or transfer-verification failure recoverable.
+        """
+
+        original = getattr(self.session, "_upload_bound", None)
+        if not callable(original) or getattr(original, "_m3_retrying_upload", False):
+            return
+
+        def retrying_upload(
+            local_path: str, *, title: str | None = None, **kwargs: Any
+        ) -> Any:
+            attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
+            for attempt in range(1, attempts + 1):
+                try:
+                    return original(local_path, title=title, **kwargs)
+                except Exception as exc:  # noqa: BLE001 - SDK/network boundary
+                    if attempt == attempts or not _is_transient_upload_error(exc):
+                        raise
+                    time.sleep(min(2 ** (attempt - 1), 8))
+            raise AssertionError("unreachable")
+
+        retrying_upload._m3_retrying_upload = True  # type: ignore[attr-defined]
+        self.session._upload_bound = retrying_upload
 
     def _ensure_collection_path(self, path: str) -> Any:
         """Resolve/create one collection with bounded transient retries."""
@@ -345,17 +376,13 @@ class DataeraiArtifactPublisher:
         if extracted is None:
             return
         extension, content = extracted
-        filename = (
-            f"cell-{execution_count:04d}-display-{display_index:02d}{extension}"
-        )
+        filename = f"cell-{execution_count:04d}-display-{display_index:02d}{extension}"
         path = self.artifact_directory / "figures" / filename
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
         self._analysis_queue[path] = _PendingArtifact(
             path=path,
-            title=_stable_title(
-                f"{Path(self.notebook_name).stem} figure", filename
-            ),
+            title=_stable_title(f"{Path(self.notebook_name).stem} figure", filename),
             component="notebook-figure",
             metadata={
                 "cell_execution_count": execution_count,
@@ -529,6 +556,12 @@ class DataeraiArtifactPublisher:
         ):
             self._attempt(lambda model=model: self._publish_model(model))
 
+        self._errors.extend(
+            message
+            for message in self._raw_errors.values()
+            if message not in self._errors
+        )
+
         self._result = ArtifactPublishResult(
             notebook_asset_id=self.notebook_asset_id,
             raw_dataset_asset_ids=self.raw_dataset_asset_ids,
@@ -603,8 +636,10 @@ class DataeraiArtifactPublisher:
                 or suffix not in _DATA_EXTENSIONS | _RAW_ARCHIVE_EXTENSIONS
             ):
                 continue
-            if suffix in _RAW_ARCHIVE_EXTENSIONS or _is_raw_candidate(path) or (
-                path in self._baseline and self._is_source_input(path)
+            if (
+                suffix in _RAW_ARCHIVE_EXTENSIONS
+                or _is_raw_candidate(path)
+                or (path in self._baseline and self._is_source_input(path))
             ):
                 self._ensure_raw_dataset(path, state=state)
 
@@ -630,9 +665,7 @@ class DataeraiArtifactPublisher:
                 matches = self.session.find_assets(
                     title,
                     title=title,
-                    predicate=lambda asset: bool(
-                        getattr(asset, "has_content", True)
-                    ),
+                    predicate=lambda asset: bool(getattr(asset, "has_content", True)),
                 )
                 if len(matches) > 1:
                     raise LookupError(
@@ -664,6 +697,7 @@ class DataeraiArtifactPublisher:
                     asset_id = str(uploaded.asset_id)
             self._raw_by_path[path] = asset_id
             self._raw_states[path] = state or self._state(path)
+            self._raw_errors.pop(path, None)
             self._record_reused_raw_product(path, asset_id)
             if self.notebook_asset_id and self.notebook_asset_id != asset_id:
                 self._relationship(self.notebook_asset_id, asset_id, "uses_data")
@@ -671,7 +705,7 @@ class DataeraiArtifactPublisher:
             os.environ.setdefault("DATAERAI_DATASET_ASSET_ID", asset_id)
             return asset_id
         except Exception as exc:  # noqa: BLE001 - SDK/network boundary
-            self._errors.append(
+            self._raw_errors[path] = (
                 f"could not publish/reuse source dataset {path}: {exc}"
             )
             return None
@@ -690,9 +724,7 @@ class DataeraiArtifactPublisher:
                 "direction": "reuse",
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 "asset_id": str(asset_id),
-                "title": _stable_title(
-                    "M3 source dataset", self._relative(path)
-                ),
+                "title": _stable_title("M3 source dataset", self._relative(path)),
                 "record_type": "dataset",
                 "component": "raw-dataset",
                 "filename": path.name,
@@ -800,9 +832,7 @@ class DataeraiArtifactPublisher:
         )
         manifest_asset_id = str(manifest.asset_id)
         for part in part_assets:
-            self._relationship(
-                str(part["asset_id"]), manifest_asset_id, "part_of"
-            )
+            self._relationship(str(part["asset_id"]), manifest_asset_id, "part_of")
         return manifest_asset_id
 
     def _queue_saved_figures(self, current: dict[Path, _FileState]) -> None:
@@ -960,9 +990,7 @@ class DataeraiArtifactPublisher:
         manifest_path = self._write_model_manifest(queued)
         manifest = self._upload(
             manifest_path,
-            title=_stable_title(
-                "M3 model manifest", self._relative(queued.model_path)
-            ),
+            title=_stable_title("M3 model manifest", self._relative(queued.model_path)),
             record_type="model",
             component="model-manifest",
             metadata={
@@ -1021,11 +1049,15 @@ class DataeraiArtifactPublisher:
             "m3_notebook_run_id": self.run_id,
             "source_notebook": self.notebook_name,
         }
-        stamped_tags = list(dict.fromkeys([
-            *tags,
-            "m3-notebook-provenance",
-            f"m3-notebook-run:{self.run_id}",
-        ]))
+        stamped_tags = list(
+            dict.fromkeys(
+                [
+                    *tags,
+                    "m3-notebook-provenance",
+                    f"m3-notebook-run:{self.run_id}",
+                ]
+            )
+        )
         collection_id = self._collection_id_for(path, component)
         attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
         for attempt in range(1, attempts + 1):
@@ -1166,9 +1198,7 @@ class DataeraiArtifactPublisher:
             return path.name
 
     def _is_source_input(self, path: Path) -> bool:
-        return path.suffix.lower() in _RAW_ARCHIVE_EXTENSIONS or _is_raw_candidate(
-            path
-        )
+        return path.suffix.lower() in _RAW_ARCHIVE_EXTENSIONS or _is_raw_candidate(path)
 
     @staticmethod
     def _state(path: Path) -> _FileState:
@@ -1288,7 +1318,9 @@ class _RoutedNotebookSession:
     def trace_run_id(self) -> str:
         return self._publisher.run_id
 
-    def upload(self, local_path: str, *, title: str | None = None, **kwargs: Any) -> Any:
+    def upload(
+        self, local_path: str, *, title: str | None = None, **kwargs: Any
+    ) -> Any:
         path = Path(local_path).expanduser().resolve()
         metadata = dict(kwargs.pop("metadata", {}) or {})
         component = str(metadata.pop("component", "nn-training-artifact"))
@@ -1406,14 +1438,15 @@ def _is_transient_upload_error(exc: Exception) -> bool:
             "http 503",
             "http 504",
             "err_server_error",
+            "err_transfer_failed",
+            "upload was not verified",
+            'server status "failed"',
         )
     )
 
 
 def _max_inline_asset_bytes() -> int:
-    return int(
-        os.environ.get("DATAERAI_MAX_INLINE_ASSET_BYTES", str(8 * 1024**3))
-    )
+    return int(os.environ.get("DATAERAI_MAX_INLINE_ASSET_BYTES", str(8 * 1024**3)))
 
 
 def _exceeds_inline_asset_limit(path: Path) -> bool:
@@ -1437,6 +1470,4 @@ def _is_raw_candidate(path: Path) -> bool:
     if path.resolve() in explicit:
         return True
     name = path.name.casefold()
-    return any(
-        token in name for token in ("raw", "source", "standard", "data_file")
-    )
+    return any(token in name for token in ("raw", "source", "standard", "data_file"))
