@@ -243,8 +243,7 @@ class DataeraiArtifactPublisher:
                 try:
                     return original(*args, **kwargs)
                 except Exception as exc:  # noqa: BLE001 - SDK/network boundary
-                    code = str(getattr(exc, "code", ""))
-                    if "EXISTS" in code.upper() or "EXISTS" in str(exc).upper():
+                    if _is_relationship_exists_error(exc):
                         # Already in the desired state - _relationship() treats this
                         # as success, so the wrapper must not diverge and re-raise.
                         return None
@@ -1228,8 +1227,7 @@ class DataeraiArtifactPublisher:
                 )
                 return
             except Exception as exc:
-                code = str(getattr(exc, "code", ""))
-                if "EXISTS" in code.upper() or "EXISTS" in str(exc).upper():
+                if _is_relationship_exists_error(exc):
                     return
                 if attempt == attempts or not _is_transient_upload_error(exc):
                     raise
@@ -1467,6 +1465,18 @@ def _env_bool(name: str, *, default: bool) -> bool:
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
+def _is_relationship_exists_error(exc: Exception) -> bool:
+    """Return whether an exception means the relationship already exists.
+
+    Matches the SDK's specific error code rather than substring-testing arbitrary
+    exception text, which would swallow unrelated failures that merely mention
+    EXISTS.
+    """
+
+    code = str(getattr(exc, "code", "")).upper()
+    return "ERR_RELATIONSHIP_EXISTS" in code or "ERR_RELATIONSHIP_EXISTS" in str(exc).upper()
+
+
 def _is_withdrawn_trace_error(message: str) -> bool:
     """Return whether an artifact error is just "the trace is already gone"."""
 
@@ -1508,7 +1518,12 @@ def _max_retry_backoff_seconds() -> float:
     which could not outlast a 22s beta outage observed on 2026-08-30.
     """
 
-    return float(os.environ.get("DATAERAI_MAX_RETRY_BACKOFF_S", "30"))
+    try:
+        seconds = float(os.environ.get("DATAERAI_MAX_RETRY_BACKOFF_S", "30"))
+    except ValueError:
+        return 30.0
+    # A negative cap would reach time.sleep() and raise instead of retrying.
+    return max(0.0, seconds)
 
 
 def _max_inline_asset_bytes() -> int:
