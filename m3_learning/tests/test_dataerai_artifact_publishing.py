@@ -853,3 +853,41 @@ def test_instrumented_fitters_use_specialized_pytorch_provenance(relative_path):
     assert "loss_path=training_loss_path" in tracker_block
     assert "params=params" in tracker_block
     assert "metrics=metrics" in tracker_block
+
+
+def _publisher_with_errors(tmp_path, errors):
+    publisher = _publisher(tmp_path).start()
+    publisher._errors.extend(errors)
+    return publisher
+
+
+def test_withdrawn_trace_does_not_fail_a_notebook_that_computed_correctly(tmp_path):
+    publisher = _publisher_with_errors(
+        tmp_path,
+        ["RuntimeError: artifact publishing requires an active notebook trace"] * 3,
+    )
+
+    with pytest.warns(RuntimeWarning, match="trace was withdrawn"):
+        result = publisher.finish()
+
+    assert result is not None
+
+
+def test_a_real_publishing_failure_still_raises(tmp_path):
+    publisher = _publisher_with_errors(tmp_path, ["ValueError: malformed asset payload"])
+
+    with pytest.raises(RuntimeError, match="artifact publishing failed"):
+        publisher.finish()
+
+
+def test_mixed_capacity_and_real_failures_still_raise(tmp_path):
+    publisher = _publisher_with_errors(
+        tmp_path,
+        [
+            "RuntimeError: artifact publishing requires an active notebook trace",
+            "ValueError: malformed asset payload",
+        ],
+    )
+
+    with pytest.raises(RuntimeError, match="artifact publishing failed"):
+        publisher.finish()
