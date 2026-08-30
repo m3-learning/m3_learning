@@ -15,6 +15,9 @@ IGNORED_NOTEBOOK_DIRECTORIES = {
     "_build",
     "executed",
 }
+# nbconvert writes its output beside the source notebook, so exclude those by
+# name too - otherwise this test fails for anyone who has executed a notebook.
+IGNORED_NOTEBOOK_PREFIXES = ("executed_", "output_")
 
 
 def _source_notebooks():
@@ -24,6 +27,7 @@ def _source_notebooks():
         path
         for path in notebooks
         if not IGNORED_NOTEBOOK_DIRECTORIES.intersection(path.parts)
+        and not path.name.startswith(IGNORED_NOTEBOOK_PREFIXES)
     )
 
 
@@ -58,7 +62,11 @@ def test_every_source_notebook_has_one_managed_provenance_boundary():
         finish = cells[finish_index]
         finish_source = "".join(finish["source"])
         assert "dataerai_artifacts.finish()" in finish_source
-        assert finish_source.strip().endswith("%dataerai --finish")
+        # the trace is finished only when it is still active: a transient server
+        # fault can withdraw it mid-run, and finishing then raises and fails a
+        # notebook that already computed its results correctly.
+        assert 'run_line_magic("dataerai", "--finish")' in finish_source
+        assert 'getattr(dataerai_session, "_trace", None) is not None' in finish_source
         assert not any(
             cell.get("cell_type") == "code" for cell in cells[finish_index + 1 :]
         ), f"{path}: code appears after the trace is finished"
