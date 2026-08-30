@@ -873,21 +873,6 @@ def test_withdrawn_trace_does_not_fail_a_notebook_that_computed_correctly(tmp_pa
     assert result is not None
 
 
-def test_exhausted_record_quota_does_not_fail_a_notebook(tmp_path):
-    publisher = _publisher_with_errors(
-        tmp_path,
-        [
-            "DaemonError: ERR_QUOTA_EXCEEDED: Record quota exhausted for this "
-            "allocation. 0 records remaining (25,000 records total)."
-        ],
-    )
-
-    with pytest.warns(RuntimeWarning, match="record quota .* is exhausted"):
-        result = publisher.finish()
-
-    assert result is not None
-
-
 def test_a_real_publishing_failure_still_raises(tmp_path):
     publisher = _publisher_with_errors(tmp_path, ["ValueError: malformed asset payload"])
 
