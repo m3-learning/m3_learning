@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import time
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -220,7 +221,7 @@ class DataeraiArtifactPublisher:
                 except Exception as exc:  # noqa: BLE001 - SDK/network boundary
                     if attempt == attempts or not _is_transient_upload_error(exc):
                         raise
-                    time.sleep(min(2 ** (attempt - 1), 8))
+                    time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
             raise AssertionError("unreachable")
 
         retrying_upload._m3_retrying_upload = True  # type: ignore[attr-defined]
@@ -244,10 +245,12 @@ class DataeraiArtifactPublisher:
                 except Exception as exc:  # noqa: BLE001 - SDK/network boundary
                     code = str(getattr(exc, "code", ""))
                     if "EXISTS" in code.upper() or "EXISTS" in str(exc).upper():
-                        raise
+                        # Already in the desired state - _relationship() treats this
+                        # as success, so the wrapper must not diverge and re-raise.
+                        return None
                     if attempt == attempts or not _is_transient_upload_error(exc):
                         raise
-                    time.sleep(min(2 ** (attempt - 1), 8))
+                    time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
             raise AssertionError("unreachable")
 
         retrying_relationship._m3_retrying_relationship = True  # type: ignore[attr-defined]
@@ -264,7 +267,7 @@ class DataeraiArtifactPublisher:
             except Exception as exc:  # noqa: BLE001 - SDK/network boundary
                 if attempt == attempts or not _is_transient_upload_error(exc):
                     raise
-                time.sleep(min(2 ** (attempt - 1), 8))
+                time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
         raise AssertionError("unreachable")
 
     def _publish_source_notebook(self) -> None:
@@ -607,6 +610,20 @@ class DataeraiArtifactPublisher:
             f"{_counted(len(self._model_asset_ids), 'model artifact')}."
         )
         if self._errors and self.strict:
+            # A trace withdrawn mid-run by a transient server fault is not an
+            # artifact-publishing defect: the notebook computed correctly and its
+            # outputs are already on disk. Failing here discards that work (we
+            # lost a 2h09m run this way), so warn and let the notebook exit 0.
+            if all(_is_withdrawn_trace_error(err) for err in self._errors):
+                warnings.warn(
+                    "Dataerai artifact publishing skipped: the notebook trace was "
+                    "withdrawn before artifacts could be published "
+                    f"({len(self._errors)} artifact(s) affected). Computed outputs "
+                    "are unaffected.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+                return self._result
             raise RuntimeError(
                 "Dataerai artifact publishing failed: " + "; ".join(self._errors)
             )
@@ -1103,7 +1120,7 @@ class DataeraiArtifactPublisher:
             except Exception as exc:  # noqa: BLE001 - SDK/network boundary
                 if attempt == attempts or not _is_transient_upload_error(exc):
                     raise
-                time.sleep(min(2 ** (attempt - 1), 8))
+                time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
         raise AssertionError("unreachable")
 
     def _upload_once(
@@ -1216,7 +1233,7 @@ class DataeraiArtifactPublisher:
                     return
                 if attempt == attempts or not _is_transient_upload_error(exc):
                     raise
-                time.sleep(min(2 ** (attempt - 1), 8))
+                time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
 
     def _attempt(self, operation: Any) -> None:
         try:
@@ -1450,6 +1467,12 @@ def _env_bool(name: str, *, default: bool) -> bool:
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
+def _is_withdrawn_trace_error(message: str) -> bool:
+    """Return whether an artifact error is just "the trace is already gone"."""
+
+    return "requires an active notebook trace" in str(message).casefold()
+
+
 def _is_transient_upload_error(exc: Exception) -> bool:
     """Return whether retrying an SDK upload can reasonably succeed."""
 
@@ -1476,6 +1499,16 @@ def _is_transient_upload_error(exc: Exception) -> bool:
             'server status "failed"',
         )
     )
+
+
+def _max_retry_backoff_seconds() -> float:
+    """Cap for exponential retry backoff.
+
+    The previous hard-coded 8s cap gave ~23s of total sleep across 5 attempts,
+    which could not outlast a 22s beta outage observed on 2026-08-30.
+    """
+
+    return float(os.environ.get("DATAERAI_MAX_RETRY_BACKOFF_S", "30"))
 
 
 def _max_inline_asset_bytes() -> int:

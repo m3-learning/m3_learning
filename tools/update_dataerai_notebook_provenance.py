@@ -29,6 +29,9 @@ IGNORED_NOTEBOOK_DIRECTORIES = {
 }
 
 
+IGNORED_NOTEBOOK_PREFIXES = ("executed_", "output_")
+
+
 def source_notebooks() -> list[Path]:
     """Return authored notebooks, excluding generated Jupyter Book output."""
 
@@ -38,7 +41,20 @@ def source_notebooks() -> list[Path]:
         path
         for path in notebooks
         if not IGNORED_NOTEBOOK_DIRECTORIES.intersection(path.parts)
+        and not _is_execution_output(path)
     )
+
+
+def _is_execution_output(path: Path) -> bool:
+    """Return whether a notebook is nbconvert output rather than an authored source.
+
+    ``jupyter nbconvert --execute`` writes its result beside the source notebook,
+    so without this an execution record gets treated as an authored notebook and
+    its managed cells are rewritten - silently editing the source of a run that
+    already happened.
+    """
+
+    return path.name.startswith(IGNORED_NOTEBOOK_PREFIXES)
 
 
 def _source_lines(text: str) -> list[str]:
@@ -325,7 +341,16 @@ def _managed_cells(path: Path, notebook: dict) -> tuple[list[dict], list[dict]]:
         "code",
         "dataerai-provenance-finish",
         "dataerai_artifact_result = dataerai_artifacts.finish()\n"
-        "%dataerai --finish\n",
+        "# A transient server fault can withdraw the trace mid-run. `--finish`\n"
+        "# raises in that case, which would fail a notebook that already computed\n"
+        "# its results correctly, so only finish a trace that is still active.\n"
+        "if getattr(dataerai_session, \"_trace\", None) is not None:\n"
+        "    get_ipython().run_line_magic(\"dataerai\", \"--finish\")\n"
+        "else:\n"
+        "    print(\n"
+        "        \"Dataerai notebook trace was withdrawn before the finish cell; \"\n"
+        "        \"skipping --finish. Computed outputs are unaffected.\"\n"
+        "    )\n",
     )
     for cell in (intro, start, finish_note, finish):
         cell["metadata"]["dataerai"] = {
