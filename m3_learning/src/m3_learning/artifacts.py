@@ -613,10 +613,15 @@ class DataeraiArtifactPublisher:
             # artifact-publishing defect: the notebook computed correctly and its
             # outputs are already on disk. Failing here discards that work (we
             # lost a 2h09m run this way), so warn and let the notebook exit 0.
-            if all(_is_withdrawn_trace_error(err) for err in self._errors):
+            if all(_is_publishing_unavailable(err) for err in self._errors):
+                if any(_is_quota_error(err) for err in self._errors):
+                    reason = (
+                        "the Dataerai record quota for this allocation is exhausted"
+                    )
+                else:
+                    reason = "the notebook trace was withdrawn"
                 warnings.warn(
-                    "Dataerai artifact publishing skipped: the notebook trace was "
-                    "withdrawn before artifacts could be published "
+                    f"Dataerai artifact publishing skipped: {reason} "
                     f"({len(self._errors)} artifact(s) affected). Computed outputs "
                     "are unaffected.",
                     RuntimeWarning,
@@ -1481,6 +1486,25 @@ def _is_withdrawn_trace_error(message: str) -> bool:
     """Return whether an artifact error is just "the trace is already gone"."""
 
     return "requires an active notebook trace" in str(message).casefold()
+
+
+def _is_quota_error(message: str) -> bool:
+    """Return whether an artifact error is the server refusing on quota."""
+
+    text = str(message).casefold()
+    return "err_quota_exceeded" in text or "quota exhausted" in text
+
+
+def _is_publishing_unavailable(message: str) -> bool:
+    """Return whether publishing was impossible for reasons outside the notebook.
+
+    A withdrawn trace and an exhausted record quota are both server-side capacity
+    conditions. Neither says anything about whether the notebook computed
+    correctly, and its outputs are already on disk either way, so neither should
+    fail the run.
+    """
+
+    return _is_withdrawn_trace_error(message) or _is_quota_error(message)
 
 
 def _is_transient_upload_error(exc: Exception) -> bool:
