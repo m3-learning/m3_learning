@@ -10,11 +10,15 @@ resulting assets to the one execution-log asset for the run.
 from __future__ import annotations
 
 import base64
+import contextlib
+import functools
 import hashlib
 import json
 import os
+import threading
 import time
 import warnings
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -165,6 +169,7 @@ class DataeraiArtifactPublisher:
             return self
         self._install_trace_upload_retry()
         self._install_trace_relationship_retry()
+        self._install_client_retries()
         self._ensure_provenance_collections()
         self._publish_source_notebook()
         self._baseline = self._snapshot()
@@ -214,17 +219,10 @@ class DataeraiArtifactPublisher:
         def retrying_upload(
             local_path: str, *, title: str | None = None, **kwargs: Any
         ) -> Any:
-            attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
-            for attempt in range(1, attempts + 1):
-                try:
-                    return original(local_path, title=title, **kwargs)
-                except Exception as exc:  # noqa: BLE001 - SDK/network boundary
-                    if attempt == attempts or not _is_transient_upload_error(exc):
-                        raise
-                    time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
-            raise AssertionError("unreachable")
+            return _retry_platform_call(original, local_path, title=title, **kwargs)
 
         retrying_upload._m3_retrying_upload = True  # type: ignore[attr-defined]
+        retrying_upload._m3_retrying = True  # type: ignore[attr-defined]
         self.session._upload_bound = retrying_upload
 
     def _install_trace_relationship_retry(self) -> None:
@@ -238,36 +236,49 @@ class DataeraiArtifactPublisher:
             return
 
         def retrying_relationship(*args: Any, **kwargs: Any) -> Any:
-            attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
-            for attempt in range(1, attempts + 1):
-                try:
-                    return original(*args, **kwargs)
-                except Exception as exc:  # noqa: BLE001 - SDK/network boundary
-                    if _is_relationship_exists_error(exc):
-                        # Already in the desired state - _relationship() treats this
-                        # as success, so the wrapper must not diverge and re-raise.
-                        return None
-                    if attempt == attempts or not _is_transient_upload_error(exc):
-                        raise
-                    time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
-            raise AssertionError("unreachable")
+            try:
+                return _retry_platform_call(original, *args, **kwargs)
+            except Exception as exc:  # noqa: BLE001 - SDK/network boundary
+                if _is_relationship_exists_error(exc):
+                    # Already in the desired state - _relationship() treats this
+                    # as success, so the wrapper must not diverge and re-raise.
+                    return None
+                raise
 
         retrying_relationship._m3_retrying_relationship = True  # type: ignore[attr-defined]
+        retrying_relationship._m3_retrying = True  # type: ignore[attr-defined]
         client.create_relationship = retrying_relationship
+
+    def _install_client_retries(self) -> None:
+        """Wrap the whole SDK client surface in the bounded platform retry.
+
+        Three consecutive ``2_5_nn_fitting_all`` runs (24 min, 15h07m, 16h00m)
+        died on three *different* unwrapped call paths - the signed trace
+        upload, ``get_metadata``, then ``client.set_metadata``.  Patching one
+        call site per lost run does not converge, so cover every platform call
+        the SDK can make at the one boundary they all funnel through.
+
+        ``_retry_platform_call`` is reentrancy-guarded, so wrapping here does
+        not multiply the attempt budget of the call sites above.
+        """
+
+        client = getattr(self.session, "client", None)
+        if client is None:
+            return
+        for name in _RETRIED_CLIENT_METHODS:
+            original = getattr(client, name, None)
+            if not callable(original) or getattr(original, "_m3_retrying", False):
+                continue
+            try:
+                setattr(client, name, _retrying_platform_method(original))
+            except Exception:  # noqa: BLE001 - read-only SDK attribute
+                self._errors.append(f"could not install retry wrapper for {name}")
 
     def _ensure_collection_path(self, path: str) -> Any:
         """Resolve/create one collection with bounded transient retries."""
 
         ensure = self.session.client.ensure_collection_path
-        attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
-        for attempt in range(1, attempts + 1):
-            try:
-                return ensure(path, create_project=False)
-            except Exception as exc:  # noqa: BLE001 - SDK/network boundary
-                if attempt == attempts or not _is_transient_upload_error(exc):
-                    raise
-                time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
-        raise AssertionError("unreachable")
+        return _retry_platform_call(ensure, path, create_project=False)
 
     def _publish_source_notebook(self) -> None:
         """Upload the raw source notebook as a first-class run input."""
@@ -1103,24 +1114,17 @@ class DataeraiArtifactPublisher:
             )
         )
         collection_id = self._collection_id_for(path, component)
-        attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
-        for attempt in range(1, attempts + 1):
-            try:
-                uploaded = self._upload_once(
-                    path,
-                    title=title,
-                    record_type=record_type,
-                    tags=stamped_tags,
-                    metadata=stamped_metadata,
-                    collection_id=collection_id,
-                )
-                self._published_paths.add(path.resolve())
-                return uploaded
-            except Exception as exc:  # noqa: BLE001 - SDK/network boundary
-                if attempt == attempts or not _is_transient_upload_error(exc):
-                    raise
-                time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
-        raise AssertionError("unreachable")
+        uploaded = _retry_platform_call(
+            self._upload_once,
+            path,
+            title=title,
+            record_type=record_type,
+            tags=stamped_tags,
+            metadata=stamped_metadata,
+            collection_id=collection_id,
+        )
+        self._published_paths.add(path.resolve())
+        return uploaded
 
     def _upload_once(
         self,
@@ -1216,22 +1220,17 @@ class DataeraiArtifactPublisher:
             self._relationship(asset_id, self.notebook_asset_id, relation)
 
     def _relationship(self, source: str, target: str, relation: str) -> None:
-        attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
-        for attempt in range(1, attempts + 1):
-            try:
-                self.session.create_relationship(
-                    source,
-                    target,
-                    relation,
-                    qualifiers={"notebook_run_id": self.run_id},
-                )
-                return
-            except Exception as exc:
-                if _is_relationship_exists_error(exc):
-                    return
-                if attempt == attempts or not _is_transient_upload_error(exc):
-                    raise
-                time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
+        try:
+            _retry_platform_call(
+                self.session.create_relationship,
+                source,
+                target,
+                relation,
+                qualifiers={"notebook_run_id": self.run_id},
+            )
+        except Exception as exc:
+            if not _is_relationship_exists_error(exc):
+                raise
 
     def _attempt(self, operation: Any) -> None:
         try:
@@ -1392,10 +1391,35 @@ class _RoutedNotebookSession:
         return uploaded
 
     def create_relationship(self, *args: Any, **kwargs: Any) -> Any:
-        return self._publisher.session.create_relationship(*args, **kwargs)
+        return _retry_platform_call(
+            self._publisher.session.create_relationship, *args, **kwargs
+        )
 
     def get_metadata(self, asset_id: str) -> Any:
-        return self._publisher.session.get_metadata(asset_id)
+        """Read asset metadata, retrying transient server failures.
+
+        ``save_checkpoint`` calls this once per checkpoint, so a single
+        transient 503 here aborts the notebook mid-training.  A 15h
+        ``2_5_nn_fitting_all`` run was lost this way on 2026-09-08 when the
+        backend answered ``get asset: GET asset: HTTP 503`` once; an earlier
+        503 the same evening was absorbed because the upload path is already
+        wrapped by :meth:`_install_trace_upload_retry`.
+        """
+
+        return _retry_platform_call(self._publisher.session.get_metadata, asset_id)
+
+    def set_metadata(self, *args: Any, **kwargs: Any) -> Any:
+        """Write asset metadata through the bounded platform retry.
+
+        The tracker reaches this through ``session.client.set_metadata``, which
+        :meth:`DataeraiArtifactPublisher._install_client_retries` wraps; this
+        facade method keeps the routed surface complete and retried even if
+        that client attribute cannot be replaced.
+        """
+
+        return _retry_platform_call(
+            self._publisher.session.client.set_metadata, *args, **kwargs
+        )
 
 
 def _stable_title(prefix: str, relative_path: str) -> str:
@@ -1481,6 +1505,95 @@ def _is_withdrawn_trace_error(message: str) -> bool:
     """Return whether an artifact error is just "the trace is already gone"."""
 
     return "requires an active notebook trace" in str(message).casefold()
+
+
+_RETRIED_CLIENT_METHODS = (
+    "upload",
+    "upload_many",
+    "get_metadata",
+    "set_metadata",
+    "set_metadata_many",
+    "ensure_collection_path",
+    "create_relationship",
+)
+
+# Feature flags that are enabled for this organization, so a 403 naming them is
+# a failed server-side flag lookup rather than a real permission decision.
+# See FOR_JOSH_2026-09-09.md section 2: `asset_metadata_edit` was reported once
+# in 16h of daemon log, and PATCH/set_metadata both returned 200 minutes later.
+_ENABLED_FEATURE_FLAGS = ("asset_metadata_edit",)
+
+_RETRY_STATE = threading.local()
+
+
+@contextlib.contextmanager
+def _outermost_retry() -> Iterator[bool]:
+    """Yield whether this frame owns the retry budget for the call below it.
+
+    Platform calls nest (``_upload`` -> ``client.upload``), and every layer is
+    now wrapped.  Without this guard the bounded attempt budget would multiply
+    per layer, turning a genuine 403 into a many-minute stall.
+    """
+
+    depth = getattr(_RETRY_STATE, "depth", 0)
+    _RETRY_STATE.depth = depth + 1
+    try:
+        yield depth == 0
+    finally:
+        _RETRY_STATE.depth = depth
+
+
+def _retry_platform_call(call: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+    """Run one Dataerai platform call with bounded retries on flaky failures."""
+
+    with _outermost_retry() as owns_budget:
+        if not owns_budget:
+            return call(*args, **kwargs)
+        attempts = max(1, int(os.environ.get("DATAERAI_UPLOAD_ATTEMPTS", "3")))
+        for attempt in range(1, attempts + 1):
+            try:
+                return call(*args, **kwargs)
+            except Exception as exc:  # noqa: BLE001 - SDK/network boundary
+                if attempt == attempts or not _is_retryable_platform_error(exc):
+                    raise
+                time.sleep(min(2 ** (attempt - 1), _max_retry_backoff_seconds()))
+    raise AssertionError("unreachable")
+
+
+def _retrying_platform_method(original: Callable[..., Any]) -> Callable[..., Any]:
+    """Return ``original`` wrapped in :func:`_retry_platform_call`."""
+
+    @functools.wraps(original)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        return _retry_platform_call(original, *args, **kwargs)
+
+    wrapper._m3_retrying = True  # type: ignore[attr-defined]
+    return wrapper
+
+
+def _is_retryable_platform_error(exc: Exception) -> bool:
+    """Return whether retrying any Dataerai platform call can succeed."""
+
+    return _is_transient_upload_error(exc) or _is_phantom_feature_flag_error(exc)
+
+
+def _is_phantom_feature_flag_error(exc: Exception) -> bool:
+    """Return whether a 403 is a flaky flag lookup on an *enabled* flag.
+
+    A 16h ``2_5_nn_fitting_all`` run died on 2026-09-09 at 15:18:08Z when
+    ``set_metadata`` answered ``HTTP 403 {"detail": "This feature is not
+    enabled for your organization. Required organization feature flag:
+    asset_metadata_edit."}``.  The flag *is* enabled - REST PATCH of
+    description/metadata/title all returned 200 minutes later, as did the
+    identical daemon call - and the message appears exactly once in the whole
+    daemon log history.  Retrying is bounded, so a 403 for any other reason,
+    or a flag that is genuinely off, still fails within the attempt budget.
+    """
+
+    message = f"{getattr(exc, 'code', '')} {exc}".casefold()
+    if "403" not in message or "feature flag" not in message:
+        return False
+    return any(flag in message for flag in _ENABLED_FEATURE_FLAGS)
 
 
 def _is_transient_upload_error(exc: Exception) -> bool:
