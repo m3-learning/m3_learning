@@ -853,3 +853,200 @@ def test_instrumented_fitters_use_specialized_pytorch_provenance(relative_path):
     assert "loss_path=training_loss_path" in tracker_block
     assert "params=params" in tracker_block
     assert "metrics=metrics" in tracker_block
+
+
+def _publisher_with_errors(tmp_path, errors):
+    publisher = _publisher(tmp_path).start()
+    publisher._errors.extend(errors)
+    return publisher
+
+
+def test_withdrawn_trace_does_not_fail_a_notebook_that_computed_correctly(tmp_path):
+    publisher = _publisher_with_errors(
+        tmp_path,
+        ["RuntimeError: artifact publishing requires an active notebook trace"] * 3,
+    )
+
+    with pytest.warns(RuntimeWarning, match="trace was withdrawn"):
+        result = publisher.finish()
+
+    assert result is not None
+
+
+def test_a_real_publishing_failure_still_raises(tmp_path):
+    publisher = _publisher_with_errors(tmp_path, ["ValueError: malformed asset payload"])
+
+    with pytest.raises(RuntimeError, match="artifact publishing failed"):
+        publisher.finish()
+
+
+def test_mixed_capacity_and_real_failures_still_raise(tmp_path):
+    publisher = _publisher_with_errors(
+        tmp_path,
+        [
+            "RuntimeError: artifact publishing requires an active notebook trace",
+            "ValueError: malformed asset payload",
+        ],
+    )
+
+    with pytest.raises(RuntimeError, match="artifact publishing failed"):
+        publisher.finish()
+
+
+def test_phantom_feature_flag_403_on_set_metadata_is_retried(tmp_path, monkeypatch):
+    """A 403 naming an *enabled* flag is a flaky lookup, not a denial.
+
+    This exact response killed a 16h ``2_5_nn_fitting_all`` run at 80%
+    completion on 2026-09-09; see FOR_JOSH_2026-09-09.md section 2.
+    """
+
+    class _PhantomFlagSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.metadata_attempts = 0
+
+        def set_metadata(self, asset_id, *, metadata):
+            self.metadata_attempts += 1
+            if self.metadata_attempts == 1:
+                raise RuntimeError(
+                    "patch asset: PATCH asset: HTTP 403 "
+                    '{"detail":"This feature is not enabled for your organization. '
+                    'Required organization feature flag: asset_metadata_edit."}'
+                )
+            return super().set_metadata(asset_id, metadata=metadata)
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    session = _PhantomFlagSession()
+    publisher = _publisher(tmp_path, session=session).start()
+
+    artifacts._RoutedNotebookSession(publisher).set_metadata(
+        "checkpoint-1", metadata={"epoch": 1}
+    )
+
+    assert session.metadata_attempts == 2
+    assert session.metadata_updates == [("checkpoint-1", {"epoch": 1})]
+
+
+def test_tracker_reaching_set_metadata_through_the_client_is_retried(
+    tmp_path, monkeypatch
+):
+    """The SDK tracker calls ``session.client.set_metadata`` directly."""
+
+    class _PhantomFlagSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.metadata_attempts = 0
+
+        def set_metadata(self, asset_id, *, metadata):
+            self.metadata_attempts += 1
+            if self.metadata_attempts < 3:
+                raise RuntimeError(
+                    "HTTP 403 Required organization feature flag: asset_metadata_edit."
+                )
+            return super().set_metadata(asset_id, metadata=metadata)
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    monkeypatch.setenv("DATAERAI_UPLOAD_ATTEMPTS", "4")
+    session = _PhantomFlagSession()
+    publisher = _publisher(tmp_path, session=session).start()
+
+    publisher.session.client.set_metadata("checkpoint-1", metadata={"epoch": 2})
+
+    assert session.metadata_attempts == 3
+
+
+def test_a_genuine_403_is_not_retried_forever(tmp_path, monkeypatch):
+    """A real permission denial must still fail, inside the attempt budget."""
+
+    class _DeniedSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.metadata_attempts = 0
+
+        def set_metadata(self, asset_id, *, metadata):
+            self.metadata_attempts += 1
+            raise RuntimeError(
+                'PATCH asset: HTTP 403 {"detail":"You do not have permission '
+                'to perform this action."}'
+            )
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    session = _DeniedSession()
+    publisher = _publisher(tmp_path, session=session).start()
+
+    with pytest.raises(RuntimeError, match="do not have permission"):
+        publisher.session.client.set_metadata("checkpoint-1", metadata={})
+
+    assert session.metadata_attempts == 1
+
+
+def test_an_exhausted_record_quota_is_never_retried(tmp_path, monkeypatch):
+    """Quota exhaustion is persistent - retrying only wastes wall-clock."""
+
+    class _QuotaSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.metadata_attempts = 0
+
+        def set_metadata(self, asset_id, *, metadata):
+            self.metadata_attempts += 1
+            raise RuntimeError(
+                "ERR_QUOTA_EXCEEDED: 0 records remaining (10,000 records total)"
+            )
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    session = _QuotaSession()
+    publisher = _publisher(tmp_path, session=session).start()
+
+    with pytest.raises(RuntimeError, match="ERR_QUOTA_EXCEEDED"):
+        publisher.session.client.set_metadata("checkpoint-1", metadata={})
+
+    assert session.metadata_attempts == 1
+
+
+def test_nested_wrapped_calls_do_not_multiply_the_attempt_budget(
+    tmp_path, monkeypatch
+):
+    """Every layer is wrapped now, so the budget must stay one layer deep.
+
+    ``_upload`` retries and the client's ``upload`` is also wrapped; without
+    the reentrancy guard a permanent failure would cost attempts x attempts
+    calls, stalling a run for many minutes instead of failing cleanly.
+    """
+
+    class _AlwaysTransientSession(_Session):
+        def __init__(self):
+            super().__init__()
+            self.upload_attempts = 0
+
+        def upload(self, local_path, *, title=None, **kwargs):
+            if Path(local_path).name == "frame.png":
+                self.upload_attempts += 1
+                raise RuntimeError("POST transfers: HTTP 503 Service Unavailable")
+            return super().upload(local_path, title=title, **kwargs)
+
+    monkeypatch.setattr(artifacts.time, "sleep", lambda seconds: None)
+    monkeypatch.setenv("DATAERAI_UPLOAD_ATTEMPTS", "3")
+    session = _AlwaysTransientSession()
+    publisher = _publisher(tmp_path, session=session).start()
+    figure = tmp_path / "Figures" / "frame.png"
+    figure.parent.mkdir()
+    figure.write_bytes(b"png")
+
+    with pytest.raises(RuntimeError, match="HTTP 503"):
+        publisher.finish()
+
+    assert session.upload_attempts == 3
+
+
+def test_every_platform_call_on_the_client_is_wrapped(tmp_path):
+    """Regression guard: three runs died on three different unwrapped paths."""
+
+    session = _Session()
+    publisher = _publisher(tmp_path, session=session).start()
+
+    for name in artifacts._RETRIED_CLIENT_METHODS:
+        method = getattr(publisher.session.client, name, None)
+        if method is None:
+            continue
+        assert getattr(method, "_m3_retrying", False), f"{name} is not retried"
