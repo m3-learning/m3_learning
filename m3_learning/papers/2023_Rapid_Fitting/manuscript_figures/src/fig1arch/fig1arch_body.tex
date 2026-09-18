@@ -22,7 +22,7 @@
         name=ccr_b1,
         caption=Conv1D,
         xlabel={{8, }},
-        zlabel=80,
+        zlabel=159,
         fill=\ConvColor,
         height=30,
         width=4,
@@ -35,7 +35,7 @@
         name=ccr_b2,
         caption=Conv1D,
         xlabel={{6, }},
-        zlabel=80,
+        zlabel=153,
         fill=\ConvColor,
         height=30,
         width=3,
@@ -50,7 +50,7 @@
         name=ccr_b3,
         caption=Conv1D,
         xlabel={{4, }},
-        zlabel=80,
+        zlabel=149,
         fill=\ConvColor,
         height=30,
         width=2,
@@ -144,7 +144,7 @@
         name=ccr_b9,
         caption=Conv1D,
         xlabel={{2, }},
-        zlabel=20,
+        zlabel=14,
         fill=\ConvColor,
         height=30,
         width=1,
@@ -173,7 +173,7 @@
         name=ccr_b11,
         caption=Conv1D,
         xlabel={{2, }},
-        zlabel=10,
+        zlabel=6,
         fill=\ConvColor,
         height=30,
         width=1,
@@ -198,14 +198,14 @@
 \draw [connection]  (ccr_b11-east)    -- node {\midarrow} (pool_b12-west);
 
 % ---------------------------------------------------------------------
-% Flatten layer (320).
+% Flatten layer (8 = 2 channels x 4).
 % ---------------------------------------------------------------------
 \pic[shift={(3,0,0)}] at (pool_b12-east)
     {Box={
         name=flatten_b13,
         caption=Flatten Layer,
         xlabel={{" ","dummy"}},
-        zlabel=320,
+        zlabel=8,
         fill=\SoftmaxColor,
         opacity=0.8,
         height=5,

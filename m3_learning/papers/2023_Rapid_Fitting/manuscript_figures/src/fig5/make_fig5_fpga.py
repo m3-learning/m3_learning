@@ -45,7 +45,7 @@ OUT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 targets = [
     ("LSQF\n(CPU, 4-core)", 781.0, 1280.0, "methods", METHOD_COLORS["LSQF"]),
     ("GPU NN\n(batched)", 1.73, 5.78e5, "notebook", METHOD_COLORS["NN"]),
-    ("FPGA NN\n(streaming)", 37.0, 2.7e4, "projected", METHOD_COLORS["NN"]),
+    ("FPGA NN\n(streaming)", 37.0, None, "projected", METHOD_COLORS["NN"]),
 ]
 
 fig, ax = plt.subplots(figsize=(4.4, 3.6))
@@ -79,7 +79,7 @@ ax.legend(handles=legend_handles, loc="upper right")
 labels = [
     "1,280 fits/s\n(throughput$^{-1}$)",
     r"$5.8\times10^{5}$ fits/s" + "\n(amortized)",
-    r"$2.7\times10^{4}$ fits/s" + "\n(projected latency)",
+    "(projected latency;\nthroughput not\ncharacterized)",
 ]
 for xi, t, lab in zip(x, targets, labels):
     ax.annotate(
