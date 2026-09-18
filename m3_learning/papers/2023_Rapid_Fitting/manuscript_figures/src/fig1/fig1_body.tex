@@ -1,0 +1,92 @@
+\begin{tikzpicture}[
+  font=\sffamily,
+  >=Stealth,
+  panellab/.style={font=\sffamily\bfseries\large, anchor=north west},
+  lab/.style={font=\sffamily\footnotesize, align=center, text=inkGray},
+  smalllab/.style={font=\sffamily\scriptsize, align=center, text=inkGray},
+  tinylab/.style={font=\sffamily\fontsize{6}{7}\selectfont, align=center, text=paperGray},
+  flow/.style={-{Stealth[length=2.6mm]}, line width=0.9pt, draw=inkGray},
+]
+
+% =====================================================================
+% PANEL (a): pipeline schematic
+% =====================================================================
+\begin{scope}[shift={(0,0)}]
+
+  % ---- BE-PFM cantilever / tip ----
+  \begin{scope}[shift={(0.2,0)}]
+    % cantilever beam
+    \draw[line width=1.2pt, draw=inkGray] (0,1.55) -- (1.25,1.05);
+    % tip
+    \draw[line width=1.0pt, draw=inkGray, fill=inkGray!12] (1.25,1.05) -- (1.12,0.6) -- (1.45,0.62) -- cycle;
+    % sample surface
+    \draw[line width=1.0pt, draw=oiBlue!70!black, fill=oiBlue!8] (0.55,0.45) rectangle (2.1,0.0);
+    \node[smalllab, text=inkGray] at (1.32,0.22) {sample};
+    % oscillation arcs (band excitation)
+    \draw[oiOrange, line width=0.7pt] (1.05,0.66) ++(-0.18,0) arc (180:360:0.18 and 0.07);
+    \draw[oiOrange, line width=0.7pt] ($(1.05,0.66)+(-0.27,0)$) arc (180:360:0.27 and 0.10);
+    \node[lab] at (0.55,2.05) {BE-PFM tip};
+  \end{scope}
+
+  % ---- pixel grid ----
+  \begin{scope}[shift={(3.05,0.15)}]
+    \foreach \i in {0,1,2,3} \foreach \j in {0,1,2,3} {
+      \fill[oiBlue!\the\numexpr15+25*\i\relax!white] (\i*0.27,\j*0.27) rectangle ++(0.25,0.25);
+    }
+    \draw[line width=0.4pt, draw=paperGray] (0,0) grid[step=0.27] (1.08,1.08);
+    % highlight one pixel
+    \draw[oiVermil, line width=1.1pt] (0.54,0.54) rectangle ++(0.27,0.27);
+    \node[lab] at (0.54,1.62) {response at\\every pixel};
+  \end{scope}
+
+  % arrow grid -> spectrum
+  \draw[flow] (4.3,0.69) -- (5.0,0.69);
+
+  % ---- response spectrum (real & imag) ----
+  \begin{scope}[shift={(5.15,0.1)}]
+    \draw[line width=0.7pt, draw=paperGray, -{Stealth[length=1.6mm]}] (0,0) -- (1.5,0); % freq axis
+    \draw[line width=0.7pt, draw=paperGray, -{Stealth[length=1.6mm]}] (0,0) -- (0,1.15); % amp axis
+    % resonance-like real & imag curves
+    \draw[oiBlue, line width=1.0pt]
+      (0.05,0.18) .. controls (0.55,0.20) and (0.62,1.05) .. (0.75,1.05)
+                  .. controls (0.88,1.05) and (0.95,0.22) .. (1.45,0.16);
+    \draw[oiOrange, line width=1.0pt, dash pattern=on 2pt off 1.2pt]
+      (0.05,0.55) .. controls (0.55,0.55) and (0.62,0.95) .. (0.75,0.55)
+                  .. controls (0.88,0.18) and (0.95,0.55) .. (1.45,0.55);
+    \node[tinylab, anchor=west] at (0.92,1.02) {Re};
+    \node[tinylab, anchor=west] at (1.0,0.74) {Im};
+    \node[smalllab, anchor=north] at (0.75,-0.05) {frequency};
+    \node[lab] at (0.75,1.52) {spectrum};
+  \end{scope}
+
+  % ---- the fitting step (two routes) ----
+  \node[draw, rounded corners=2pt, fill=inkGray!4, line width=0.7pt,
+        minimum width=1.9cm, minimum height=1.0cm, align=center, font=\sffamily\footnotesize,
+        text=inkGray] (fit) at (8.35,0.69) {fit each\\spectrum};
+
+  \draw[flow] (6.75,0.69) -- (fit.west);
+
+  % two routes: slow LSQF (top), fast NN (bottom), both reaching the maps
+  \draw[-{Stealth[length=2.6mm]}, line width=0.9pt, draw=oiVermil]
+        (fit.north east) to[out=22,in=170] (10.55,1.05);
+  \node[smalllab, text=oiVermil, anchor=south] at (9.45,1.18) {LSQF: serial, $\sim$min};
+  \draw[-{Stealth[length=2.6mm]}, line width=0.9pt, draw=oiGreen]
+        (fit.south east) to[out=-22,in=190] (10.55,0.05);
+  \node[smalllab, text=oiGreen, anchor=north] at (9.45,-0.08) {network: parallel, $\sim$\textmu s};
+
+  % ---- parameter maps ----
+  \begin{scope}[shift={(10.85,0.25)}]
+    \def\mapw{0.62}
+    \foreach \k/\name/\col in {0/$A$/oiBlue, 1/$\omega_0$/oiOrange, 2/$Q$/oiGreen, 3/$\phi$/oiPurple} {
+      \begin{scope}[shift={(\k*0.78,0)}]
+        \shade[left color=\col!15, right color=\col!70] (0,0) rectangle (\mapw,\mapw);
+        \draw[line width=0.5pt, draw=paperGray] (0,0) rectangle (\mapw,\mapw);
+        \node[smalllab, anchor=south] at (0.31,\mapw+0.02) {\name};
+      \end{scope}
+    }
+    \node[lab] at (1.55,1.55) {SHO parameter maps};
+  \end{scope}
+\end{scope}
+
+
+\end{tikzpicture}

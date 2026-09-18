@@ -1,0 +1,39 @@
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+% Sans-serif labels (Latin Modern Sans), Nature-family friendly.
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,%
+  decorations.pathmorphing,decorations.pathreplacing}
+
+% ---- Okabe-Ito colorblind-safe palette ----
+\definecolor{oiBlue}{RGB}{0,114,178}
+\definecolor{oiOrange}{RGB}{230,159,0}
+\definecolor{oiGreen}{RGB}{0,158,115}
+\definecolor{oiVermil}{RGB}{213,94,0}
+\definecolor{oiPurple}{RGB}{204,121,167}
+\definecolor{oiSky}{RGB}{86,180,233}
+\definecolor{oiYellow}{RGB}{240,228,66}
+\definecolor{inkGray}{RGB}{60,60,60}
+\definecolor{paperGray}{RGB}{120,120,120}
+
+% 3D-ish conv block (parallelepiped). Args:
+% #1 x-anchor, #2 half-height, #3 width, #4 fill, #5 label below, #6 top label
+\newcommand{\convblock}[6]{%
+  \begin{scope}[shift={(#1,0)}]
+    \def\hh{#2}\def\ww{#3}\def\dd{0.32}%
+    \colorlet{cbFront}{#4}%
+    \colorlet{cbTop}{cbFront!75!black}%
+    \colorlet{cbSide}{cbFront!60!black}%
+    \pgfmathsetmacro{\wwh}{#3/2}%
+    \pgfmathsetmacro{\wwd}{#3/2+0.16}%
+    \fill[cbFront] (0,-\hh) rectangle (\ww,\hh);
+    \draw[line width=0.5pt, draw=inkGray!70] (0,-\hh) rectangle (\ww,\hh);
+    \fill[cbTop] (0,\hh) -- (\dd,\hh+\dd) -- (\ww+\dd,\hh+\dd) -- (\ww,\hh) -- cycle;
+    \draw[line width=0.5pt, draw=inkGray!70] (0,\hh) -- (\dd,\hh+\dd) -- (\ww+\dd,\hh+\dd) -- (\ww,\hh);
+    \fill[cbSide] (\ww,-\hh) -- (\ww+\dd,-\hh+\dd) -- (\ww+\dd,\hh+\dd) -- (\ww,\hh) -- cycle;
+    \draw[line width=0.5pt, draw=inkGray!70] (\ww,-\hh) -- (\ww+\dd,-\hh+\dd) -- (\ww+\dd,\hh+\dd);
+    \node[smalllab, anchor=north] at (\wwh,-\hh-0.05) {#5};
+    \node[tinylab, anchor=south] at (\wwd,\hh+\dd+0.02) {#6};
+  \end{scope}}
