@@ -43,7 +43,7 @@ OUT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # Consistent paper palette: LSQF = blue, the network = orange (GPU and FPGA are
 # both "the network"; the FPGA bar is hatched to mark it as a projected result).
 targets = [
-    ("LSQF\n(CPU)", 781.0, 1280.0, "methods", METHOD_COLORS["LSQF"]),
+    ("LSQF\n(CPU, 4-core)", 781.0, 1280.0, "methods", METHOD_COLORS["LSQF"]),
     ("GPU NN\n(batched)", 1.73, 5.78e5, "notebook", METHOD_COLORS["NN"]),
     ("FPGA NN\n(streaming)", 37.0, 2.7e4, "projected", METHOD_COLORS["NN"]),
 ]
@@ -60,7 +60,7 @@ bars[2].set_hatch("////")
 
 ax.set_yscale("log")
 ax.set_xlabel("Deployment target")
-ax.set_ylabel("Latency per spectrum ($\\mu$s)")
+ax.set_ylabel("Time per spectrum ($\\mu$s)")
 ax.set_xticks(x)
 ax.set_xticklabels([t[0] for t in targets], fontsize=9.5)
 ax.set_ylim(0.7, 5000)
@@ -77,9 +77,9 @@ ax.legend(handles=legend_handles, loc="upper right")
 
 # Throughput annotations above each bar (FPGA marked as a projected estimate).
 labels = [
-    "1,280 fits/s",
-    r"$5.8\times10^{5}$ fits/s",
-    r"$2.7\times10^{4}$ fits/s" + "\n(projected)",
+    "1,280 fits/s\n(throughput$^{-1}$)",
+    r"$5.8\times10^{5}$ fits/s" + "\n(amortized)",
+    r"$2.7\times10^{4}$ fits/s" + "\n(projected latency)",
 ]
 for xi, t, lab in zip(x, targets, labels):
     ax.annotate(
@@ -88,7 +88,7 @@ for xi, t, lab in zip(x, targets, labels):
         ha="center", va="bottom", fontsize=8.5,
     )
 
-ax.set_title("Inference latency")
+ax.set_title("Per-spectrum deployment timing")
 fig.tight_layout()
 fig.savefig(os.path.join(OUT, "fig5_fpga_latency.png"), dpi=300)
 plt.close(fig)

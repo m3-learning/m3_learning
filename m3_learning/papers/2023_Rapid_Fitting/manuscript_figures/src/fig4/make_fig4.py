@@ -24,7 +24,7 @@ overlap there; the meaningful optimizer margin is read at noise 0.
 
 Outputs two panels written to figures/:
   fig4_clean_loss.png   -- panel (a): clean-data (noise 0) final loss by optimizer
-  fig4_loss_vs_noise.png-- panel (b): final loss vs noise level, both optimizers
+  fig4_margin_vs_noise.png-- panel (b): final loss vs noise level, both optimizers
 """
 import os
 import sys
