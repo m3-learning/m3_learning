@@ -46,13 +46,29 @@ def log(m):
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.abspath(os.path.join(HERE, "..", ".."))
-H5 = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser(
-    "~/Desktop/Projects/m3_learning/m3_learning/papers/2023_Rapid_Fitting/Data/data_raw.h5")
-CKPT = sys.argv[2] if len(sys.argv) > 2 else (glob.glob(os.path.expanduser(
-    "~/Downloads/rapid_fitting_artifacts/Trained Models/SHO Fitter/"
-    "SHO_Fitter_original_data_model_optimizer_Adam_epoch_4_train_loss_0.034*.pth"))
-    + [None])[0]
-assert CKPT and os.path.isfile(CKPT), "clean Adam checkpoint not found; pass its path"
+_H5_CANDIDATES = [
+    os.path.join(HERE, "..", "..", "..", "Data", "data_raw.h5"),  # in-repo layout
+    os.path.expanduser(
+        "~/Desktop/Projects/m3_learning/m3_learning/papers/2023_Rapid_Fitting/Data/data_raw.h5"),
+]
+H5 = sys.argv[1] if len(sys.argv) > 1 else next(
+    (q for q in _H5_CANDIDATES if os.path.isfile(q)), _H5_CANDIDATES[0])
+assert os.path.isfile(H5), (
+    "data_raw.h5 not found; download it from Zenodo 10.5281/zenodo.7774788 "
+    "into Data/ or pass its path as the first argument")
+_CKPT_GLOBS = [
+    os.path.join(HERE, "..", "..", "..", "Trained Models", "SHO Fitter",
+                 "SHO_Fitter_original_data_model_optimizer_Adam_epoch_4_train_loss_0.034*.pth"),
+    os.path.expanduser(
+        "~/Downloads/rapid_fitting_artifacts/Trained Models/SHO Fitter/"
+        "SHO_Fitter_original_data_model_optimizer_Adam_epoch_4_train_loss_0.034*.pth"),
+]
+CKPT = sys.argv[2] if len(sys.argv) > 2 else next(
+    (m for g in _CKPT_GLOBS for m in sorted(glob.glob(g))), None)
+assert CKPT and os.path.isfile(CKPT), (
+    "clean Adam checkpoint not found; it is a registered record in the paper's "
+    "Dataerai collection (public at acceptance) - pass its local path as the "
+    "second argument")
 
 # ---------------- data ----------------
 import h5py  # noqa: E402
