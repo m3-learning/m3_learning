@@ -1,0 +1,1179 @@
+{
+ "pulled_utc": "2026-07-29",
+ "asset": "6323cd64-933d-4df2-af80-6000d481698e",
+ "relationships": [
+  {
+   "id": "c812209c-e653-4ce2-a11d-cac2bfc1b37b",
+   "type": "derived_from",
+   "direction": "outgoing",
+   "related_asset": {
+    "id": "a8d23a07-50c2-432b-bb06-ce64df9519eb",
+    "title": "PZT 2080 raw BE-PFM data \u2014 Zenodo original",
+    "alias": ""
+   },
+   "analysis_mode": "altering",
+   "qualifier_note": ""
+  },
+  {
+   "id": "093b78e5-90db-4f5f-bdf5-47b217389dad",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "23dbef53-5b47-4051-964f-9f6be234c6b5",
+    "title": "Fig 5b \u2014 second-order optimizer margin vs noise (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "19755c9d-930a-4a36-b806-95d35942b66b",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "c03b9c8f-d7af-4653-8aeb-6f92cefe5736",
+    "title": "SHO fitter \u2014 clean, Adam, seed 42 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "197d5cca-321c-4f3c-81e8-3dd72ef12257",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "4ba194d1-295c-4ad6-88c5-18020252a13c",
+    "title": "Fig 4 \u2014 SHO parameter violins under added noise (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "215155fc-d473-465e-b154-512885595ce6",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "ce9401b7-f41b-49a5-9ae3-486252522440",
+    "title": "SHO fitter \u2014 noise 2, Adam, seed 41 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "2c34228f-e9ed-4fbd-a138-b666b695f3f5",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "5e5a4f7f-7137-4190-a824-62dc93a4082c",
+    "title": "SHO fitter \u2014 noise 5, Adam, seed 44 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "2c5e55e2-bb90-47ee-afb2-bcca9c0eff2a",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "6f33d2a3-59f8-4e46-b2ec-1d54ccd403f6",
+    "title": "Revision experiments 2026-07-15/16 - consolidated results (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "3154e69e-080d-46aa-ba64-cdff1009c65a",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "a6b705d7-cbdd-4107-b87e-f020cf050aa4",
+    "title": "SHO fitter \u2014 noise 6, TRCG, seed 44 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "3e2d67a9-7750-4dca-abc5-c70be1b06382",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "5e644551-a689-410b-a2f0-62e572c1f75c",
+    "title": "SHO fitter \u2014 noise 7, Adam, seed 45 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "3f8f0d4a-639b-49b8-b177-a47d856405ac",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "f382516f-6a87-4015-9f62-85b3ca98ac7b",
+    "title": "Hysteresis fitter \u2014 TRCG, seed 42 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "4707c167-2f95-4cca-aa04-9d4645db7847",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "0260661b-faae-4070-b53b-54e1626dbfa7",
+    "title": "SHO fitter \u2014 noise 8, Adam, seed 41 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "54013676-c3bb-4c27-bb5d-dccf536d1954",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "75564691-11d9-4e0b-bfa0-0a143378d8d6",
+    "title": "Fig 6a \u2014 hysteresis loops: best/median/worst, NN vs LSQF (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "5b02104b-2323-440f-8abe-558a5ffeb254",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "a2daac6a-45bb-476e-862b-107a75fb557b",
+    "title": "SHO fitter \u2014 noise 2, TRCG, seed 44 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "64099a0d-f2c4-4344-85bd-182765372db2",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "f3816cfd-aaa8-429a-8fa3-a08f67e21197",
+    "title": "SHO fitter \u2014 noise 6, Adam, seed 44 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "642fdae3-2548-452c-bbc6-818bfb90eeb8",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "c64938e4-e0a7-4945-bbc2-641722b53fbc",
+    "title": "Fig 3 \u2014 SHO parameter violins, NN vs LSQF (clean) (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "6c1430c6-99fb-4392-b2a9-6627abb3aaf6",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "a85b941a-95fa-4688-9809-a381b5f2a23c",
+    "title": "SHO fitter \u2014 noise 0, Adam, seed 43 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "6c2a11a5-1144-409a-9195-846ace66412c",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "45cd1289-5a16-4cec-96ca-6c99e3636d7e",
+    "title": "SHO fitter \u2014 noise 5, TRCG, seed 44 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "6ecbf131-1a77-427c-a836-1ee90f5ed898",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "4d73dcaa-2eed-4a04-a2bb-3d829ba9e6ad",
+    "title": "SHO fitter \u2014 noise 3, TRCG, seed 44 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "7629e445-7a30-40bd-ae01-eeaa55d3b1b3",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "00d61c9b-d995-44eb-9586-f79f9551f7c9",
+    "title": "Fig 5a \u2014 optimizer benchmark: clean training loss (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "7e7a9759-0558-465e-9fec-b09f0fb5668c",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "930ceabf-95e4-47f6-a813-bd07112c0f8b",
+    "title": "SHO fitter \u2014 noise 8, TRCG, seed 41 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "82d41627-0798-41e5-aa4b-baa714d582ac",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "59ce4fd9-9a09-4ca6-9249-ccd79189b3e2",
+    "title": "SHO fitter \u2014 noise 0, TRCG, seed 43 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "87964d94-f6e6-41a8-91dc-3e529d687775",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "b4b331eb-a4d9-490f-b2dc-0ce424082254",
+    "title": "SHO fitter \u2014 noise 4, Adam, seed 43 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "8f605593-05b0-44a9-bcbd-0aac3ea98fc1",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "0c7e13ba-da24-4679-a01b-f91a9deaf589",
+    "title": "SHO noise benchmark CSV (531 rows, find_best_model input)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "a80db47d-290d-47ce-b9a0-c1e45dd56877",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "0e7107ae-5555-4155-8a05-ae8cef8993b8",
+    "title": "Fig 6b \u2014 hysteresis loop-parameter violins (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "b04dccef-d8df-4a59-b420-40299ccfef85",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "7ab2cb9b-8946-49dc-89d2-c38c2a3a5200",
+    "title": "Fig 4 \u2014 parameter accuracy vs noise level (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "b11b222d-0751-4bf2-b5f7-1d009eac0a77",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "24198682-a72c-4389-9235-2ebf9648bd44",
+    "title": "SHO fitter \u2014 noise 1, Adam, seed 43 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "b7b80380-c942-4f18-98c0-dfcfe641a398",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "0d5357fb-99ef-4a4f-b4e3-8fafdb325c78",
+    "title": "SHO fitter \u2014 noise 7, TRCG, seed 45 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "cd0b3de2-ab68-4b53-804f-ec900495028c",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "3fd11a54-8e72-4616-aade-087ff0a5f12f",
+    "title": "SHO fitter \u2014 noise 1, TRCG, seed 43 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "d0b220d5-1afd-4429-a28c-cad72f30eb0c",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "c6101603-8c52-4a67-b156-8f3758d2b851",
+    "title": "SHO fitter \u2014 noise 3, Adam, seed 44 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "ea1803ef-a7b3-4cc7-bab5-d1cb7edcff08",
+   "type": "derived_from",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "d217664b-11d7-4a33-9655-116fb790b89a",
+    "title": "SHO fitter \u2014 noise 4, TRCG, seed 43 (provenance rerun)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  },
+  {
+   "id": "ea497925-d461-47ca-b1a8-3e234f82120a",
+   "type": "analysis_of",
+   "direction": "incoming",
+   "related_asset": {
+    "id": "ebb3c42d-9b42-4694-adbb-f854d4ba1c16",
+    "title": "Fig 3 \u2014 SHO fits: best/median/worst, NN vs LSQF (clean) (Rapid Fitting)",
+    "alias": ""
+   },
+   "analysis_mode": "non_destructive",
+   "qualifier_note": ""
+  }
+ ],
+ "lineage": {
+  "start": {
+   "kind": "record",
+   "sk": 29108
+  },
+  "direction": "up",
+  "depth": 3,
+  "node_count": 42,
+  "edge_count": 41,
+  "truncated": false,
+  "nodes": [
+   {
+    "kind": "record",
+    "sk": 29108,
+    "pid": "019f0f52-438a-7540-b178-79fd0c2d6d49",
+    "subject_kind": 1,
+    "subject_id": "6323cd64-933d-4df2-af80-6000d481698e"
+   },
+   {
+    "kind": "run",
+    "sk": 311,
+    "run_id": "b9a5d4a2-b0df-4529-9198-15cb7ffc5f8f",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 404,
+    "run_id": "d2594cf9-9457-48ea-8116-79752d5a5fde",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 268,
+    "run_id": "f6c5ee5a-2262-4eec-a9df-a683dfe183c6",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 411,
+    "run_id": "326fa075-72da-41df-a770-61f4bbc5ab02",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 312,
+    "run_id": "d8c7b568-ae87-4344-a198-0500dc818500",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 298,
+    "run_id": "d80646d7-b9ca-4b2c-b31f-d2ae6fe33ea7",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 27,
+    "run_id": "0885d8b4-8c78-44b8-a3db-3b6c423466ca",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 299,
+    "run_id": "a186f5ce-deea-4f8b-866e-636f43c83324",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 405,
+    "run_id": "7e363d57-7920-4b02-a588-f4d79f11584c",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 300,
+    "run_id": "acd095fe-59fd-4e4f-983b-cda8c31d370e",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 313,
+    "run_id": "8ba230fe-0b90-417d-9222-0110909f92f6",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 301,
+    "run_id": "b23eefe1-454e-4a75-8bc3-82219e991396",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 302,
+    "run_id": "ddc83b53-3596-4028-bc1e-83c9c3008c54",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 303,
+    "run_id": "4d270405-5df4-4813-a366-fc73fae2c729",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 406,
+    "run_id": "3986ba30-6691-4998-a20d-577641ad5f76",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 314,
+    "run_id": "01bc2877-8c4a-4924-a22f-044bd1732d7b",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 304,
+    "run_id": "04550872-5165-4c29-a14a-420ed5fcb06c",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 305,
+    "run_id": "d780b17b-9719-4aaf-b7bb-5aff39b26544",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 306,
+    "run_id": "69c56efc-443e-4994-bd9b-d8ed38cc320a",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 315,
+    "run_id": "3289b592-1a92-4cfd-ac35-be6404f9f3db",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 307,
+    "run_id": "89ae9469-0b79-4181-928f-89e513092294",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 407,
+    "run_id": "3814534b-f183-41b1-b7e6-f8bd0865e6f8",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 308,
+    "run_id": "d02a2267-0221-4cb6-93e5-32e08c791e96",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 403,
+    "run_id": "5aad199c-f59a-4639-a3ba-33e7584efe99",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 309,
+    "run_id": "1d93615a-5c37-463d-afb7-5affb323d4bf",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 412,
+    "run_id": "7892ee72-095a-4ba8-8d6a-7ca77732f21e",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 316,
+    "run_id": "ea03dee9-4731-47d5-bfc9-37940479b398",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 310,
+    "run_id": "c9364ffd-be44-4b6d-9940-de3c0fc44e1b",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 408,
+    "run_id": "32d34d8f-74d8-4ed7-bd40-6c73e344f761",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 317,
+    "run_id": "8630a280-13f1-438e-a96b-dab8f0e85a25",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 409,
+    "run_id": "231243d9-35ef-42a9-8bda-2819db92d164",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 413,
+    "run_id": "c5e352f9-cf59-48c4-93a6-1f1088580d5f",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 410,
+    "run_id": "f51f23d6-30e6-4178-9108-016456da402b",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 416,
+    "run_id": "db4fee5a-1e9f-48d6-846b-f35847e264e4",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 414,
+    "run_id": "d6ff55f5-b3ad-422e-886a-2dfb59891321",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 423,
+    "run_id": "ca222e27-6a91-4996-8452-a1f5640e4776",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 415,
+    "run_id": "dfbefdd7-9b61-4fa5-bbbb-e423c80ca1d6",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 425,
+    "run_id": "b583ca1d-4dcb-47f9-b2ca-27d5033c8a3c",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 424,
+    "run_id": "82e1cc39-0bab-4bf1-b9be-90f52313be07",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 426,
+    "run_id": "8974a8c9-287d-4176-88a9-dfb2908a7ae2",
+    "run_kind": "training",
+    "status": "closed"
+   },
+   {
+    "kind": "run",
+    "sk": 427,
+    "run_id": "24bc6417-c64b-49cb-b0f2-058f0b0f827f",
+    "run_kind": "training",
+    "status": "closed"
+   }
+  ],
+  "edges": [
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 27
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-06-28T17:41:51.071713+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 268
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T02:21:35.580069+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 298
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T04:47:23.547935+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 299
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T04:54:54.449532+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 300
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T05:14:35.707912+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 301
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T05:22:16.741195+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 302
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T05:39:05.569321+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 303
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T05:46:37.118809+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 304
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T06:00:22.746788+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 305
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T06:08:04.130736+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 306
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T06:20:15.844652+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 307
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T06:27:48.676376+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 308
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T06:39:12.438141+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 309
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T06:46:44.331160+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 310
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T06:57:26.041416+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 311
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T07:04:53.906348+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 312
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T07:14:45.047222+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 313
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T07:22:17.807831+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 314
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T07:32:03.493325+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 315
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T07:39:33.030370+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 316
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T07:51:08.867562+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 317
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-13T08:11:09.888154+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 403
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:05:40.043780+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 404
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:07:13.456863+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 405
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:07:29.337678+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 406
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:07:49.194663+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 407
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:08:11.783479+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 408
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:08:35.579227+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 409
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:08:54.567063+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 410
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:09:03.283807+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 411
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:09:14.441719+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 412
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:09:27.258680+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 413
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:09:40.829285+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 414
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:11:06.424685+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 415
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:15:51.224359+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 416
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T04:21:09.437648+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 423
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T13:08:27.997343+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 424
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T13:10:00.106841+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 425
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T13:11:31.763823+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 426
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T13:13:10.113926+00:00"
+   },
+   {
+    "relation": "trained_on",
+    "src": {
+     "kind": "run",
+     "sk": 427
+    },
+    "dst": {
+     "kind": "record",
+     "sk": 29108
+    },
+    "ts": "2026-07-16T13:14:55.454167+00:00"
+   }
+  ]
+ }
+}

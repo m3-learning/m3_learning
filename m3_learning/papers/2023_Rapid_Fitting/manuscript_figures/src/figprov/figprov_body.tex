@@ -1,0 +1,72 @@
+\begin{tikzpicture}[
+  font=\sffamily,
+  >=Stealth,
+  lab/.style={font=\sffamily\footnotesize, align=center, text=inkGray},
+  smalllab/.style={font=\sffamily\scriptsize, align=center, text=inkGray},
+  tinylab/.style={font=\sffamily\fontsize{6}{7}\selectfont, align=center, text=paperGray},
+  edgelab/.style={font=\sffamily\itshape\fontsize{6.5}{7.5}\selectfont, text=inkGray,
+                  fill=white, inner sep=1.2pt},
+  asset/.style={draw=inkGray!70, rounded corners=3pt, line width=0.7pt,
+                align=center, font=\sffamily\scriptsize, text=inkGray,
+                inner sep=5pt, minimum height=0.95cm},
+  rel/.style={-{Stealth[length=2.2mm]}, line width=0.8pt, draw=inkGray},
+  xref/.style={-{Stealth[length=1.8mm]}, line width=0.5pt, draw=paperGray,
+               dash pattern=on 1.8pt off 1.4pt},
+]
+
+% ---------------- nodes ----------------
+% immutable external record (outside the collection)
+\node[asset, fill=inkGray!6] (zenodo) at (0,0)
+  {published Zenodo record\\\texttt{10.5281/zenodo.7774788}\\immutable, CC~BY~4.0};
+
+% the dataset asset (center of the graph)
+\node[asset, fill=oiBlue!12, line width=1.0pt, draw=oiBlue!70!black] (dataset) at (5.4,0)
+  {\textbf{BE-PFM dataset asset}\\\texttt{data\_raw.h5} (9.0\,GB)\\
+   \texttt{6323cd64\ldots}};
+\node[tinylab] at (5.4,-0.95)
+  {resolvable DID, published on acceptance};
+
+% training lineage runs
+\node[asset, fill=oiOrange!14] (runs) at (10.6,1.75)
+  {\textbf{20 training-run lineage records}\\optimizer, hyperparameters, seed,\\
+   final loss, wall-clock, hardware;\\sealed by server-side integrity root};
+
+% checkpoints
+\node[asset, fill=oiGreen!14] (ckpts) at (10.6,-0.6)
+  {\textbf{20 model checkpoint assets}\\one per benchmark-winning\\configuration and seed};
+
+% benchmark table
+\node[asset, fill=oiPurple!14] (bench) at (2.3,-2.5)
+  {optimizer-benchmark\\table (531-row log)};
+
+% figures
+\node[asset, fill=oiSky!16] (figs) at (6.4,-2.9)
+  {\textbf{8 data-driven main-text figure assets}\\generating script recorded\\in each asset's metadata};
+
+% ---------------- edges ----------------
+\draw[rel] (dataset.west) -- node[edgelab] {derived\_from} (zenodo.east);
+\node[tinylab] at (0.55,-1.2) {in-place preprocessing:\\cached LSQF fits, noise realizations};
+
+\draw[rel, draw=oiOrange!80!black] (runs.west) to[out=185,in=40]
+  node[edgelab, pos=0.45] {trained\_on} (dataset.north east);
+
+\draw[rel, draw=oiGreen!60!black] (ckpts.west) -- node[edgelab] {derived\_from} (dataset.east);
+\draw[xref] (ckpts.north) -- node[edgelab, text=paperGray] {cross-references} (runs.south);
+
+\draw[rel, draw=oiPurple!80!black] (bench.north) to[out=75,in=225]
+  node[edgelab, pos=0.5] {analysis\_of} (dataset.south west);
+
+\draw[rel, draw=oiSky!60!black] (figs.north) -- node[edgelab, pos=0.45] {analysis\_of} (dataset.south);
+\draw[xref] (figs.east) to[out=10,in=250]
+  node[edgelab, text=paperGray, pos=0.4] {derived\_from} (ckpts.south);
+\draw[xref] (figs.west) to[out=180,in=310] (bench.south east);
+
+% ---------------- collection boundary ----------------
+\begin{scope}[on background layer]
+  \draw[rounded corners=6pt, line width=0.6pt, draw=paperGray, dash pattern=on 3pt off 2.2pt]
+    (3.2,2.9) rectangle (13.05,-3.85);
+\end{scope}
+\node[tinylab, anchor=south west] at (3.3,-3.8)
+  {Dataerai collection ``Rapid Fitting -- npj paper'' (public and locked on acceptance)};
+
+\end{tikzpicture}

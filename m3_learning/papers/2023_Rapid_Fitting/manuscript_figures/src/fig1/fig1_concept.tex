@@ -1,0 +1,14 @@
+% Standalone source for Figure 1 (concept + physics-constrained autoencoder).
+% Portable build (requires the `standalone` class):
+%     pdflatex fig1_concept.tex   ->   fig1_concept.pdf  (auto-cropped)
+%
+% If `standalone.cls` is unavailable, build with the article fallback:
+%     pdflatex build.tex && python3 crop.py    (see build.tex / crop.py)
+%
+% The figure body lives in fig1_body.tex and the preamble in
+% fig1_preamble.tex so both build paths share identical content.
+\documentclass[border=4pt]{standalone}
+\input{fig1_preamble.tex}
+\begin{document}
+\input{fig1_body.tex}
+\end{document}

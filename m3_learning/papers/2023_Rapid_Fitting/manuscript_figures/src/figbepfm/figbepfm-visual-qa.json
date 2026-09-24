@@ -1,0 +1,87 @@
+{
+  "pdf": "/Users/alibek/Desktop/Projects/rapid-fitting-npj/figures/src/figbepfm/fig_bepfm_schematic.pdf",
+  "mode": "compact",
+  "text_plot_overlap_check": false,
+  "plot_label_regex": null,
+  "page": {
+    "width": 537.3055419921875,
+    "height": 279.273681640625
+  },
+  "text_box_count": 48,
+  "title": {
+    "text": "response(mV)",
+    "x0": 262.470703125,
+    "y0": 54.419654846191406,
+    "x1": 269.44451904296875,
+    "y1": 99.82608032226562,
+    "colors": [
+      3947580
+    ]
+  },
+  "issues": [
+    {
+      "severity": "error",
+      "code": "title_band_collision",
+      "message": "Text enters protected title band near 'response(mV)': 'VACband'",
+      "boxes": [
+        "response(mV)",
+        "VACband"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "title_band_collision",
+      "message": "Text enters protected title band near 'response(mV)': 'Re'",
+      "boxes": [
+        "response(mV)",
+        "Re"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "title_band_collision",
+      "message": "Text enters protected title band near 'response(mV)': '+VDC'",
+      "boxes": [
+        "response(mV)",
+        "+VDC"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "title_band_collision",
+      "message": "Text enters protected title band near 'response(mV)': 'Im'",
+      "boxes": [
+        "response(mV)",
+        "Im"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "title_band_collision",
+      "message": "Text enters protected title band near 'response(mV)': 'time'",
+      "boxes": [
+        "response(mV)",
+        "time"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "title_band_collision",
+      "message": "Text enters protected title band near 'response(mV)': '0'",
+      "boxes": [
+        "response(mV)",
+        "0"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "title_band_collision",
+      "message": "Text enters protected title band near 'response(mV)': 'sample'",
+      "boxes": [
+        "response(mV)",
+        "sample"
+      ]
+    }
+  ],
+  "status": "fail"
+}

@@ -94,3 +94,12 @@ The smoke tests (7 tests, seconds, CPU-only, no data download) cover the SHO
 function, scalers, the Fitter1D model forward/backward in train/eval modes, the
 9-parameter hysteresis loop function, and one optimization step of AdaHessian and
 Trust-Region CG.
+
+## Manuscript figures and analysis
+
+- `manuscript_figures/` — every panel of the npj manuscript with its
+  generating sources; `manuscript_figures/README.md` maps each panel to the
+  notebook or committed script that produces it.
+- `analysis/` — standalone scripts for the ground-truth recovery study and
+  the hysteresis loop-refit control (Methods), with the summary data they
+  produced; see `analysis/README.md` for pins and reproduction details.

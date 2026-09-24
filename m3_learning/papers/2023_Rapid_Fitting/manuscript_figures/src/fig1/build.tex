@@ -1,0 +1,11 @@
+% Article fallback wrapper used when standalone.cls is unavailable.
+% Produces build.pdf on a large page; crop.py then crops to the figure
+% bounding box and writes the final fig1_concept.pdf.
+\documentclass{article}
+\usepackage[paperwidth=40cm,paperheight=20cm,margin=1cm]{geometry}
+\pagestyle{empty}
+\input{fig1_preamble.tex}
+\begin{document}
+\noindent
+\input{fig1_body.tex}
+\end{document}
